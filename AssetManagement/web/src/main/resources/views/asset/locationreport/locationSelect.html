@@ -1,0 +1,185 @@
+<% layout('/layouts/default.html', {title: '报表-耗材库存(库位)管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('报表-耗材库存(库位)管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+			</div>
+		</div>
+
+		<div class="box-body">
+			<#form:form id="searchForm" model="${locationReport}" action="${ctx}/locationreport/locationReport/listData" method="post" class="form-inline"
+			data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">仓库名称：</label>
+				<div class="control-inline">
+					<#form:treeselect id="amWarehouse" title="${text('仓库选择')}"
+					path="warehouseCode" labelPath="warehouseName"
+					url="${ctx}/warehouse/amWarehouse/treeData" class="form-control" allowClear="true"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label"></label>
+				<div class="control-inline">
+					<#form:input path="codeORname" placeholder="物品编码或者名称" maxlength="64" class="form-control width-150"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+				<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+			</div>
+		</#form:form>
+		<table id="dataGrid"></table>
+		<h4 style="color: red;position: absolute;left: 1100px;">合计:</h4>
+		<h4 id="stockSum" style="color: red;position: absolute;left: 1200px;"></h4>
+		<h4 id="stockAtmSum" style="color: red;position: absolute;left: 1500px;"></h4>
+		<div id="dataGridPage">
+		</div>
+	</div>
+</div>
+</div>
+</div><div id="mask"><span style="text-align: center"></span></div>
+<style>
+	#mask{
+		display: none;
+		background-color: rgba(0,0,0,0.3);
+		color: #ffffff;
+		font-size: 30px;
+		font-weight: bold;
+		text-align: center;
+		position: absolute;
+		top:0;
+		left:0;
+		z-index: 9999;
+	}
+
+	.big{
+		width: 700px;
+		height: 700px;
+		margin: 0 auto;
+	}
+
+</style>
+<% } %>
+
+<script>
+    var selectData = JSON.parse(js.decodeUrl('${selectData}')), selectNum = 0,
+    // 初始化DataGrid对象
+		dataGrid = $('#dataGrid').dataGrid({
+        searchForm: $("#searchForm"),
+        columnModel: [
+            {header:'仓库', name:'warehouseName', index:'b.warehouse_name', width:150, align:"center"},
+            {header:'库位编码', name:'locationCode', index:'a.location_code', hidden: true, width:150, align:"center"},
+            {header:'库位', name:'locationName', index:'', width:150, align:"center"},
+            {header:'分类编码', name:'categoryCode', index:'e.category_code', hidden: true, width:150, align:"left"},
+            {header:'耗材分类', name:'categoryName', index:'e.category_name', width:150, align:"left"},
+            {header:'耗材编码', name:'consumablesCode', index:'a.consumables_code', width:150, align:"center"},
+            {header:'耗材名称', name:'consumablesName', index:'c.consumables_name', width:150, align:"left"},
+            {header:'规格型号', name:'specifications', index:'c.specifications', width:150, align:"left"},
+            {header:'计量单位', name:'measureUnit', index:'', width:150, hidden: true, align:"left"},
+            {header:'单位', name:'measureValue', index:'c.measure_unit', width:150, align:"center"},
+            {header:'库存', name:'stock', index:'stock', width:150, align:"center"},
+            {header:'库存单价', name:'stockPrice', index:'stock_price', width:150, align:"right", formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+                }},
+            {header:'库存金额', name:'stockAtm', index:'stock_atm', width:150, align:"right", formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+                }},
+            {header:'图片', name:'photo', sortable:false, width:150, align:"left",sortable:false,
+                formatter: function(val, obj, row, act){
+                    if(null==row.filePath){
+                        return "";
+                    }
+                    else{ return  "<img src='"+val+"' class=\"thumbnail\" onclick=\"getVal('"+val+"')\" height=\"80\" width=\"130\"/>"}
+                }
+            },
+            {header:'行数据', name:'rowData', hidden:true, formatter: function(val, obj, row, act){
+                    return JSON.stringify(row);
+                }}
+        ],
+            // 加载成功后执行事件
+            ajaxSuccess: function(data){
+                if(data.list.length>0){
+                    $("#stockSum").html(data.list[0].stockSum);
+                    $("#stockAtmSum").html(data.list[0].stockAtmSum);
+                }
+                var grid = $("#dataGrid");
+                var ids = grid.getDataIDs();
+                for (var i = 0; i < ids.length; i++) {
+                    grid.setRowData ( ids[i], false, {height: 80} );
+                }
+                $.each(selectData, function(key, value){
+                    dataGrid.dataGrid('setSelectRow', key);
+                });
+                initSelectTag();
+            },
+
+            onSelectRow: function(rowid, status){
+				selectData = {};
+				selectData[rowid] = JSON.parse(dataGrid.dataGrid('getRowData', rowid).rowData);
+                initSelectTag();
+            },
+            onSelectAll:function(rowids,status){
+				for (var i = 0; i < rowids.length; i++) {
+					if (status) {
+						selectData[rowids[i]] = JSON.parse(dataGrid.dataGrid('getRowData', rowids[i]).rowData);
+					} else {
+						delete selectData[rowids[i]];
+                    }
+                }
+                initSelectTag();
+            },
+            ondblClickRow: function(rowid, rowData){
+				js.layer.$('#' + window.name).closest('.layui-layer').find(".layui-layer-btn0").trigger("click");
+                initSelectTag();
+            }
+        });
+
+    var valp;
+    function getVal(val){
+        valp = val;
+    }
+    $(document).on("click",".thumbnail",function() {
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><img src="+valp+" class='big'></div>");
+        $(".big").bind("click", function () {
+            hideMask("#mask");
+            $(".big").remove();
+        })
+    })
+    function showMask(ele,words){
+        $(ele).show().text(words).css({
+            "width":$(window).width()+"px",
+            "height":$(window).height()+"px",
+            "lineHeight":$(window).height()+"px"
+        })
+    }
+    function hideMask(ele){
+        $(ele).hide();
+    }
+
+    function initSelectTag(){
+        selectNum = 0;
+        var html = [];
+        $.each(selectData, function(key, value){
+            selectNum ++;
+            html.push('<span class="tag" id="'+key+'_tags-input"><span>'+value.locationName+' </span>'
+                + '<a href="#" onclick="removeSelectTag(\''+key+'\');" title="取消选择">x</a></span>');
+        });
+        html.unshift('<div class="title">当前已选择<span id="selectNum">'+selectNum+'</span>项：</div>');
+        $('#selectData').empty().append(html.join(''));
+    }
+    function removeSelectTag(key){
+        delete selectData[key];
+        dataGrid.dataGrid('resetSelection', key);
+        $('#selectNum').html(--selectNum);
+        $('#'+key+'_tags-input').remove();
+    }
+    function getSelectData(){
+        return selectData;
+    }
+</script>

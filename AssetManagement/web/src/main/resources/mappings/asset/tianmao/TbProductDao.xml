@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.tianmao.dao.TbProductDao">
+	
+	<!-- 查询数据-->
+	<select id="findList" resultType="TbProduct">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<if test="outerId != null and outerId != ''">
+		INNER JOIN tb_sku ON tb_sku.num_iid=a.num_iid and tb_sku.outer_id LIKE '%${outerId}%'
+		</if>
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="queryNick != null and queryNick != ''">
+				AND a.nick != #{queryNick}
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<update id="updateProductCategory">
+		update tb_product SET `procategory_code` = #{arg0}, `proseries_code` = #{arg1} where num_iid=#{arg2}
+	</update>
+</mapper>

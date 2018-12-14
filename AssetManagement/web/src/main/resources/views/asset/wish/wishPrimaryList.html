@@ -1,0 +1,96 @@
+<% layout('/layouts/default.html', {title: '初选提名记录表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('初选提名记录表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('wish:wishPrimary:edit')){ %>
+					<!--<a href="${ctx}/fz/wish/wishPrimary/form" class="btn btn-default btnTool" title="${text('新增初选提名记录表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<% } %>
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-import"></i> 导出</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${wishPrimary}" action="${ctx}/fz/wish/wishPrimary/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('提名人')}：</label>
+					<div class="control-inline">
+						<#form:input path="nomineeBy" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('工号')}：</label>
+					<div class="control-inline">
+						<#form:input path="jobNumber" maxlength="10" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('岗位')}：</label>
+					<div class="control-inline">
+						<#form:input path="position" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('部门')}：</label>
+					<div class="control-inline">
+						<#form:treeselect id="dept" title="${text('部门选择')}"
+						path="departmentId" labelPath="deptname" checkbox="false"
+						url="${ctx}/fz/ding/dingDepartment/treeData" class="required " allowClear="true"
+						canSelectRoot="true" canSelectParent="true"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('提名人')}', name:'nomineeBy', index:'a.nominee_by', width:150, align:"center", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/fz/wish/wishPrimary/form?userId='+row.userId+'" class="btnList" data-title="${text('编辑初选提名记录表')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'${text('工号')}', name:'jobNumber', index:'a.job_number', width:150, align:"center"},
+		{header:'${text('岗位')}', name:'position', index:'a.position', width:150, align:"center"},
+		{header:'${text('部门')}', name:'department', index:'a.department', width:150, align:"center"},
+		{header:'${text('提名时间')}', name:'createTime', index:'a.create_time', width:150, align:"center"},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('wish:wishPrimary:edit')){ %>
+		// 		actions.push('<a href="${ctx}/wish/wishPrimary/form?userId='+row.userId+'" class="btnList" title="${text('编辑初选提名记录表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#searchForm'), {
+        url:'${ctx}/fz/wish/wishPrimary/exportData',
+        downloadFile:true
+    });
+});
+</script>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.fz.appreciation.dao.FzLeaderboardsDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="FzLeaderboards">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="getYearMonthList" resultType="com.jeesite.modules.fz.appreciation.returnData.LeaderboardData">
+	SELECT
+		a.praiser_id userid,
+		SUM(a.coin_count) praiserNumber,
+		a.appreciation_code appreciationCode,
+		b.name,
+		b.jobnumber,
+		b.avatar,
+		b.position
+	FROM
+		fz_appreciation_sum a
+	LEFT JOIN js_ding_user b ON a.praiser_id = b.userid
+	WHERE
+		a.create_date LIKE CONCAT('%',#{yearMonth},'%')
+	GROUP BY
+		a.praiser_id
+	ORDER BY
+		praiserNumber DESC;
+	</select>
+
+
+	<select id="getWeekQuarterList" resultType="com.jeesite.modules.fz.appreciation.returnData.LeaderboardData">
+	SELECT
+		a.praiser_id userid,
+		SUM(a.coin_count) praiserNumber,
+		a.appreciation_code appreciationCode,
+		b.name,
+		b.jobnumber,
+		b.avatar,
+		b.position
+	FROM
+		fz_appreciation_sum a
+	LEFT JOIN js_ding_user b ON a.praiser_id = b.userid
+	WHERE
+		a.create_date BETWEEN #{arg0} AND  #{arg1}
+	GROUP BY
+		a.praiser_id
+	ORDER BY
+		praiserNumber DESC;
+	</select>
+
+	<select id="getLeaderboardByType" resultType="com.jeesite.modules.fz.appreciation.returnData.LeaderboardData">
+		SELECT
+		a.praiser_id userid,
+		a.create_date,
+		SUM(a.coin_count) praiserNumber,
+		a.appreciation_code appreciationCode,
+		b.name,
+		b.jobnumber,
+		b.avatar,
+		b.position,
+		a.tag
+		FROM
+		fz_appreciation_record a
+		LEFT JOIN js_ding_user b on a.praiser_id=b.userid
+		WHERE
+		a.create_date &gt;= #{arg0}
+		AND a.create_date &lt;= #{arg1}
+		and tag = #{arg2}
+		GROUP BY
+		a.praiser_id,
+		a.tag
+		ORDER BY
+		praiserNumber DESC
+	</select>
+</mapper>

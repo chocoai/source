@@ -1,0 +1,420 @@
+<% layout('/layouts/default.html', {title: '供应商资料管理', libs: ['dataGrid']}){ %>
+<style>
+    .chosen-container{display: none}
+    .form-inline .form-group .control-label{display: inline-block;width: 80px}
+    .form-inline .form-group.more{position: relative;}
+    .hideBoxSeachNav{margin-top: 10px}
+
+    .form-inline .form-group .Wdate-date{width: 120px!important}
+    /* .hideBoxSeachNav .form-group{margin-right: 2px!important} */
+    .form-inline .form-group{margin-right: 5px!important}
+    .control-inline input{width: 120px!important}
+</style>
+<div class="main-content">
+    <div class="box box-main">
+        <div class="box-header">
+            <div class="box-title">
+                <i class="fa fa-list-alt"></i> ${text('供应商资料管理')}
+            </div>
+            <div class="box-tools pull-right">
+                <% if(hasPermi('supplier:supSupplier:edit')){ %>
+               <!-- <a href="javascript:void(0)" id="exportInfoToK3" class="btn btn-default btn-sm" title="${text('写入K3')}"> ${text('写入K3')}</a>-->
+                <!--<a id="exportBtn" class="btn btn-default btn-sm" title="${text('导出Excel')}"> ${text('导出Excel')}</a>-->
+                <a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出Excel</a>&nbsp;&nbsp;&nbsp;
+                <a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除供应商资料')}"> ${text('删除')}</a>
+                <!--${ctx}/supplier/supSupplier/export?cooperationLevel="+cooperationLevel-->
+                <!--<a href="javascript:void(0)" onclick="getUrl()-->
+
+                <% } %>
+            </div>
+        </div>
+        <div class="box-body">
+            <#form:form id="searchForm" model="${supSupplier}" action="${ctx}/supplier/supSupplier/listData" method="post" class="form-inline"
+            data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+
+
+            <div class="form-group mr-40">
+                <label class="control-label">公司全称：</label>
+                <div class="control-inline">
+                    <#form:input path="companyName" maxlength="64" class="form-control width-150" id="companyName"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">K3名称：</label>
+                <div class="control-inline width-120">
+                    <#form:input path="abbreviationName" maxlength="64" class="form-control width-150" id="abbreviationName"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">单据状态：</label>
+                <div class="control-inline width-120">
+                    <#form:select path="supplierStatus" dictType="supplier_status" blankOption="true" class="form-control" id="supplierStatus"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">综合评分：</label>
+                <div class="control-inline">
+                    <#form:input path="score_gte" maxlength="20" class="form-control" id="score_gte"/>
+                    -
+                    <#form:input path="score_lte" maxlength="20" class="form-control" id="score_lte"/>
+                </div>
+            </div>
+
+            <div class="form-group more btn btn-sm btn-primary btnList">更多筛选条件</div>
+            <div class="form-group">
+                <button type="submit" class="btn btn-primary btn-sm" id="querySupplier">${text('查询')}</button>
+                <button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+            </div>
+
+
+
+            <!--  隐藏 -->
+            <div class="hideBoxSeachNav" style="display: none">
+                <div class="form-group">
+                    <label class="control-label">国　　家：</label>
+                    <div class="control-inline width-120">
+                        <!--  <select id="country" name="country" class="form-control select2-hidden-accessible" tabindex="-1" aria-hidden="true"></select>-->
+                        <#form:input path="country" maxlength="64" class="form-control width-150" id="country"/>
+                    </div>
+
+                </div>
+
+
+
+                <div class="form-group">
+                    <label class="control-label">省　　份：</label>
+                    <div class="control-inline width-120">
+                       <!-- <select id="province" name="province" class="form-control select2-hidden-accessible" tabindex="-1" aria-hidden="true"></select>-->
+                        <#form:input path="province" maxlength="64" class="form-control width-150" id="province"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">城　　市：</label>
+                    <div class="control-inline width-120">
+                       <!-- <select id="city" name="city" class="form-control select2-hidden-accessible" tabindex="-1" aria-hidden="true"></select>-->
+                        <#form:input path="city" maxlength="64" class="form-control width-150" id="city"/>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="control-label">经营类型：</label>
+                    <div class="control-inline width-120">
+                        <#form:select path="businessType" dictType="business_type" blankOption="true" class="form-control" id="businessType"/>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="control-label">公司性质：</label>
+                    <div class="control-inline width-120">
+                        <#form:select path="companyProperty" dictType="company_property" blankOption="true" class="form-control" id="companyProperty"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">经营范围：</label>
+                    <div class="control-inline width-120">
+                        <#form:select path="businessScope" dictType="business_scope" blankOption="true" class="form-control" id="businessScope"/>
+                    </div>
+                </div>
+
+                <br/>
+
+
+                <div class="form-group">
+                    <label class="control-label">成立日期：</label>
+                    <div class="control-inline">
+                        <#form:input path="dateStartup_gte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="dateStartup_gte"
+                        dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true,onpicked:function(){dateStartup_lte.click()}});"/>
+                        -
+                        <#form:input path="dateStartup_lte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="dateStartup_lte"
+                        dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true});"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">申请日期：</label>
+                    <div class="control-inline">
+                        <#form:input path="createDate_gte" readonly="true" maxlength="20" class="form-control Wdate-date" id="createDate_gte"
+                        dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true,onpicked:function(){dateStartup_lte.click()}});"/>
+                        -
+                        <#form:input path="createDate_lte" readonly="true" maxlength="20" class="form-control Wdate-date" id="createDate_lte"
+                        dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true});"/>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+                <div class="form-group">
+                    <label class="control-label">生产能力：</label>
+                    <div class="control-inline">
+                        <#form:input path="monthProduction_gte" maxlength="20" class="form-control" id="monthProduction_gte"/>
+                        -
+                        <#form:input path="monthProduction_lte" maxlength="20" class="form-control" id="monthProduction_lte"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">富余能力：</label>
+                    <div class="control-inline">
+                        <#form:input path="monthSurplusProduction_gte" maxlength="20" class="form-control" id="monthSurplusProduction_gte"/>
+                        -
+                        <#form:input path="monthSurplusProduction_lte" maxlength="20" class="form-control" id="monthSurplusProduction_lte"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">年营业额：</label>
+                    <div class="control-inline">
+                        <#form:input path="yearTurnover_gte" maxlength="20" class="form-control" id="yearTurnover_gte"/>
+                        -
+                        <#form:input path="yearTurnover_lte" maxlength="20" class="form-control" id="yearTurnover_lte"/>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">注册资本：</label>
+                    <div class="control-inline">
+                        <#form:input path="registeredCapital_gte" class="form-control" id="registeredCapital_gte"/>
+                        -
+                        <#form:input path="registeredCapital_lte" class="form-control" id="registeredCapital_lte"/>
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <label class="control-label">占地面积：</label>
+                    <div class="control-inline">
+                        <#form:input path="space_gte" maxlength="20" class="form-control" id="space_gte"/>
+                        -
+                        <#form:input path="space_lte" maxlength="20" class="form-control" id="space_lte"/>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="control-label">员工数量：</label>
+                    <div class="control-inline">
+                        <#form:input path="employees_gte" class="form-control" id="employees_gte"/>
+                        -
+                        <#form:input path="employees_lte" class="form-control " id="employees_lte"/>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+                <!-- end -->
+            </div>
+
+
+        </#form:form>
+        <table id="dataGrid"></table>
+        <div id="dataGridPage"></div>
+    </div>
+</div>
+</div>
+<% } %>
+<script>
+    // 初始化DataGrid对象
+    $('#dataGrid').dataGrid({
+        searchForm: $("#searchForm"),
+        columnModel: [
+            {header:'公司全称', name:'companyName', index:'a.company_name', width:270, align:"center", frozen:true, formatter: function(val, obj, row, act){
+                    // return '<a href="${ctx}/supplier/supSupplier/form?supplierCode='+row.supplierCode+'" class="btnList" data-title="${text('编辑供应商资料')}">'+(val||row.id)+'</a>';
+                    return '<a href="${ctx}/supplier/supSupplier/form?supplierCode='+row.supplierCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑供应商资料')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" data-id="'+row.id+'" class="click_tab">'+(val||row.id)+'</a>';
+
+                }},
+            {header:'K3名称', name:'abbreviationName', index:'a.abbreviation_name', width:150, align:"center"},
+            {header:'综合评分', name:'score', index:'a.score', width:150, align:"center"},
+            {header:'单据状态', name:'supplierStatus', index:'a.supplierStatus', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('supplier_status')}, val, '${text('未知')}', true);
+                }},
+            {header:'申请日期', name:'createDate', index:'a.create_date', width:150, align:"center"},
+            {header:'修改日期', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+            {header:'已写入K3', name:'written', index:'a.written', width:150, align:"center"},
+            {header:'公司网址', name:'companyOnlineadd', index:'a.company_onlineadd', width:270, align:"center"},
+            {header:'公司成立日期', name:'dateStartup', index:'a.date_startup', width:150, align:"center"},
+            {header:'公司性质', name:'companyProperty', index:'a.company_property', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('company_property')}, val, '${text('未知')}', true);
+                }},
+            {header:'注册资本（万元）', name:'registeredCapital', index:'a.registered_capital', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 0, true, '0'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+                }},
+            {header:'税号/统一社会信用代码号', name:'taxNumber', index:'a.tax_number', width:200, align:"center"},
+            {header:'占地面积（㎡）', name:'space', index:'a.space', width:150, align:"center",formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 0, true, '0');}},
+            {header:'员工数量（人）', name:'employees', index:'a.employees', width:150, align:"center",formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 0, true, '0');}},
+            {header:'月生产能力（万元）', name:'monthProduction', index:'a.month_production', width:150, align:"center",formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 0, true, '0');}},
+            {header:'月富余生产能力（万元）', name:'monthSurplusProduction', index:'a.month_surplus_production', width:200, align:"center",formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 0, true, '0');}},
+            {header:'年营业额（万元）', name:'yearTurnover', index:'a.year_turnover', width:150, align:"center",formatter: function(val, obj, row, act){
+                    return js.formatNumber(val, 0, true, '0');}},
+            {header:'经营类型', name:'businessType', index:'a.business_type', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('business_type')}, val, '${text('未知')}', true);
+                }},
+            {header:'企业经营范围', name:'businessScope', index:'a.business_scope', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('business_scope')}, val, '${text('未知')}', true);
+                }},
+            {header:'公司简介', name:'companyIntroduction', index:'a.company_introduction', width:150, align:"center"},
+            {header:'公司电话', name:'companyTel', index:'a.company_tel', width:150, align:"center"},
+            {header:'公司传真', name:'companyFax', index:'a.company_fax', width:150, align:"center"},
+            {header:'邮政编码', name:'companyPostcode', index:'a.company_postcode', width:150, align:"center"},
+            {header:'国家', name:'country', index:'a.country', width:150, align:"center"},
+            {header:'省份', name:'province', index:'a.province', width:150, align:"center"},
+            {header:'城市', name:'city', index:'a.city', width:150, align:"center"},
+            {header:'公司详细地址', name:'fullAddress', index:'a.full_address', width:350, align:"center"}
+        ],
+        shrinkToFit:false,
+        autoScroll:true,
+        autowidth:true,
+        showCheckbox:true,
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            Concurrency();
+            $('#dataGrid td[aria-describedby="dataGrid_companyIntroduction"]').on('click',function () {
+                layer.open({
+                    type: 1,
+                    title: '公司简介',
+                    closeBtn: 1, //不显示关闭按钮
+                    anim: 2,
+                    skin: 'layui-layer-demo',
+                    shadeClose: true, //开启遮罩关闭
+                    content: '<div style="padding:20px;width: 300px">'+$(this).html()+'</div>'
+                });
+            })
+        }
+    });
+    $('#asDelBtn').click( function(e){
+
+        // 获取所有被选中订单
+        var orderArr = $('#dataGrid :checkbox:checked'),
+            temp = []   // 当前被选中的订单
+        if(orderArr.length>0){
+            for(var i = 0; i<orderArr.length; i++){
+                var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+                temp.push(a)
+            }
+
+            var str = temp.join(',')
+            $.ajax({
+                url: '${ctx}/consumables/amTransfer',
+                data: {
+                    'code': str.toString(),
+                    'isDel': 'true'
+                },
+                type: 'GET',
+                contentType: 'application/json',
+                dataType: 'json',
+                success:function(res){
+                    if(res.flag === 'true'){
+                        if(confirm('确认删除吗?')){
+                            $.ajax({
+                                async:false,
+                                url:'${ctx}/supplier/supSupplier/delete?supplierCode='+str,
+                                success:function (res) {
+                                    var obj = JSON.parse(res);
+                                    if (obj.result =='true'){
+                                        js.showMessage(obj.message)
+                                        window.location.reload()
+                                    }else {
+                                        js.showMessage(obj.message)
+                                        // alert("删除失败")
+                                    }
+                                }
+                            })
+                        }
+                    }else{
+                        layer.msg(res.msg)
+                    }
+                }
+            })
+        }else{
+            layer.msg('请至少选择一条供应商资料进行删除')
+        }
+    });
+    //写入K3按钮
+    $('#exportInfoToK3').click(function(){
+        var checkedCode = $('#dataGrid :checkbox:checked');
+
+        if(checkedCode.length==1){
+            var supplierCode = $(checkedCode[0]).attr('name').replace(/jqg_dataGrid_/g,'')
+            $.ajax({
+                url:'${ctx}/supplier/supSupplier/exportSupplierInfo?supplierCode='+supplierCode,
+                success:function (res) {
+                    var obj = JSON.parse(res);
+                    js.showMessage(obj.message)
+                    // alert(obj.message);
+                    if(obj.result=='true') {
+                        window.location.reload()
+                    }
+                }
+            })
+        }else{
+            layer.msg('请选择一条供应商资料写入到K3!')
+        }
+    })
+    $(function () {
+        // 筛选菜单
+        $('.form-group.more').click(function(){
+            $('.hideBoxSeachNav').stop(true).slideToggle()
+        })
+        $('#btnExport').click(function(){
+            js.ajaxSubmitForm($('#searchForm'), {
+                url:'${ctx}/supplier/supSupplier/export',
+                downloadFile:true
+            });
+        });
+    });
+
+
+
+</script>
+
+
+
+<script type="text/javascript" src="${ctxStatic}/chosen/chosen.jquery.min.js"></script>
+<script type="text/javascript" src="${ctxStatic}/chosen/area_chs.js"></script>
+
+<script>
+
+    // 并发检测
+    function Concurrency(){
+        $("#dataGrid td[aria-describedby='dataGrid_companyName'] .click_tab").on('click', function(e){
+            var _t = $(this)
+            $.ajax({
+                // url: '${ctx}/redisUnits/getFlag',
+                url: '${ctx}/consumables/amTransfer',
+                data: {
+                    'code':_t.attr('data-id')
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json',
+                success:function(res){
+                    console.log(res)
+                    if(res.flag === 'true'){
+                        _t.siblings('a.btnList').trigger('click')
+                    }else{
+                        layer.msg(res.msg)
+                    }
+                }
+            })
+        });
+    }
+
+</script>

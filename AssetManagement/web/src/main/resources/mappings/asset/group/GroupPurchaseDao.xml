@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.group.dao.GroupPurchaseDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="GroupPurchase">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+
+	<!-- 根据团长旺旺id/phone查询小区拼团表中是否存在该团： -->
+	<select id="getGroupPurchase" resultType="GroupPurchase">
+		SELECT * FROM js_group_purchase WHERE wang_code = #{wangCode}
+		<if test="phone != null and phone !=''">
+			OR group_phone = #{phone}
+		</if>
+	</select>
+
+	<!-- 根据团长旺旺ID+phone 查询小区拼团表中是否存在该团： -->
+	<select id="getPurchase" resultType="GroupPurchase">
+		SELECT * FROM js_group_purchase WHERE wang_code = #{arg0} AND group_phone = #{arg1}
+	</select>
+
+	<!-- 查询团员旺旺ID是否存在小区拼团表中 -->
+	<select id="getMember" resultType="com.jeesite.modules.asset.group.entity.PurchaseData">
+		SELECT a.purchase_code AS purchaseCode,
+		a.wang_code AS wangCode,
+		a.group_phone AS groupPhone,
+		a.create_time AS createTime,
+		b.detail_code AS detailCode,
+		b.purchase_code AS purchaseCodeDetail,
+		b.member_wang_code AS memberWangCode,
+		b.create_time AS createTimeDetail
+		FROM js_group_purchase a
+		LEFT JOIN Js_group_detail b
+		ON a.purchase_code = b.purchase_code
+		WHERE a.wang_code = #{arg0}
+		OR b.member_wang_code = #{arg0}
+	</select>
+
+	<select id="getOrderRds" resultType="com.jeesite.modules.taobao.entity.TaobaoOrderRds">
+		SELECT *
+		FROM taobao_order_rds a
+		<where>
+			a.buyer_nick in
+			<foreach collection="list" item="buyerNickList" index="index" open="(" separator="," close=")">
+				#{buyerNickList}
+			</foreach>
+		</where>
+	</select>
+
+	<select id="selectBySkuList" resultType="com.jeesite.modules.asset.tianmao.entity.TbSku">
+		SELECT *
+		FROM tb_sku a
+		<where>
+			a.sku_id in
+			<foreach collection="list" item="skuList" index="index" open="(" separator="," close=")">
+				#{skuList}
+			</foreach>
+		</where>
+	</select>
+</mapper>

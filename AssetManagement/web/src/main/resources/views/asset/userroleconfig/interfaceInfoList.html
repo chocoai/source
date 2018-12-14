@@ -1,0 +1,154 @@
+<% layout('/layouts/default.html', {title: '接口信息管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('接口信息管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('userroleconfig:interfaceInfo:edit')){ %>
+					<a href="${ctx}/userroleconfig/interfaceInfo/form" class="btn btn-default btnTool" title="${text('新增接口信息')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+				<a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除入库表')}"> ${text('删除')}</a>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${interfaceInfo}" action="${ctx}/userroleconfig/interfaceInfo/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">接口名字：</label>
+					<div class="control-inline">
+						<#form:input path="interfaceName" maxlength="127" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">路径：</label>
+					<div class="control-inline">
+						<#form:input path="url" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">创建时间：</label>
+					<div class="control-inline">
+						<#form:input path="createDate_gte" class="form-control width-60"/>
+						&nbsp;--&nbsp;
+						<#form:input path="createDate_lte" class="form-control width-60"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'接口名字', name:'interfaceName', index:'a.interface_name', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/userroleconfig/interfaceInfo/form?interfaceCode='+row.interfaceCode+'" class="btnList" data-title="${text('编辑接口信息')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'路径', name:'url', index:'a.url', width:150, align:"left"},
+		{header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'创建人', name:'createBy', index:'a.create_by', width:150, align:"left"},
+		{header:'修改时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+		{header:'修改人', name:'updateBy', index:'a.update_by', width:150, align:"left"},
+		{header:'备注', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('userroleconfig:interfaceInfo:edit')){ %>
+				actions.push('<a href="${ctx}/userroleconfig/interfaceInfo/form?interfaceCode='+row.interfaceCode+'" class="btnList" title="${text('编辑接口信息')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/userroleconfig/interfaceInfo/disable?interfaceCode='+row.interfaceCode+'" class="btnList" title="${text('停用接口信息')}" data-confirm="${text('确认要停用该接口信息吗？')}"><i class="glyphicon glyphicon-ban-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/userroleconfig/interfaceInfo/enable?interfaceCode='+row.interfaceCode+'" class="btnList" title="${text('启用接口信息')}" data-confirm="${text('确认要启用该接口信息吗？')}"><i class="glyphicon glyphicon-ok-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/userroleconfig/interfaceInfo/delete?interfaceCode='+row.interfaceCode+'" class="btnList" title="${text('删除接口信息')}" data-confirm="${text('确认要删除该接口信息吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+
+
+$('#asDelBtn').click( function(e){
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/consumables/amInstorage',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/userroleconfig/interfaceInfo/deleteDb?ids='+str,
+                            success:function (result) {
+                                result=result.split(',')
+                                var messagea=result[1].split(':')[1];
+                                result=result[0].split(':')
+                                if (result[1].toString()=='"true"'){
+                                    messagea=messagea.replace('}','');
+                                    messagea=messagea.replace('"','');
+                                    messagea=messagea.replace('"','');
+                                    alert(messagea)
+                                    window.location.reload()
+                                }else {
+                                    alert("删除失败")
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一张订单进行删除')
+    }
+
+
+
+
+
+});
+</script>

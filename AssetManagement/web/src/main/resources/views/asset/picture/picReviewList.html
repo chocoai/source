@@ -1,0 +1,193 @@
+<% layout('/layouts/default.html', {title: '图片审核单管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('图片审核单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('picture:picReview:edit')){ %>
+					<a href="${ctx}/picture/picReview/form?isNewRecord=true" class="btn btn-default btnTool" title="${text('新增图片审核单')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				 <a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除图片审核单')}"> ${text('删除')}</a>
+				<% } %>
+
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${picReview}" action="${ctx}/picture/picReview/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">单据编号：</label>
+					<div class="control-inline">
+						<#form:input path="reviewCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据日期：</label>
+					<div class="control-inline">
+						<#form:input path="reviewDate"  maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="reviewStatus" dictType="am_document_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+			   <div class="form-group">
+				<label class="control-label">方案类型：</label>
+				<div class="control-inline">
+					<#form:input path="reviewType" maxlength="100" class="form-control width-120"/>
+				</div>
+			   </div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'单据编号', name:'reviewCode', index:'a.review_code', width:150, align:"center",formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/picture/picReview/form?reviewCode='+row.reviewCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑图片审核单')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+
+                // return '<a href="${ctx}/picture/picReview/form?reviewCode='+row.reviewCode+'" class="btnList" data-title="${text('编辑图片审核单')}">'+(val||row.id)+'</a>';
+}},
+		{header:'单据日期', name:'reviewDate', index:'a.review_date',dataFormat:"yyyy-MM-dd", width:150, align:"center"},
+		{header:'方案类型', name:'reviewType', index:'a.review_type', width:150, align:"center"},
+		{header:'单据状态', name:'reviewStatus', index:'a.review_status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('am_document_status')}, val, '${text('未知')}', true);
+		}},
+        {header:'方案说明', name:'remarks', index:'a.remarks', width:150, align:"left"},
+        {header:'创建者', name:'createBy', index:'a.create_by', width:150, align:"center"},
+        {header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+        {header:'更新者', name:'updateBy', index:'a.update_by', width:150, align:"center"},
+        {header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"}
+	],
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        Concurrency()
+	}
+});
+// $('#asDelBtn').click( function(e){
+//     var nodes = $('#dataGrid').find('input[type=checkbox]');
+//     var temp = [];
+//     $(nodes).each(function(index, item){
+//         var checked = $(item).attr('checked'); // 是否被选中
+//         if(checked) {
+//             var id = $(item).attr('id');
+//
+//             if(id.indexOf('_')) { // 如果有分割符的话，先分割
+//                 id = id.split('_');
+//                 id = id[2];
+//             }
+// 			temp.push(id);
+//         }
+//     });
+//     temp = temp.join(',');
+//     if(confirm('确认删除吗?')){
+//         $.ajax({
+//             async:false,
+//             url:'${ctx}/picture/picReview/delete?reviewCode='+temp,
+//             success:function (result) {
+//                 result=result.split(',')
+//                 var messagea=result[1].split(':')[1];
+//                 result=result[0].split(':')
+//                 if (result[1].toString()=='"true"'){
+//                     messagea=messagea.replace('}','');
+//                     messagea=messagea.replace('"','');
+//                     messagea=messagea.replace('"','');
+//                     alert(messagea)
+//                 }else {
+//                     alert("删除失败")
+//                 }
+//             }
+//         })}
+// });
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_reviewCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/picture/picReview',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                console.log(res)
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+$('#asDelBtn').click( function(e){
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/picture/picReview/delete?reviewCode='+str,
+                            success:function (result) {
+                                var obj = JSON.parse(result);
+                                if(obj.result=='true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                }else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一张订单进行删除')
+    }
+
+
+
+
+
+});
+</script>

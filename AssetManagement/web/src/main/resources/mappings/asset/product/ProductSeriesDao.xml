@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.product.dao.ProductSeriesDao">
+	
+	<!-- 查询数据-->
+	<select id="findList" resultType="ProductSeries">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="item != null and item !=''">
+				AND (
+				a.parent_code IN (
+				SELECT
+				b.proseries_code
+				FROM
+				js_product_series b
+				WHERE
+				b.proseries_status = '0'
+				AND b.tree_leaf = '0'
+				)
+				OR a.proseries_code IN (
+				SELECT
+				b.proseries_code
+				FROM
+				js_product_series b
+				WHERE
+				b.proseries_status = '0'
+				AND b.tree_leaf = '0'
+				)
+				)
+				AND a.proseries_status = '0'
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<select id="selectByProseriesStatus" resultType="Integer">
+		select count(1) from js_product_series WHERE proseries_status=0 and `proseries_code` =#{arg0}
+	</select>
+	<delete id="delete">
+		delete from js_product_series WHERE `proseries_code` =#{arg0}
+	</delete>
+	<select id="findProseries" resultType="Integer">
+		select count(1) from js_product_series where series_name=#{arg0}
+	</select>
+	<select id="selectByName" resultType="ProductSeries">
+		(
+	SELECT
+		a.series_name,
+		a.tree_sort,
+		b.tree_sort
+	FROM
+		js_product_series a
+	INNER JOIN js_product_series b ON a.parent_code = b.proseries_code
+	WHERE
+		LOWER(a.series_name) LIKE '${series}%'
+	AND a.tree_leaf = '1'
+	AND a.proseries_status = '0'
+	AND (
+		SELECT
+			c.proseries_status
+		FROM
+			js_product_series c
+		WHERE
+			c.proseries_code = a.parent_code
+	) = '0'
+	ORDER BY
+		b.tree_sort asc,
+		a.tree_sort asc
+		limit 0, 1000
+)
+UNION
+	(
+		SELECT
+			d.series_name,
+			d.tree_sort,
+			e.tree_sort
+		FROM
+			js_product_series d
+		INNER JOIN js_product_series e ON e.proseries_code = d.parent_code
+		WHERE
+			LOWER(d.series_name) LIKE '%${series}%'
+		AND LEFT (d.series_name, 1) != #{series}
+		AND d.tree_leaf = '1'
+		AND d.proseries_status = '0'
+		AND (
+			SELECT
+				f.proseries_status
+			FROM
+				js_product_series f
+			WHERE
+				f.proseries_code = d.parent_code
+		) = '0'
+		ORDER BY
+			e.tree_sort asc,
+			d.tree_sort asc
+			limit 0, 1000
+	)
+	</select>
+
+</mapper>

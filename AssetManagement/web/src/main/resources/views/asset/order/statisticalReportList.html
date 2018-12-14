@@ -1,0 +1,90 @@
+<% layout('/layouts/default.html', {title: '订单业绩统计管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('订单业绩统计管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<!--<% if(hasPermi('order:statisticalReport:edit')){ %>-->
+					<!--<a href="${ctx}/order/statisticalReport/form" class="btn btn-default btnTool" title="${text('新增订单业绩统计')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<!--<% } %>-->
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${statisticalReport}" action="${ctx}/order/statisticalReport/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('开始时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="date_gte" readonly="true" maxlength="20" class="form-control Wdate-date"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:function(){date_lte.click()}});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('结束时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="date_lte" readonly="true" maxlength="20" class="form-control Wdate-date"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('统计维度')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="dimensionality" dictType="am_order_dimensionality" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('日期')}', name:'orderTime', index:'a.order_date', width:150, align:"left"},
+		{header:'${text('成交订单数')}', name:'dealOrderNum', index:'a.deal_order_num', width:150, align:"center"},
+		{header:'${text('支付金额')}', name:'paymentAmount', index:'a.payment_amount', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('成交客户个数')}', name:'dealCustomerNum', index:'a.deal_customer_num', width:150, align:"center"},
+		{header:'${text('客单价')}', name:'customerPrice', index:'a.customer_price', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('order:statisticalReport:edit')){ %>
+		// 		actions.push('<a href="${ctx}/order/statisticalReport/form?reportCode='+row.reportCode+'" class="btnList" title="${text('编辑订单业绩统计')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#searchForm'), {
+        url:'${ctx}/order/statisticalReport/exportData',
+        downloadFile:true
+    });
+});
+</script>

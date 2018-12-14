@@ -1,0 +1,204 @@
+<% layout('/layouts/default.html', {title: 'tb_item管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('tb_item管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('tianmao:tbItem:edit')){ %>
+					<a href="${ctx}/tianmao/tbItem/form" class="btn btn-default btnTool" title="${text('新增tb_item')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${tbItem}" action="${ctx}/tianmao/tbItem/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">商品地址URL：</label>
+					<div class="control-inline">
+						<#form:input path="detailUrl" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品标题：</label>
+					<div class="control-inline">
+						<#form:input path="title" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">卖家昵称：</label>
+					<div class="control-inline">
+						<#form:input path="nick" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品类型：</label>
+					<div class="control-inline">
+						<#form:input path="type" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品所属的叶子类目 id：</label>
+					<div class="control-inline">
+						<#form:input path="cid" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品所属的店铺内卖家自定义类目列表：</label>
+					<div class="control-inline">
+						<#form:input path="sellerCids" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品属性：</label>
+					<div class="control-inline">
+						<#form:input path="props" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">用户自行输入的类目属性ID串：</label>
+					<div class="control-inline">
+						<#form:input path="inputPids" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">用户自行输入的子属性名和属性值：</label>
+					<div class="control-inline">
+						<#form:input path="inputStr" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品描述：</label>
+					<div class="control-inline">
+						<#form:input path="desc" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品主图片地址：</label>
+					<div class="control-inline">
+						<#form:input path="picUrl" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品数量：</label>
+					<div class="control-inline">
+						<#form:input path="num" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">有效期：</label>
+					<div class="control-inline">
+						<#form:input path="validThru" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">上架时间：</label>
+					<div class="control-inline">
+						<#form:input path="listTime" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">下架时间：</label>
+					<div class="control-inline">
+						<#form:input path="delistTime" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品价格：</label>
+					<div class="control-inline">
+						<#form:input path="price" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">平邮费用：</label>
+					<div class="control-inline">
+						<#form:input path="postFee" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">快递费用：</label>
+					<div class="control-inline">
+						<#form:input path="expressFee" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">ems费用：</label>
+					<div class="control-inline">
+						<#form:input path="emsFee" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品修改时间：</label>
+					<div class="control-inline">
+						<#form:input path="modified" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品上传后的状态。onsale出售中，instock库中：</label>
+					<div class="control-inline">
+						<#form:input path="approveStatus" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品的重量：</label>
+					<div class="control-inline">
+						<#form:input path="itemWeight" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'商品地址URL', name:'detailUrl', index:'a.detail_url', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/tianmao/tbItem/form?numIid='+row.numIid+'" class="btnList" data-title="${text('编辑tb_item')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'商品标题', name:'title', index:'a.title', width:150, align:"left"},
+		{header:'卖家昵称', name:'nick', index:'a.nick', width:150, align:"left"},
+		{header:'商品类型', name:'type', index:'a.type', width:150, align:"left"},
+		{header:'商品所属的叶子类目 id', name:'cid', index:'a.cid', width:150, align:"center"},
+		{header:'商品所属的店铺内卖家自定义类目列表', name:'sellerCids', index:'a.seller_cids', width:150, align:"left"},
+		{header:'商品属性', name:'props', index:'a.props', width:150, align:"left"},
+		{header:'用户自行输入的类目属性ID串', name:'inputPids', index:'a.input_pids', width:150, align:"left"},
+		{header:'用户自行输入的子属性名和属性值', name:'inputStr', index:'a.input_str', width:150, align:"left"},
+		{header:'商品描述', name:'desc', index:'a.desc', width:150, align:"left"},
+		{header:'商品主图片地址', name:'picUrl', index:'a.pic_url', width:150, align:"left"},
+		{header:'商品数量', name:'num', index:'a.num', width:150, align:"center"},
+		{header:'有效期', name:'validThru', index:'a.valid_thru', width:150, align:"center"},
+		{header:'上架时间', name:'listTime', index:'a.list_time', width:150, align:"center"},
+		{header:'下架时间', name:'delistTime', index:'a.delist_time', width:150, align:"center"},
+		{header:'商品价格', name:'price', index:'a.price', width:150, align:"left"},
+		{header:'平邮费用', name:'postFee', index:'a.post_fee', width:150, align:"left"},
+		{header:'快递费用', name:'expressFee', index:'a.express_fee', width:150, align:"left"},
+		{header:'ems费用', name:'emsFee', index:'a.ems_fee', width:150, align:"left"},
+		{header:'商品修改时间', name:'modified', index:'a.modified', width:150, align:"left"},
+		{header:'商品上传后的状态。onsale出售中，instock库中', name:'approveStatus', index:'a.approve_status', width:150, align:"left"},
+		{header:'商品的重量', name:'itemWeight', index:'a.item_weight', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('tianmao:tbItem:edit')){ %>
+				actions.push('<a href="${ctx}/tianmao/tbItem/form?numIid='+row.numIid+'" class="btnList" title="${text('编辑tb_item')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/tianmao/tbItem/delete?numIid='+row.numIid+'" class="btnList" title="${text('删除tb_item')}" data-confirm="${text('确认要删除该tb_item吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

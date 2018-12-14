@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.userroleconfig.dao.InterfaceQueryDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="InterfaceQuery">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<delete id="deluserInfterfaceQuery">
+	DELETE from js_sys_interface_query
+	WHERE user_code=#{arg0} and interface_code=#{arg1}
+	</delete>
+	<delete id="deleteDbByInterFaceCode" >
+	DELETE from js_sys_interface_query
+	WHERE interface_code=#{interFaceCode}
+	</delete>
+	<delete id="deleteQueryByField" >
+	DELETE from js_sys_interface_query
+	WHERE field_code=#{fieldCode}
+	</delete>
+	<delete id="delRoleInfterfaceQuery">
+	DELETE from js_sys_interface_query
+	WHERE role_code=#{arg0} and interface_code=#{arg1}
+	</delete>
+</mapper>

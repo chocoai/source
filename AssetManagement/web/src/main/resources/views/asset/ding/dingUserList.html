@@ -1,0 +1,268 @@
+<% layout('/layouts/default.html', {title: '用户管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('用户管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出</a></li>
+						<% if(hasPermi('ding:dingUser:import')){ %>
+						<li><a href="javascript:" id="btnImport"><i class="glyphicon glyphicon-import"></i> 导入工号</a></li>
+						<% } %>
+					</ul>
+				</div>
+			</div>
+		</div>
+
+		<div class="box-body">
+			<#form:form id="searchForm" model="${dingUser}" action="${ctx}/fz/ding/dingUser/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('姓名')}：</label>
+					<div class="control-inline">
+						<#form:input path="name" maxlength="225" class="form-control width-120"/>
+					</div>
+				</div>
+			<div class="form-group">
+				<label class="control-label">所属部门：</label>
+				<div class="control-inline width-120" >
+					<#form:treeselect id="dept" title="${text('部门选择')}"
+					path="departmentId" labelPath="deptname" checkbox="false"
+					url="${ctx}/fz/ding/dingDepartment/treeData" class="required " allowClear="true"
+					canSelectRoot="true" canSelectParent="true"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">是否离职：</label>
+				<div class="control-inline width-120">
+					<#form:select path="left" dictType="written" blankOption="true" class="form-control" id="left"/>
+				</div>
+			</div>
+
+				<!--<div class="form-group">
+					<label class="control-label">${text('办公地点')}：</label>
+					<div class="control-inline">
+						<#form:input path="workPlace" maxlength="125" class="form-control width-120"/>
+					</div>
+				</div>-->
+				<div class="form-group">
+					<label class="control-label">${text('手机号码')}：</label>
+					<div class="control-inline">
+						<#form:input path="mobile" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+
+			<!--	<div class="form-group">
+					<label class="control-label">${text('职位信息')}：</label>
+					<div class="control-inline">
+						<#form:input path="position" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>-->
+
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<div id="mask"><span style="text-align: center"></span></div>
+<style>
+	#mask{
+		display: none;
+		background-color: rgba(0,0,0,0.3);
+		color: #ffffff;
+		font-size: 30px;
+		font-weight: bold;
+		text-align: center;
+		position: absolute;
+		top:0;
+		left:0;
+		z-index: 9999;
+	}
+
+	.big{
+		width: 700px;
+		height: 700px;
+		margin: 0 auto;
+	}
+
+</style>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'${text('姓名')}', name:'name',width:200, align:"center"},
+		{header:'${text('工号')}', name:'jobnumber', index:'a.jobnumber', width:150, align:"center", frozen:true},
+        {header:'${text('手机')}', name:'mobile', index:'a.mobile', width:140, align:"center"},
+        {header:'${text('部门')}', name:'departmentNames', index:'a.department', width:200, align:"center"},
+        {header:'${text('职位')}', name:'position', index:'a.position', width:200, align:"center"},
+        {header:'${text('中文名')}', name:'chineseName', index:'a.name', width:140, align:"center"},
+        {header:'${text('可兑换梵钻')}', name:'convertibleGold', index:'a.convertible_gold', align:"center", width:120, align:"center"},
+        {header:'${text('部门内梵钻')}', name:'inDepartmentGold', index:'a.in_department_gold', align:"center", width:120, align:"center"},
+        {header:'${text('跨部门梵钻')}', name:'outDepartmentGold', index:'a.out_department_gold', align:"center", width:120, align:"center"},
+        {header:'${text('角色')}', name:'roleNames', width:250, align:"center"},
+        {header:'${text('入职时间')}', name:'hiredDate', index:'a.hired_date', width:150, align:"center"},
+		{header:'${text('分机号')}', name:'tel', index:'a.tel', width:120, align:"center"},
+		{header:'${text('邮箱')}', name:'email', index:'a.email', width:220, align:"center"},
+
+        {header:'${text('办公地点')}', name:'workPlace', index:'a.work_place', width:150, align:"center"},
+        {header:'${text('性别')}', name:'sex', width:100, sortable:false, align:"center",enablesort:"false"},
+        {header:'${text('备注')}', name:'remark', index:'a.remark', width:100, align:"center"},
+        {header:'${text('是否离职')}', name:'left', index:'a.left', width:80, align:"center", formatter:function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('written')}, val, '${text('未知')}', true);
+            }},
+        {header:'${text('特权用户')}', name:'userIsVip', index:'a.user_is_vip', width:80, align:"center", formatter:function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_yes_no')}, val, '${text('未知')}', true);
+            }},
+		{header:'${text('头像')}', name:'avatar', index:'a.avatar', align:"center", width:70, align:"center",
+            formatter: function(val, obj, row, act){
+                if(row.avatar==null){
+                    return "";
+                }
+                else{ return  "<img src='"+val+"' class=\"thumbnail\" onclick=\"getVal('"+val+"')\" height=\"80\" width=\"80\"/>"}
+            }},
+		{header:'${text('操作特权用户')}', name:'actions', width:160, sortable:false, align:"center",title:false, formatter: function(val, obj, row, act){
+                var actions = [];
+            <% if(hasPermi('ding:dingUser:edit')){ %>
+					if(row.userIsVip == '0'){
+						actions.push('<a href="${ctx}/fz/ding/dingUser/updateUserIsVip?userid='+ row.userid +'&status=1" class="btnList" title="${text('设为特权用户')}" data-confirm="${text('确认要设为特权用户吗？')}">设为特权用户</a>&nbsp;<br><br>');
+					}
+					if(row.userIsVip == '1'){
+						actions.push('<a href="${ctx}/fz/ding/dingUser/updateUserIsVip?userid='+ row.userid +'&status=0" class="btnList" title="${text('设为普通用户')}" data-confirm="${text('确认要设为普通用户吗？')}">设为普通用户</a>&nbsp;');
+                    }
+			 	<% } %>
+                return actions.join('');
+            }},
+		{header:'${text('操作')}', name:'actions', width:60, sortable:false, align:"center",title:false, formatter: function(val, obj, row, act){
+                var actions = [];
+            <% if(hasPermi('ding:dingUser:edit')){ %>
+					if (row.userStatus == Global.STATUS_NORMAL){
+                        actions.push('<a href="${ctx}/fz/ding/dingUser/disable?userid='+row.userid+'" class="btnList" title="停用" data-confirm="确认要停用该用户吗？"><i class="glyphicon glyphicon-ban-circle"></i></a>&nbsp;');
+                    }
+                    if (row.userStatus == Global.STATUS_DISABLE){
+                        actions.push('<a href="${ctx}/fz/ding/dingUser/enable?userid='+row.userid+'" class="btnList" title="启用" data-confirm="确认要启用该用户吗？"><i class="glyphicon glyphicon-ok-circle"></i></a>&nbsp;');
+                    }
+                    actions.push('<a href="${ctx}/fz/ding/dingUser/formData?userid='+row.userid+'" title="${text('编辑钉钉用户')}" class="btnList"><i class="fa fa-pencil"></i></a>&nbsp;');
+                    // actions.push('<a href="javascript:void(0)" title="${text('编辑钉钉用户')}" class="btnList"><i onclick="editUser(this)" data-id='+row.userid+' class="fa fa-pencil"></i></a>&nbsp;');
+
+                <% } %>
+                return actions.join('');
+            }}
+	],
+    shrinkToFit:false,
+    autoScroll:true,
+    autowidth:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+
+	}
+});
+
+var valp;
+function getVal(val){
+    valp = val;
+}
+$(document).on("click",".thumbnail",function() {
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src="+valp+" class='big'></div>");
+    $(".big").bind("click", function () {
+        hideMask("#mask");
+        $(".big").remove();
+    })
+})
+function showMask(ele,words){
+    $(ele).show().text(words).css({
+        "width":$(window).width()+"px",
+        "height":$(window).height()+"px",
+        "lineHeight":$(window).height()+"px"
+    })
+}
+function hideMask(ele){
+    $(ele).hide();
+}
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#searchForm'), {
+        url:'${ctx}/fz/ding/dingUser/exportData',
+        downloadFile:true
+    });
+});
+function editUser(that) {
+	var userId = that.getAttribute("data-id");
+    js.layer.open({
+        type: 2,
+        area: ['900px', '700px'],
+        shadeClose: true,
+        shade: 0.8,
+        maxmin: 1,
+        closeBtn: 1,
+        content: '${ctx}/fz/ding/dingUser/formData?userid=' + userId,
+        success: function (result) {
+            // location.reload();
+        }
+    });
+}
+
+
+$('#btnImport').click(function(){
+    js.layer.open({
+        type: 1,
+        area: ['400px'],
+        title: '导入用户数据',
+        resize: false,
+        scrollbar: true,
+        content: js.template('importTpl'),
+        success: function(layero, index){
+            layero.find('input[type="checkbox"]').iCheck();
+        },
+        btn: ['<i class="fa fa-check"></i> 导入',
+            '<i class="fa fa-remove"></i> 取消'],
+        btn1: function(index, layero){
+            var form = {
+                inputForm: layero.find('#inputForm'),
+                file: layero.find('#file').val()
+            };
+            if (form.file == '' || (!js.endWith(form.file, '.xls') && !js.endWith(form.file, '.xlsx'))){
+                js.showMessage("${text('文件不正确，请选择后缀为 “xls”或“xlsx”的文件。')}", null, 'warning');
+                return false;
+            }
+            js.ajaxSubmitForm(form.inputForm, function(data){
+                js.showMessage(data.message);
+                if(data.result == Global.TRUE){
+                    js.layer.closeAll();
+                }
+                page();
+            }, "json");
+            return true;
+        }
+    });
+});
+</script>
+<script id="importTpl" type="text/template">//<!--
+<form id="inputForm" action="${ctx}/fz/ding/dingUser/importData" method="post" enctype="multipart/form-data"
+	class="form-horizontal mt20 mb10" style="overflow:auto;max-height:200px;">
+	<div class="row">
+		<div class="col-xs-12 col-xs-offset-1">
+			<input type="file" id="file" name="file" class="form-file"/>
+
+			<font color="red" class="pull-left mt10">
+				${text('提示：仅允许导入“xls”或“xlsx”格式文件！')}
+			</font>
+		</div>
+	</div>
+</form>
+//--></script>
+</script>

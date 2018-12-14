@@ -1,0 +1,266 @@
+<% layout('/layouts/default.html', {title: '耗材出库表管理', libs: ['validate','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amOutStorage.isNewRecord ? '新增耗材出库表' : '编辑耗材出库表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amOutStorage}" action="${ctx}/consumables/amOutStorage/save" method="post" class="form-horizontal">
+		<div class="box-body">
+			<div class="form-unit">${text('基本信息')}</div>
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 出库单号：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+
+							<#form:hidden path="isNewRecord"/>
+							<#form:input path="outstorageCode" maxlength="64" readonly="true" class="form-control required abc"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 出库日期：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:input path="outDate" readonly="true" maxlength="20" class="form-control Wdate required"
+							dataFormat="date" />
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 单据类型：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:hidden path="billType" id="billType" dictType="am_out_lib" class="form-control required"/>
+							<#form:input path="typeLabel" class="form-control required" readonly="true"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 出库仓库：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:hidden path="warehouseCode" class="form-control required"/>
+							<#form:input path="amWarehouse.warehouseName" class="form-control required" readonly="true"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 领用部门：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:hidden path="officeCode" id="officeCode" value=""/>
+							<#form:input path="office.officeName" id="officeName" value="" maxlength="100" class="form-control required" readonly="true"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 领用人：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:listselect id="amStaff" title="员工" readonly="true"
+							path="staffCode" labelPath="amStaff.staffName" itemCode="staffCode" itemName="staffName"
+							url="${ctx}/staff/amStaff/staffSelect" allowClear="true"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-8">
+					<div class="form-group">
+						<label class="control-label col-sm-2" title="">
+							<span class="required hide">*</span> 出库备注：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-10">
+							<#form:textarea path="remarks" rows="1" maxlength="1000" class="form-control" readonly="true"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:hidden path="billStatus" class="form-control required"/>
+							<#form:input path="statusLabel" class="form-control required" readonly="true"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<h4 class="form-unit">物品信息</h4>
+			<div class="ml10 mr10">
+				<table id="amOutStorageDetailsDataGrid"></table>
+				<div style="color: red"><label class="control-label col-sm-10">合计：<span id="a_countAll"></span></label>
+				</div>
+			</div>
+		</div>
+		<div class="box-footer">
+			<div class="row">
+				<div class="col-sm-offset-9 col-sm-5">
+					<% if (hasPermi('consumables:amOutStorage:edit')){ %>
+					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+					<a href="#" onclick="save(true)"  data-title="${text('审 核')}">  <button type="submit" class="btn btn-sm btn-primary" id="examine" onclick="">
+						${text('审 核')}</button></a>
+					<a href="#" onclick="save(false)"  data-title="${text('反 审 核')}">  <button type="submit" class="btn btn-sm btn-primary" id="unexamine" onclick="">
+						${text('反 审 核')}</button></a>
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+	</#form:form>
+</div>
+</div>
+<% } %>
+<script>
+//初始化耗材出库表(明细)DataGrid对象
+$("#amOutStorageDetailsDataGrid").dataGrid({
+
+	data: ${toJson(amOutStorage.amOutStorageDetailsList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+        {header:'状态', name:'status', editable:true, hidden:true},
+        {header:'主键', name:'detail_code', editable:true, hidden:true},
+        {header:'出库单号', name:'outstorageCode.outstorageCode', editable:true, hidden:true},
+        {header:'库位编码', name:'locationCode', width:150, editable:true, hidden:true, editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'库位', name:'locationName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'耗材编号', name:'consumablesCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'耗材名称', name:'consumablesName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control required'}},
+        {header:'规格型号', name:'specifications', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+        {header:'耗材分类编码', name:'categoryCode', width:150, editable:true, hidden:true, editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'耗材分类', name:'categoryName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'计量单位', name:'measureUnit', width:150, editable:true, hidden:true, editoptions:{'maxlength':'1', 'class':'form-control required'}},
+        {header:'计量单位', name:'measureValue', width:150, editable:true, edittype:'text',editoptions:{'maxlength':'1', 'class':'form-control required'}},
+        {header:'出库数量', name:'outstorageCount', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'20', 'class':'form-control required digits'}},
+        {header:'出库单价', name:'outstoragePrice', width:150, hidden:true, editoptions:{'class':'form-control required number'}},
+        {header:'出库金额', name:'outstorageAmount', width:150, hidden:true, editoptions:{'class':'form-control required number'}},
+        {header:'备注', name:'remarks', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},
+
+    ],
+
+    // 编辑表格参数
+    editGrid: true,				// 是否是编辑表格
+    editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+    editGridAddRowBtn: $('#amOutStorageDetailsDataGridAddRowBtn'),	// 子表增行按钮
+    editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+    // 编辑表格的提交数据参数
+    editGridInputFormListName: 'amOutStorageDetailsList', // 提交的数据列表名
+    editGridInputFormListAttrs: 'status,outstorageCode.outstorageCode,locationCode,consumablesCode,consumablesName,specifications,categoryCode,measureUnit,outstorageCount,outstoragePrice,outstorageAmount,remarks,detailCode,staffCode,', // 提交数据列表的属性字段
+
+    // 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+            $('#examine').attr("disabled",true);
+            $('#btnSubmit').attr("disabled",true);
+			if(data.result == Global.TRUE){
+				location.reload();
+			}
+		}, "json");
+    }
+});
+
+// function save(flag){
+//     alert(flag)
+//     if (flag == false) {
+//         $.ajax({
+//             type: "POST",//方法类型
+//             // dataType: "String",//预期服务器返回的数据类型
+//             url: "${ctx}/consumables/amOutStorage/save?examine=2",   //url
+//             data: $("#inputForm").serialize(),
+//             success: function (result) {
+//                 result = result.split(',');
+//                 var message = result[1].split(':')
+//                 message = message[1]
+//                 alert(message);
+//                 result = result[0].split(':')
+//                 if (result[1].toString() == '"true"') {
+//                     location.reload();
+//                 }
+//             },
+//             error: function (erro) {
+//                 console.log(erro);
+//             }
+//         });
+//     }
+// }
+
+$(function() {
+	$('#examine').attr("disabled",true);
+    $('#btnSubmit').attr("disabled",true);
+    sq.countAll();
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=locationName]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=consumablesCode]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=consumablesName]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=categoryName]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=specifications]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=measureValue]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=outstorageCount]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid textarea[name=remarks]'));
+});
+
+var sq = {};
+sq.countAll = function() { // 合计
+    var tdNodes = $('#amOutStorageDetailsDataGrid tr:not(:first-child) td:nth-child(14)>input');
+    var count = 0;
+    tdNodes.each(function(index, item){
+        count = sq.add(count, item.value);
+    });
+    $('#a_countAll').html(count); // 赋值
+}
+
+sq.add = function (arg1, arg2) {
+    var r1, r2, m;
+    try {
+        r1 = arg1.toString().split(".")[1].length
+    } catch (e) {
+        r1 = 0
+    }
+    try {
+        r2 = arg2.toString().split(".")[1].length
+    } catch (e) {
+        r2 = 0
+    }
+    m = Math.pow(10, Math.max(r1, r2))
+    return (arg1 * m + arg2 * m) / m
+}
+
+
+sq.setInputReadonly = function(node) {       //改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+    $(node).each(function(index, item){
+        $(item).attr('readonly', 'true');
+    });
+}
+
+function save(flag) {
+    var inputForm = document.getElementById("inputForm");
+    if (flag == true) {
+        inputForm.action = '${ctx}/consumables/amOutStorage/save?examine=1';
+    } else {
+        inputForm.action = '${ctx}/consumables/amOutStorage/save?examine=2';
+    }
+}
+</script>

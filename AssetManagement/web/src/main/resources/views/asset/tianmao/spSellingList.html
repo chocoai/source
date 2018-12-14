@@ -1,0 +1,127 @@
+<% layout('/layouts/default.html', {title: '出售中的商品列表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('出售中的商品列表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('tianmao:spSelling:edit')){ %>
+					<a href="${ctx}/tianmao/spSelling/form" class="btn btn-default btnTool" title="${text('新增出售中的商品列表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${spSelling}" action="${ctx}/tianmao/spSelling/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">商品数字id：</label>
+					<div class="control-inline">
+						<#form:input path="itemId" maxlength="20" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品别名：</label>
+					<div class="control-inline">
+						<#form:input path="alias" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品标题：</label>
+					<div class="control-inline">
+						<#form:input path="title" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">价格：</label>
+					<div class="control-inline">
+						<#form:input path="price" maxlength="20" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品类型：</label>
+					<div class="control-inline">
+						<#form:input path="itemType" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商家编码：</label>
+					<div class="control-inline">
+						<#form:input path="itemNo" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">总库存：</label>
+					<div class="control-inline">
+						<#form:input path="quantity" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">运费类型：</label>
+					<div class="control-inline">
+						<#form:input path="postType" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">运费：</label>
+					<div class="control-inline">
+						<#form:input path="postFee" maxlength="20" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品划线价：</label>
+					<div class="control-inline">
+						<#form:input path="origin" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">同price：</label>
+					<div class="control-inline">
+						<#form:input path="shareDetail" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'商品数字id', name:'itemId', index:'a.item_id', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/tianmao/spSelling/form?sellCode='+row.sellCode+'" class="btnList" data-title="${text('编辑出售中的商品列表')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'商品别名', name:'alias', index:'a.alias', width:150, align:"left"},
+		{header:'商品标题', name:'title', index:'a.title', width:150, align:"left"},
+		{header:'价格', name:'price', index:'a.price', width:150, align:"center"},
+		{header:'商品类型', name:'itemType', index:'a.item_type', width:150, align:"center"},
+		{header:'商家编码', name:'itemNo', index:'a.item_no', width:150, align:"left"},
+		{header:'总库存', name:'quantity', index:'a.quantity', width:150, align:"center"},
+		{header:'运费类型', name:'postType', index:'a.post_type', width:150, align:"center"},
+		{header:'运费', name:'postFee', index:'a.post_fee', width:150, align:"center"},
+		{header:'商品划线价', name:'origin', index:'a.origin', width:150, align:"left"},
+		{header:'同price', name:'shareDetail', index:'a.share_detail', width:150, align:"center"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('tianmao:spSelling:edit')){ %>
+				actions.push('<a href="${ctx}/tianmao/spSelling/form?sellCode='+row.sellCode+'" class="btnList" title="${text('编辑出售中的商品列表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/tianmao/spSelling/delete?sellCode='+row.sellCode+'" class="btnList" title="${text('删除出售中的商品列表')}" data-confirm="${text('确认要删除该出售中的商品列表吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

@@ -1,0 +1,94 @@
+<% layout('/layouts/default.html', {title: '菜鸟对接记录管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('菜鸟对接记录管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<!--<% if(hasPermi('rookie:amRookie:edit')){ %>-->
+					<!--<a href="${ctx}/rookie/amRookie/form" class="btn btn-default btnTool" title="${text('新增菜鸟对接记录')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<!--<% } %>-->
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amRookie}" action="${ctx}/rookie/amRookie/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">单据编号：</label>
+					<div class="control-inline">
+						<#form:input path="documentCode" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据名称：</label>
+					<div class="control-inline">
+						<#form:input path="documentName" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">操作类型：</label>
+					<div class="control-inline width-120">
+						<#form:select path="operationType" dictType="rookie_operationType" blankOption="true"  maxlength="20" class="form-control "/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">源单编号：</label>
+					<div class="control-inline">
+						<#form:input path="orderCode" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">响应编号：</label>
+					<div class="control-inline">
+						<#form:input path="respCode" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">是否成功：</label>
+					<div class="control-inline width-120">
+						<#form:select path="success" dictType="is_success" blankOption="true" maxlength="10" class="form-control"/>
+					</div>
+				</div>
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">WMS单据编号：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="wmsCode" maxlength="64" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'单据编号', name:'documentCode', index:'a.document_code', width:150, align:"center", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/rookie/amRookie/form?documentCode='+row.documentCode+'" class="btnList" data-title="${text('菜鸟对接记录')}">'+(val||row.id)+'</a>';
+		}},
+        {header:'单据名称', name:'documentName', index:'a.document_name', width:150, align:"center"},
+		{header:'操作类型', name:'operationType', index:'a.operation_type', width:150, align:"center"},
+		{header:'业务时间', name:'busineDate', index:'a.busine_date', width:150, align:"center"},
+		{header:'操作人员', name:'operationBy', index:'a.operation_by', width:150, align:"center"},
+		{header:'源单编号', name:'orderCode', index:'a.order_code', width:150, align:"left"},
+		{header:'响应编号', name:'respCode', index:'a.resp_code', width:150, align:"left"},
+		{header:'响应信息', name:'respInfo', index:'a.resp_info', width:150, align:"left"},
+		{header:'是否成功', name:'success', index:'a.success', width:150, align:"center"},
+		{header:'WMS单据编号', name:'wmsCode', index:'a.wms_code', width:150, align:"left"}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

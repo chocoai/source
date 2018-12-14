@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.ding.dao.DingDepartmentDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="DingDepartment">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+
+	<!--
+
+	<insert id="syncAllDepartment" keyProperty="departmentId" parameterType="java.util.List">
+		        insert into js_ding_department (
+		        department_id,
+		        name,
+		        parentid,
+		        order,
+		        create_dept_group,
+		        auto_add_user,
+		        dept_hiding,
+		        dept_permits,
+		        user_permits,
+		        outer_dept,
+		        outer_permit_pepts,
+		        outer_permit_users,
+		        org_dept_owner,
+		        dept_manager_userid_list,
+		        source_identifier,
+		        group_contain_subdept,
+		        parent_code,
+		        parent_codes,
+		        user_count
+
+		)
+		        values
+		        <foreach collection="list" item="DingDepartment" separator=","> 
+		            (#{cmsRoleMenu.roleId,jdbcType=BIGINT},
+		            #{cmsRoleMenu.roleType,jdbcType=VARCHAR},
+		            #{cmsRoleMenu.menuId,jdbcType=BIGINT},
+		            #{cmsRoleMenu.buttonId,jdbcType=VARCHAR},
+		            #{cmsRoleMenu.createdUser,jdbcType=VARCHAR},
+		            #{cmsRoleMenu.createdTime,jdbcType=TIMESTAMP},
+		            #{cmsRoleMenu.updatedTime,jdbcType=TIMESTAMP},
+		            #{cmsRoleMenu.remark,jdbcType=VARCHAR})
+		        </foreach>
+		    </insert>
+
+ -->
+</mapper>

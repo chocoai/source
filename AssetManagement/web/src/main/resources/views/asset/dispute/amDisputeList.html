@@ -1,0 +1,135 @@
+<% layout('/layouts/default.html', {title: '物流纠纷单管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('物流纠纷单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<!--<% if(hasPermi('dispute:amDispute:edit')){ %>-->
+					<!--<a href="${ctx}/dispute/amDispute/form" class="btn btn-default btnTool" title="${text('新增物流纠纷表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<!--<% } %>-->
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amDispute}" action="${ctx}/dispute/amDispute/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">单据编号：</label>
+					<div class="control-inline">
+						<#form:input path="documentCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="documentStatus" dictType="logisticsorder_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">客户：</label>
+					<div class="control-inline">
+						<#form:input path="client" maxlength="200" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">客户姓名：</label>
+					<div class="control-inline">
+						<#form:input path="clientName" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">省份：</label>
+					<div class="control-inline">
+						<#form:input path="province" maxlength="200" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">城市：</label>
+					<div class="control-inline">
+						<#form:input path="city" maxlength="200" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">发货物流：</label>
+					<div class="control-inline">
+						<#form:input path="logisticsCompany" maxlength="200" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">是否超时：</label>
+					<div class="control-inline width-120">
+						<#form:select path="isTimedOut" dictType="is_timed_out" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'单据编号', name:'documentCode', index:'a.document_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/dispute/amDispute/form?documentCode='+row.documentCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑物流纠纷表')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+
+                // return '<a href="${ctx}/dispute/amDispute/form?documentCode='+row.documentCode+'" class="btnList" data-title="${text('编辑物流纠纷表')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'单据状态', name:'documentStatus', index:'a.document_status', width:150, align:"left"},
+		{header:'客户', name:'client', index:'a.client', width:150, align:"left"},
+        {header:'客户姓名', name:'clientName', index:'a.client_name', width:150, align:"left"},
+        {header:'配送方式', name:'deliveryMethod', index:'a.delivery_method', width:150, align:"left"},
+        {header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"left"},
+        {header:'城市', name:'city', index:'a.city', width:150, align:"left"},
+        {header:'区县', name:'county', index:'a.county', width:150, align:"left"},
+        {header:'运输单号', name:'singleTranportCode', index:'a.single_tranport_code', width:150, align:"left"},
+        {header:'物流公司', name:'logisticsCompany', index:'a.logistics_company', width:150, align:"left"},
+        {header:'问题描述', name:'problemDescription', index:'a.problem_description', width:150, align:"left"},
+        {header:'责任类型', name:'dutyType', index:'a.duty_type', width:150, align:"left",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_duty_type')}, val, '', true)}},
+        {header:'是否超时', name:'isTimedOut', index:'a.is_timed_out', width:150, align:"left"},
+
+	],
+    shrinkToFit: false,
+    autoScroll: true,
+    autowidth: true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        Concurrency()
+	}
+});
+
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_documentCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/dispute/amDispute',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                console.log(res)
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+</script>

@@ -1,0 +1,1094 @@
+<% layout('/layouts/default.html', {title: '角色表管理', libs: ['dataGrid']}){ %>
+	<style>
+		.mar-b10{margin-bottom:10px}
+		.inlineB{display: inline-block}
+		.main-top .ui-jqgrid-bdiv{height: 260px!important;}
+		#dataGrid tr{cursor: pointer;}
+		.main-bottom .box-tools #btnSearch-bottom{margin-right: 20px}
+		#dataGrid-bottom-edit,
+		#dataGrid-bottom-add,
+		#dataGrid-bottom-operation{padding: 20px}
+		.selectBox select{display: inline;}
+		.width-290{width: 290px}
+		.width-150{width: 150px}
+		.form-group .control-inline>.select2.select2-container{z-index: 1!important;}
+		#writeFormula-edit,
+		#writeFormula-add{padding-right: 30px}
+		/* 公式 */
+		.info-message{position:absolute;top:0;right:-235px;background-color:#333A4C;padding:6px;color:#fff;z-index: 10;top: 0;display: none}
+		.info-message p{margin:0 0 10px}
+		.info-message .ok{color:#1bb99a}
+		.info-message .error{color:#ff3015}
+		.message{position: absolute;font-size: 20px;right: 6px;top: 6px;cursor: help;}
+	</style>
+	
+	<!-- 角色表管理 - top -->
+	<div class="main-content main-top">
+		<div class="box box-main">
+			<div class="box-header">
+				<div class="box-title">
+					<i class="fa fa-list-alt"></i> ${text('角色表管理')}
+				</div>
+				<div class="box-tools pull-right">
+					<a href="#" class="btn btn-default" id="btnSearch-top" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				</div>
+			</div>
+			<div class="box-body">
+				<#form:form id="searchForm-top" model="${basicRoleInfo}" action="${ctx}/basicroleinfoconfig/basicRoleInfo/listData" method="post" class="form-inline hide"
+						data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+					<div class="form-group">
+						<label class="control-label">角色名称：</label>
+						<div class="control-inline">
+							<#form:input path="roleName" maxlength="100" class="form-control width-120"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">角色分类：</label>
+						<div class="control-inline width-120">
+							<#form:select path="roleType" dictType="sys_role_type" blankOption="true" class="form-control"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">用户类型：</label>
+						<div class="control-inline width-120">
+							<#form:select path="userType" dictType="sys_user_type" blankOption="true" class="form-control"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">状态：</label>
+						<div class="control-inline width-120">
+							<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<button type="submit" class="btn btn-primary btn-sm submit-searchBottom">${text('查询')}</button>
+						<button type="reset" class="btn btn-default btn-sm reset-searchBottom'">${text('重置')}</button>
+					</div>
+				</#form:form>
+				<table id="dataGrid"></table>
+				<div id="dataGridPage"></div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<!-- 接口管理 - 查询 -->
+	<div class="main-content main-bottom">
+		<div class="box box-main">
+			<div class="box-header mar-b10">
+				<div class="box-title">
+					<i class="fa fa-list-alt"></i> ${text('接口信息管理')}
+				</div>
+				<div class="box-tools pull-right">
+					<a href="#" class="btn btn-default" id="btnSearch-bottom" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+	
+					<a href="javascript:void(0)" class="btn btn-primary" id="add-bottomSearch" title="${text('新增')}"><i class="fa icon-plus"></i> ${text('新增')}</a>
+					<a href="javascript:void(0)" class="btn btn-info" id="set-bottomSearch" title="${text('修改')}"><i class="fa icon-pencil"></i> ${text('修改')}</a>
+					<a href="javascript:void(0)" class="btn btn-danger" id="del-bottomSearch" title="${text('删除')}"><i class="fa icon-close"></i> ${text('删除')}</a>
+				</div>
+			</div>
+			<div class="box-body">		
+				<#form:form id="searchForm-bottom" action="${ctx}/basicroleinfoconfig/basicRoleInfo/listDataByRoleCode" method="post" class="form-inline hide"
+						data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+						<#form:hidden path="roleCode" id="roleCode"  maxlength="127" class="form-control width-120"/>
+					<div class="form-group">
+						<label class="control-label">接口名字：</label>
+						<div class="control-inline">
+							<#form:input path="interfaceName" maxlength="127" class="form-control width-120"/>	
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">路径：</label>
+						<div class="control-inline">
+							<#form:input path="url" maxlength="255" class="form-control width-120"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">状态：</label>
+						<div class="control-inline width-120">
+							<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">创建时间：</label>
+						<div class="control-inline">
+							<#form:input path="createDate_gte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="dateStartup_gte"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:function(){dateStartup_lte.click()}});"/>
+							-
+							<#form:input path="createDate_lte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="dateStartup_lte"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<button type="submit" id="submit-searchBottom" class="btn btn-primary btn-sm">${text('查询')}</button>
+						<button type="reset" id="reset-searchBottom" class="btn btn-default btn-sm">${text('重置')}</button>
+					</div>
+				</#form:form>
+				<table id="dataGrid-bottom"></table>
+			</div>
+		</div>
+	</div>
+	
+	
+	
+	<!-- 弹窗 -->
+	<!-- 接口信息管理外层 -- 新增按钮 -->
+	<div id="dataGrid-bottom-add" style="display: none">
+		<from class="dataGrid-bottom-add-from">
+			<div class="form-group selectBox">
+				<label class="control-label">接口：</label>
+				<div class="control-inline inlineB width-120">
+					<select class="form-control select2-hidden-accessible" style="width: 150px"></select>
+				</div>
+	
+				<label class="control-label " style="margin:0 25px">公式：</label>
+				<div class="control-inline inlineB width-290" style="position: relative;">
+					<input class="form-control width-290" id="writeFormula-add" name="formula"/>
+					<i class="message icon-question"></i>
+					<div class="info-message">
+						<p>请按如下规则编辑条件组合</p>
+						<p class="ok">(1 and 2) or (3 and 4) <i class="fa fa-check"></i></p>
+						<p>1.有and和or必须加括号</p>
+						<p class="error">1 and 2 or 3 and 4 <i class="fa fa-close"></i></p>
+						<p>2.一个括号里不能同时出现and和or</p>
+						<p class="error">(1 and 2 or 3 )and 4 <i class="fa fa-close"></i></p>
+						<p>3.不允许出现不存在的编号</p>
+						<p class="error">1 and 2 and 3 and 4 and 5 <i class="fa fa-close"></i></p>
+						<p>4.括号都是成对出现的</p>
+						<p class="error">(1 and 2 and 3 and 4 <i class="fa fa-close"></i></p>
+					</div>
+				</div>
+			</div>
+			<input type="hidden" name="code" value="" /> <!-- code -->
+			<input type="hidden" name="sql" value="" /> <!-- sql -->
+			<input type="hidden" name="status" value="" /> <!-- status -->
+		</from>
+	
+		<!-- 列表 -->
+		<div class="main-content main-bottom">
+			<div class="box box-main">
+				<div class="box-header mar-b10">
+					<div class="box-title">
+						<i class="fa fa-list-alt"></i> ${text('接口信息管理')}
+					</div>
+					<div class="box-tools pull-right">
+						<a href="javascript:void(0)" class="btn btn-primary" id="add-bottomSearch" onclick="InterEdit.add('dataGrid-bottomAdd')" title="${text('新增')}"><i class="fa icon-plus"></i> ${text('新增')}</a>
+					</div>
+				</div>
+				<div class="box-body2">		
+					<#form:form id="searchForm-bottomAdd" action="${ctx}/userroleconfig/interfaceQuery/getQueryListByRole" method="post" class="form-inline hide">
+						<div class="form-group">
+							<label class="control-label">编码：</label>
+							<div class="control-inline">
+								<#form:input path="queryCode" maxlength="127" class="form-control width-120"/>	
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="control-label">名字：</label>
+							<div class="control-inline">
+								<#form:input path="queryName" maxlength="255" class="form-control width-120"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<button type="submit" id="submit-searchBottomAdd" class="btn btn-primary btn-sm">${text('查询')}</button>
+							<button type="reset" id="reset-searchBottomAdd" class="btn btn-default btn-sm">${text('重置')}</button>
+						</div>
+					</#form:form>
+					<table id="dataGrid-bottomAdd"></table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<!-- 接口信息管理外层 -- 修改按钮 -->
+	<div id="dataGrid-bottom-edit" style="display: none">
+		<from class="dataGrid-bottom-edit-from">
+			<div class="form-group selectBox">
+				<label class="control-label">接口：</label>
+				<div class="control-inline inlineB width-120">
+					<select class="form-control select2-hidden-accessible" style="width: 150px"></select>
+				</div>
+	
+				<label class="control-label " style="margin:0 25px">公式：</label>
+				<div class="control-inline inlineB width-290" style="position: relative;">
+					<input class="form-control width-290" id="writeFormula-edit" name="formula"/>
+					<i class="message icon-question"></i>
+					<div class="info-message">
+						<p>请按如下规则编辑条件组合</p>
+						<p class="ok">(1 and 2) or (3 and 4) <i class="fa fa-check"></i></p>
+						<p>1.有and和or必须加括号</p>
+						<p class="error">1 and 2 or 3 and 4 <i class="fa fa-close"></i></p>
+						<p>2.一个括号里不能同时出现and和or</p>
+						<p class="error">(1 and 2 or 3 )and 4 <i class="fa fa-close"></i></p>
+						<p>3.不允许出现不存在的编号</p>
+						<p class="error">1 and 2 and 3 and 4 and 5 <i class="fa fa-close"></i></p>
+						<p>4.括号都是成对出现的</p>
+						<p class="error">(1 and 2 and 3 and 4 <i class="fa fa-close"></i></p>
+					</div>
+				</div>
+	
+				<div class="control-inline inlineB width-290">
+					<input class="form-control width-290" id="writeFormula-editShow" readonly="readonly" name=""/>
+				</div>
+			</div>
+			<input type="hidden" name="code" value="" /> <!-- code -->
+			<input type="hidden" name="sql" value="" /> <!-- sql -->
+			<input type="hidden" name="status" value="" /> <!-- status -->
+		</from>
+	
+		<!-- 列表 -->
+		<div class="main-content main-bottom">
+			<div class="box box-main">
+				<div class="box-header mar-b10">
+					<div class="box-title">
+						<i class="fa fa-list-alt"></i> ${text('接口信息管理')}
+					</div>
+					<div class="box-tools pull-right">
+						<a href="javascript:void(0)" class="btn btn-primary" id="add-bottomSearchEdit" onclick="InterEdit.add('dataGrid-bottomEdit')" title="${text('新增')}"><i class="fa icon-plus"></i> ${text('新增')}</a>
+					</div>
+				</div>
+				<div class="box-body2">		
+					<#form:form id="searchForm-bottomEdit" action="${ctx}/userroleconfig/interfaceQuery/getQueryListByRole" method="post" class="form-inline hide">
+						<div class="form-group">
+							<label class="control-label">编码：</label>
+							<div class="control-inline">
+								<#form:input path="queryCode" maxlength="127" class="form-control width-120"/>	
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="control-label">名字：</label>
+							<div class="control-inline">
+								<#form:input path="queryName" maxlength="255" class="form-control width-120"/>
+							</div>
+						</div>
+						<div class="form-group">
+							<button type="submit" id="submit-searchBottomEdit" class="btn btn-primary btn-sm">${text('查询')}</button>
+							<button type="reset" id="reset-searchBottomEdit" class="btn btn-default btn-sm">${text('重置')}</button>
+						</div>
+					</#form:form>
+					<table id="dataGrid-bottomEdit"></table>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	
+	<!-- 接口信息管理 -- 操作界面 -->
+	<div id="dataGrid-bottom-operation"  style="display: none">
+		<from class="dataGrid-bottom-operation-from" >	
+			<div class="form-group selectBox">
+				<label class="control-label">选择参数：</label>
+				<div class="control-inline inlineB width-290">
+					<select class="form-control select2-hidden-accessible width-290" id="selParameter"></select>
+				</div>
+			</div>
+			<div class="form-group selectBox">
+				<label class="control-label">比较符　：</label>
+				<div class="control-inline inlineB width-290">
+					<#form:select path="" dictType="js_am_symbol" blankOption="true" class="form-control" id="selSymbol" blankOption="false"/>
+				</div>
+			</div>   
+			<div class="form-group selectBox">   
+				<label class="control-label">字段类型：</label>
+				<div class="control-inline inlineB width-290">
+					<#form:select path="" dictType="js_am_fieldType" blankOption="true" class="form-control" id="selFieldType" blankOption="false"/>
+				</div>
+			</div>
+	
+			<div class="form-group">
+				<label class="control-label">字段值　：</label>
+				<div class="control-inline inlineB width-290">
+					<input type="text" value="" class="form-control width-290" placeholder="字段值" name="fieldValue"/>
+				</div>
+			</div>
+	
+			<input type="hidden" name="queryCode" value="" />  <!-- id -->
+			<input type="hidden" name="queryName" value="" />  <!-- 拼接起来的名字 -->
+			<input type="hidden" name="fieldCode" value="" selParameter=""/>  <!-- 字段代码 -->
+			<input type="hidden" name="fileType" value="" />  <!-- 字段值类型 -->
+			<input type="hidden" name="fieldValue" value="" />  <!-- 字段值 -->
+			<input type="hidden" name="symbol" value="" />  <!-- 比较符 -->
+			<input type="hidden" name="interfaceCode" value="" />  
+			<input type="hidden" name="roleCode" value="" />  
+		</from>
+	</div>
+	
+	
+	<% } %>
+	<script>
+	var L = {
+		selRow_dataGrid_bottom : null,  // 接口信息管理 - 当前选择行 
+		setInterface: '', // 接口信息管理/修改/接口下拉选择
+		interfaceQuerys: [],  // 提交数据 (对应修改接口信息 - 新增)
+		roleDataPermission: {  // 提交数据 (对应外层用户数据之间关系 - 新增)
+			permissionCode : '',    // id
+			roleCode : '',    // 当前角色id
+			interfaceCode : '',    // 接口id
+			interfaceSql : '',    // sql
+			createById : '',    // 创建人id
+			updateById : '',    // 修改人ID
+			stitching : '',    //拼接sql （1 and 2）
+			isNewRecord: ''   // 新增 true 修改false
+		},
+		reg:{  // 判断公式输入框是否带空格格式 #writeFormula-add/edit
+			reg1: null,
+			reg2: null,
+			reg3: null,
+			reg4: null,
+			reg5: null
+		}
+	} 
+	
+	
+	// 角色表管理 - top
+	$('#dataGrid').dataGrid({
+		searchForm: $("#searchForm-top"),
+		columnModel: [
+			{header:'角色编码', name:'roleCode', index:'a.role_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+				// return '<a href="${ctx}/basicroleinfoconfig/basicRoleInfo/form?roleCode='+row.roleCode+'" class="btnList" data-title="${text('编辑角色表')}">'+(val||row.id)+'</a>';
+				return '<span style="cursor: pointer;color: #3c8dbc;" data-title="${text("编辑角色表")}">'+(val||row.id)+'</span>';
+			}},
+			{header:'角色名称', name:'roleName', index:'a.role_name', width:150, align:"left"},
+			{header:'角色分类', name:'roleType', index:'a.role_type', width:150, align:"center", formatter: function(val, obj, row, act){
+				return js.getDictLabel(${@DictUtils.getDictListJson('sys_role_type')}, val, '${text('未知')}', true);
+			}},
+			{header:'角色排序', name:'roleSort', index:'a.role_sort', width:150, align:"center"},
+            {header:'系统内置', name:'isSys', index:'a.is_sys', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('sys_yes_no')}, val, '${text('未知')}', true);
+                }},
+            {header:'用户类型', name:'userType', index:'a.user_type', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('sys_user_type')}, val, '${text('未知')}', true);
+                }},
+            {header:'数据范围设置', name:'dataScope', index:'a.data_scope', width:150, align:"center", formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('sys_role_data_scope')}, val, '${text('未知')}', true);
+                }},
+			{header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+				return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+			}},
+			{header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+			{header:'备注信息', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		],
+		// 加载成功后执行事件
+		ajaxSuccess: function(data){},
+		onSelectRow: function(rowid,status){
+			$('#reset-searchBottom').trigger('click')
+			L.roleDataPermission.roleCode = rowid.split('_')[0]
+			$('#roleCode').val(rowid.split('_')[0])
+	
+			$('#submit-searchBottom').trigger('click')
+			L.selRow_dataGrid_bottom = null
+		}
+	});
+	
+	
+	// 接口管理-查询
+	$('#dataGrid-bottom').dataGrid({
+		searchForm: $("#searchForm-bottom"),
+		columnModel: [
+			{header:'接口名字', name:'interfaceName', index:'a.interface_name', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+				return '<span style="cursor: pointer;color: #3c8dbc;" data-title="${text("编辑接口信息")}">'+(val||row.id)+'</span>';
+			}},
+			{header:'路径', name:'url', index:'a.url', width:150, align:"left"},
+			{header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+				return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text("未知")}', true);
+			}},
+			{header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+			{header:'创建人', name:'createBy', index:'a.create_by', width:150, align:"left"},
+			{header:'修改时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+			{header:'修改人', name:'updateBy', index:'a.update_by', width:150, align:"left"},
+			{header:'备注', name:'remarks', index:'a.remarks', width:150, align:"left"}
+		],
+		onSelectRow: function(rowid,status){
+			if(!$('#'+rowid).hasClass('ui-state-highlight')){
+				L.selRow_dataGrid_bottom = ''
+				L.setInterface = ''
+				return
+			}
+			L.selRow_dataGrid_bottom = rowid
+			L.setInterface = rowid
+		},
+		showCheckbox:true,
+		// 加载成功后执行事件
+		ajaxSuccess: function(data){
+			// 点击行取消其他行选中样式
+			$('#dataGrid-bottom').find('tr').off().click(function(){
+				$(this).addClass('ui-state-highlight').siblings('tr').removeClass('ui-state-highlight')
+			})
+		}
+	});
+	
+	
+	// 接口信息管理 -- 新增列表
+	$('#dataGrid-bottomAdd').dataGrid({
+		searchForm: $("#searchForm-bottomAdd"),
+		columnModel: [
+			{header:'序号', name:'sortNo', index:'a.sort_no', width:50, align:"left", frozen:true, formatter: function(val, obj, row, act){
+				return (val||row.id);
+			}},
+			{header:'编码', name:'queryCode', index:'a.queryCode',hidden:true, width:10, align:"left", frozen:true, formatter: function(val, obj, row, act){
+				return '<span style="cursor: pointer;color: #3c8dbc;" data-title="${text("删除接口信息")}">'+(val||row.id)+'</span>';
+			}},
+			{header:'名字', name:'queryName', width:150, align:"left"},
+			{header:'${text('操作')}', name:'actions', width:50, sortable:false, title:false, formatter: function(val, obj, row, act){
+				var actions = [];
+				<% if(hasPermi('userroleconfig:interfaceInfo:edit')){ %>
+					if(row.id){
+						actions.push('<a onclick="InterEdit.edit(this)" dom="dataGrid-bottomAdd" sortNo="'+row.sortNo+'" rowId="'+row.id+'" href="javascript:void(0)" title="${text("编辑接口信息")}"><i class="fa fa-pencil"></i></a>&nbsp;');
+						actions.push('<a onclick="InterEdit.del(this)" dom="dataGrid-bottomAdd" sortNo="'+row.sortNo+'" rowId="'+row.id+'" href="javascript:void(0)" title="${text("删除接口信息")}" data-confirm="${text("确认要删除该接口信息吗？")}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+					}else{
+						actions.push('<a onclick="InterEdit.edit(this)" dom="dataGrid-bottomAdd" newRow="true" sortNo="'+row.sortNo+'" href="javascript:void(0)" title="${text("编辑接口信息")}"><i class="fa fa-pencil"></i></a>&nbsp;');
+						actions.push('<a onclick="InterEdit.del(this)" dom="dataGrid-bottomAdd" newRow="true" sortNo="'+row.sortNo+'" href="javascript:void(0)" title="${text("删除接口信息")}" data-confirm="${text("确认要删除该接口信息吗？")}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+					}
+				<% } %>
+				return actions.join('');
+			}}
+		],
+		showCheckbox:false,
+		// 加载成功后执行事件
+		ajaxSuccess: function(data){}
+	});
+	
+	
+	// 接口信息管理 -- 修改列表
+	$('#dataGrid-bottomEdit').dataGrid({
+		searchForm: $("#searchForm-bottomEdit"),
+		columnModel: [
+			{header:'序号', name:'sortNo', index:'a.sort_no', width:50, align:"left", frozen:true, formatter: function(val, obj, row, act){
+				return (val||row.id);
+			}},
+			{header:'编码', name:'queryCode', index:'a.queryCode', width:10, align:"left", frozen:true, hidden:true,formatter: function(val, obj, row, act){
+				return '<span style="cursor: pointer;color: #3c8dbc;" data-title="${text("删除接口信息")}">'+(val||row.id)+'</span>';
+			}},
+			{header:'名字', name:'queryName', align:"left"},
+			{header:'${text("操作")}', name:'actions', width:50, sortable:false, title:false, formatter: function(val, obj, row, act){
+				var actions = [];
+				<% if(hasPermi('userroleconfig:interfaceInfo:edit')){ %>
+					if(row.id){
+						actions.push('<a onclick="InterEdit.edit(this)" dom="dataGrid-bottomEdit" sortNo="'+row.sortNo+'" rowId="'+row.id+'" href="javascript:void(0)" title="${text("编辑接口信息")}"><i class="fa fa-pencil"></i></a>&nbsp;');
+						actions.push('<a onclick="InterEdit.del(this)" dom="dataGrid-bottomEdit" sortNo="'+row.sortNo+'" rowId="'+row.id+'" href="javascript:void(0)" title="${text("删除接口信息")}" data-confirm="${text("确认要删除该接口信息吗？")}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+					}else{
+						actions.push('<a onclick="InterEdit.edit(this)" dom="dataGrid-bottomEdit" newRow="true" sortNo="'+row.sortNo+'" href="javascript:void(0)" title="${text("编辑接口信息")}"><i class="fa fa-pencil"></i></a>&nbsp;');
+						actions.push('<a onclick="InterEdit.del(this)" dom="dataGrid-bottomEdit" newRow="true" sortNo="'+row.sortNo+'" href="javascript:void(0)" title="${text("删除接口信息")}" data-confirm="${text("确认要删除该接口信息吗？")}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+					}
+				<% } %>
+				return actions.join('');
+			}}
+		],
+		showCheckbox:false,
+		// 加载成功后执行事件
+		ajaxSuccess: function(data){}
+	});
+	
+	
+	// ========================  逻辑start ========================  
+	$(function(){
+		click_showSearch('btnSearch-top','searchForm-top')
+		click_showSearch('btnSearch-bottom','searchForm-bottom')
+
+		// 公式提示
+		$('.message').hover(function(){
+			$(this).next('.info-message').show()
+		},function(){
+			$('.info-message').hide()
+		})
+	})
+	
+	// 搜索框展示
+	function click_showSearch(id,showBox){
+		$('#'+id).click(function(){
+			var s = $('#'+showBox).attr('class').indexOf('hide')
+			if(s < 0) $('#'+showBox).addClass('hide')
+			else $('#'+showBox).removeClass('hide')
+		})
+	}
+	
+	
+	// 接口信息管理外层 -- 新增按钮
+	$('#add-bottomSearch').click(function(){
+		if(!L.roleDataPermission.roleCode){
+			layer.msg('请选择需要添加接口的用户')
+			return false
+		}
+	
+		$('#writeFormula-add').val('').keyup()  // 清空公式
+		$('#writeFormula-addShow').val('') // 清空公式
+		L.interfaceQuerys = []  // 清空需要新增的队列
+		L.roleDataPermission.isNewRecord = true  // 当前点击模式
+		$.ajax({
+			url: '${ctx}/basicroleinfoconfig/basicRoleInfo/getInfoByNotInUser?roleCode='+ L.roleDataPermission.roleCode.toString(),
+			type: 'POST',
+			contentType: 'text/plain;charset=UTF-8',
+			dataType: 'json',
+			success:function(res){
+				var option = ''
+				for(var a in res){
+					var num = parseInt(a) + 1
+					option += '<option value="'+num+'" stitching="'+res[a].stitching+'" interfaceSql="'+res[a].interfaceSql+'"  data-code="'+res[a].interfaceCode+'"  data-status="'+res[a].status+'">'+res[a].interfaceName+'</option>'
+				}
+	
+				$('#dataGrid-bottom-add select').html(option)
+	
+				layer.open({
+					type: 1,
+					shade : 0.7,
+					title: '新增接口信息',
+					area: ['60%', '60%'], //宽高
+					content: $('#dataGrid-bottom-add'),
+					btn: ['保存', '取消'],
+					yes:function(index,layero){
+						if((L.reg.reg1 !== null) || (L.reg.reg2 !== null) || (L.reg.reg3 !== null) || (L.reg.reg4 !== null) || (L.reg.reg5 !== null)){
+							layer.msg('请检查您输入的公式格式是否正确')
+							return false
+						}
+
+
+
+						data = {
+							"interfaceQuerys": L.interfaceQuerys,
+							"roleDataPermission" : L.roleDataPermission
+						}
+	
+	
+						// 保存修改接口信息
+						$.ajax({
+							url: '${ctx}/basicroleinfoconfig/basicRoleInfo/saveQuery',
+							type: 'POST',
+							data: JSON.stringify(data),
+							contentType: 'application/json;charset=UTF-8',
+							dataType: 'json',
+							success:function(res){
+								layer.msg('添加成功')
+								L.interfaceQuerys = []  // 清空数据
+								$('#submit-searchBottom').trigger('click')  // 手动刷新接口信息管理
+								console.log(res)
+							}
+						})
+	
+					},
+					success:function(layero, index){
+						// 初始默认
+						$('#writeFormula-add').val('')
+	
+						$('#dataGrid-bottom-add .selectBox').click(function(){
+							$('.select2-container').css('z-index',parseInt(layero.css('z-index'))+1)
+						})
+	
+						$('#dataGrid-bottom-add select').change(function(){})
+	
+	
+						// 默认显示选中的那条
+						var action = $('#searchForm-bottomAdd').attr('action'),
+								resAtcion = action.split('?')[0],
+								defOption = $('#dataGrid-bottom-add select option').eq(0);  // 默认下拉第一个
+	
+								defOption.attr('selected','selected')
+								$('#searchForm-bottomAdd')[0].action = resAtcion+'?interfaceCode='+defOption.attr('data-code')+'&roleCode='+L.roleDataPermission.roleCode
+								$('#submit-searchBottomAdd').trigger('click')
+	
+	
+						
+							L.roleDataPermission.interfaceCode = defOption.attr('data-code')
+							L.setInterface = L.roleDataPermission.interfaceCode
+					
+	
+	
+							// 接口选择
+							$('#dataGrid-bottom-add select').change(function(){	
+								L.interfaceQuerys = []  // 清空需要新增的队列
+	
+								var val = $(this).val(),
+									op = $(this).find('option[value="'+val+'"]'),
+									code = op.attr('data-code'),
+									roleCode = L.roleDataPermission.roleCode
+	
+									// 赋值当前接口信息
+									L.setInterface = code
+									L.roleDataPermission.interfaceCode = code
+									console.log(L.roleDataPermission)
+	
+								// 查询当前接口下的子接口	
+								var action = $('#searchForm-bottomAdd').attr('action'),
+									resAtcion = action.split('?')[0]
+								$('#searchForm-bottomAdd')[0].action = resAtcion+'?interfaceCode='+code+'&roleCode='+roleCode
+								$('#submit-searchBottomAdd').trigger('click')
+	
+								
+							})
+							
+							// 公式
+							$('#dataGrid-bottom-add #writeFormula-add').keyup(function(){
+								var val = $(this).val()
+								L.roleDataPermission.stitching = val
+
+								// 判断公式输入框是否带空格格式 #writeFormula-add
+								L.reg.reg1 = val.match(/\(\S+/ig)
+								L.reg.reg2 = val.match(/\S+\)/ig)
+								L.reg.reg3 = val.match(/\S+(or|and)\S+/ig)
+								L.reg.reg4 = val.match(/\S+(or|and)\S?/ig)
+								L.reg.reg5 = val.match(/\S?(or|and)\S+/ig)
+							})
+						//end
+					},
+					cancel: function(){
+						L.interfaceQuerys = []  // 清空数据
+					},
+					btn2 : function(){
+						L.interfaceQuerys = []  // 清空数据
+					}
+				});
+			}
+		})	
+	})
+		
+	// 接口信息管理外层 --- 修改按钮
+	$('#set-bottomSearch').click(function(){
+		$('#writeFormula-add').val('').keyup()  // 清空公式
+		$('#writeFormula-addShow').val('') // 清空公式
+		L.interfaceQuerys = []  // 清空需要新增的队列
+		L.roleDataPermission.isNewRecord = false  // 当前点击模式
+			if(L.selRow_dataGrid_bottom){	
+			$.ajax({
+				url: '${ctx}/basicroleinfoconfig/basicRoleInfo/listDataByRoleCode?roleCode='+ L.roleDataPermission.roleCode.toString(),
+				type: 'POST',
+				contentType: 'text/plain;charset=UTF-8',
+				dataType: 'json',
+				success:function(res){
+					var option = '';
+					for(var a in res.list){
+						var num = parseInt(a) + 1
+						option += '<option value="'+num+'" interfaceSql="'+res.list[a].interfaceSql+'" stitching="'+res.list[a].stitching+'"  data-code="'+res.list[a].interfaceCode+'" data-status="'+res.list[a].status+'">'+res.list[a].interfaceName+'</option>'	
+					}
+					
+					
+					$('#dataGrid-bottom-edit select').html(option)
+							
+					layer.open({
+						type: 1,
+						shade : 0.7,
+						title: '修改接口信息',
+						area: ['60%', '60%'], //宽高
+						content: $('#dataGrid-bottom-edit'),
+						btn: ['保存', '取消'],
+						yes:function(index,layero){
+							if((L.reg.reg1 !== null) || (L.reg.reg2 !== null) || (L.reg.reg3 !== null) || (L.reg.reg4 !== null) || (L.reg.reg5 !== null)){
+								layer.msg('请检查您输入的公式格式是否正确')
+								return false
+							}
+
+
+							data = {
+								"interfaceQuerys": L.interfaceQuerys,
+								"roleDataPermission" : L.roleDataPermission
+							}
+	
+	
+							// 保存修改接口信息
+							$.ajax({
+								url: '${ctx}/basicroleinfoconfig/basicRoleInfo/saveQuery',
+								type: 'POST',
+								data: JSON.stringify(data),
+								contentType: 'application/json;charset=UTF-8',
+								dataType: 'json',
+								success:function(res){
+									L.interfaceQuerys = []  // 清空数据
+									layer.msg('修改成功')
+									console.log(res)
+								}
+							})
+	
+						},
+						success:function(layero, index){
+							$('#dataGrid-bottom-edit .selectBox').click(function(){
+								$('.select2-container').css('z-index',parseInt(layero.css('z-index'))+1)
+							})
+	
+							// 默认显示选中的那条
+							var action = $('#searchForm-bottomEdit').attr('action'),
+								resAtcion = action.split('?')[0];
+	
+							var select_optiondef1 = $('#dataGrid-bottom-edit select option[data-code="'+L.selRow_dataGrid_bottom+'"]')  // 当前点击选中的修改接口
+								select_optiondef1.attr('selected','selected')
+								$('#searchForm-bottomEdit')[0].action = resAtcion+'?interfaceCode='+L.selRow_dataGrid_bottom+'&roleCode='+L.roleDataPermission.roleCode
+								$('#submit-searchBottomEdit').trigger('click')
+							
+							L.roleDataPermission.interfaceCode = select_optiondef1.attr('data-code')
+							L.roleDataPermission.interfaceSql = select_optiondef1.attr('interfaceSql')
+							L.roleDataPermission.stitching = select_optiondef1.attr('stitching')
+							$('#writeFormula-edit').val(select_optiondef1.attr('stitching'))
+							$('#writeFormula-editShow').val(select_optiondef1.attr('interfaceSql'))
+					
+	
+							// 接口切换
+							$('#dataGrid-bottom-edit select').change(function(){	
+								L.interfaceQuerys = []  // 清空需要新增的队列
+	
+								var val = $(this).val(),
+									op = $(this).find('option[value="'+val+'"]'),
+									code = op.attr('data-code'),
+									roleCode = L.roleDataPermission.roleCode
+								
+									// 赋值当前接口信息
+									L.setInterface = code
+									L.roleDataPermission.interfaceCode = code
+									L.roleDataPermission.interfaceSql = op.attr('interfaceSql')
+									$('#writeFormula-edit').val(op.attr('stitching')).keyup()
+									$('#writeFormula-editShow').val(op.attr('interfaceSql'))
+									console.log(L.roleDataPermission)
+								
+								
+								var action = $('#searchForm-bottomEdit').attr('action'),
+									resAtcion = action.split('?')[0]
+								$('#searchForm-bottomEdit')[0].action = resAtcion+'?interfaceCode='+code+'&roleCode='+roleCode
+								$('#submit-searchBottomEdit').trigger('click')							
+							})
+							
+							// // 公式输入
+							$('#dataGrid-bottom-edit #writeFormula-edit').keyup(function(){
+								var val = $(this).val()
+								L.roleDataPermission.stitching = val
+
+								// 判断公式输入框是否带空格格式 #writeFormula-edit
+								L.reg.reg1 = val.match(/\(\S+/ig)
+								L.reg.reg2 = val.match(/\S+\)/ig)
+								L.reg.reg3 = val.match(/\S+(or|and)\S+/ig)
+								L.reg.reg4 = val.match(/\S+(or|and)\S?/ig)
+								L.reg.reg5 = val.match(/\S?(or|and)\S+/ig)
+							})
+						},
+						cancel: function(){
+							L.interfaceQuerys = []  // 清空数据
+						},
+						btn2 : function(){
+							L.interfaceQuerys = []  // 清空数据
+						}
+					});
+				}
+			})
+		}else{
+			layer.msg('请至少选择一张订单进行删除')
+		}
+	})
+	
+	// 接口信息管理外层 --- 删除按钮
+	$('#del-bottomSearch').click( function(e){
+		// 获取所有被选中订单
+		var orderArr = $('#dataGrid-bottom :checkbox:checked'),
+			temp = []   // 当前被选中的订单
+			
+		if(orderArr.length>0){
+			for(var i = 0; i<orderArr.length; i++){
+				var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid-bottom_/g,'')
+				temp.push(a)
+			}
+	
+			var str = temp.join(',')
+			$.ajax({
+				url: '${ctx}/basicroleinfoconfig/basicRoleInfo/delRoleInfterface?ids='+str.toString()+'&roleCode='+ L.roleDataPermission.roleCode.toString(),
+				type: 'POST',
+				contentType: 'text/plain;charset=UTF-8',
+				dataType: 'json',
+				success:function(res){
+					layer.msg(res.message)
+					// 清空被选择的接口
+					L.selRow_dataGrid_bottom = ''
+					L.setInterface = ''
+					$('#reset-searchBottom').trigger('click')
+					$('#submit-searchBottom').trigger('click')
+				}
+			})
+		}else{
+			layer.msg('请至少选择一张订单进行删除')
+		}
+	});
+	
+	
+	// 接口信息管理 --- 修改 弹窗内操作
+	//接口信息管理
+	var InterEdit = {
+		add : function(dom){  // dom 需要插入数据的表格
+			openOperation('添加自定义查询条件',{},function(layero, index){
+				var el = $('#dataGrid-bottom-operation')
+	
+				var queryCode = el.find('input[name="queryCode"]').val(),    // id
+					fieldCode = el.find('input[name="fieldCode"]').val(),    // 字段代码
+					fieldType = el.find('input[name="fileType"]').val(),    // 字段值类型(文本、登录者ID、登录者部门等)
+					fieldValue = el.find('input[name="fieldValue"]').val(),    // 字段值(字段类型为文本才可编辑)
+					symbol = el.find('input[name="symbol"]'),    // 比较符(=、&gt;、&lt;等)
+					interfaceCode = el.find('input[name="interfaceCode"]').val(),
+					queryName = el.find('input[name="fieldCode"]').attr('selParameter') + ' ' + symbol.val() + ' ' + fieldValue,      //拼接起来的名字
+					type = 'add',       //参数类型
+					sortNo = ''
+				
+	
+				var bianmaIDLen = $('#'+dom+' tr.ui-widget-content').length
+	
+				var bianmaID = parseInt($('#'+dom+' tr.ui-widget-content').eq(bianmaIDLen-1).find('td[aria-describedby="'+dom+'_sortNo"]').html()) || 0
+				$('#'+dom).dataGrid('addRowData', 'newData_'+(bianmaID+1),{sortNo:bianmaID+1,queryName: queryName}, "last")
+	
+				// 插入需要上传队列
+				var obj = {
+					'queryCode' : queryCode, // id
+					'queryName' : queryName,    // 名称
+					'fieldCode' : fieldCode,   // 字段代码
+					'fieldType' : fieldType,    // 字段值类型(文本、登录者ID、登录者部门等)
+					'fieldValue' :  fieldValue,   // 字段值(字段类型为文本才可编辑)
+					'symbol' : symbol.attr('symbol'),    // 比较符(=、&gt;、&lt;等)
+					'interfaceCode' : L.roleDataPermission.interfaceCode,
+					'roleCode' : L.roleDataPermission.roleCode,
+					'type' : type,       //参数类型
+					'sortNo' : bianmaID+1  
+				}
+	
+				L.interfaceQuerys.push(obj)
+				
+				console.log(L.interfaceQuerys)
+			})
+		},
+		edit : function(t){
+			var newRow = $(t).attr('newRow');
+	
+			openOperation('编辑自定义查询条件', {_this:$(t)}, function(layero, index){
+				// 判断是否新增行还是已存在数据库
+				var el = $('#dataGrid-bottom-operation'),
+					dom = $(t).attr('dom'),
+					sortNo = parseInt($(t).attr('sortNo'));  // 当前序号
+	
+				var queryCode = $(t).closest('tr').attr('id'),    // id
+					fieldCode = el.find('input[name="fieldCode"]').val(),    // 字段代码
+					fieldType = el.find('input[name="fileType"]').val(),    // 字段值类型(文本、登录者ID、登录者部门等)
+					fieldValue = el.find('input[name="fieldValue"]').val(),    // 字段值(字段类型为文本才可编辑)
+					symbol = el.find('input[name="symbol"]'),    // 比较符(=、&gt;、&lt;等)
+					interfaceCode = el.find('input[name="interfaceCode"]').val(),
+					queryName = el.find('input[name="fieldCode"]').attr('selParameter') + ' ' + symbol.val() + ' ' + fieldValue,      //拼接起来的名字
+					type = 'add',       //参数类型
+					sortNo = sortNo
+	
+					
+	
+				// 判断修改是数据库已有数据还是新增数据
+				if(newRow){
+					$('#'+dom).dataGrid('setRowData', 'newData_'+sortNo,{queryName: queryName})	
+				}else{
+					var rowId =  $(t).attr('rowId')
+					$('#'+dom).dataGrid('setRowData', rowId, {queryName: queryName})
+				}
+	
+				// 更新已存在数组数据
+				for(var item in L.interfaceQuerys){
+					if(L.interfaceQuerys[item].sortNo === sortNo){	
+						L.interfaceQuerys[item].queryName = queryName    // 名称
+						L.interfaceQuerys[item].fieldCode = fieldCode   // 字段代码
+						L.interfaceQuerys[item].fieldType = fieldType    // 字段值类型(文本、登录者ID、登录者部门等)
+						L.interfaceQuerys[item].fieldValue =  fieldValue   // 字段值(字段类型为文本才可编辑)
+						L.interfaceQuerys[item].symbol = symbol.attr('symbol')   // 比较符(=、&gt;、&lt;等)
+						console.log(L.interfaceQuerys)
+						return false
+					}
+				}
+	
+				// 数据中找不到则新增
+				var obj = {
+					'queryCode' : queryCode, // id
+					'queryName' : queryName,    // 名称
+					'fieldCode' : fieldCode,   // 字段代码
+					'fieldType' : fieldType,    // 字段值类型(文本、登录者ID、登录者部门等)
+					'fieldValue' :  fieldValue,   // 字段值(字段类型为文本才可编辑)
+					'symbol' : symbol.attr('symbol'),    // 比较符(=、&gt;、&lt;等)
+					'interfaceCode' : L.roleDataPermission.interfaceCode,
+					'roleCode' : L.roleDataPermission.roleCode,
+					'type' : 'edit',       //参数类型
+					'sortNo' : sortNo  
+				}
+				L.interfaceQuerys.push(obj)
+				console.log(L.interfaceQuerys)
+			})
+		},
+		del : function(t){
+			layer.confirm('是否删除当前接口?', function(index){
+				var newRow = $(t).attr('newRow'),
+					sortNo = parseInt($(t).attr('sortNo')), // 当前序号
+					queryCode = $(t).closest('tr').attr('id');
+	
+	
+				// 判断是否新增行还是已存在数据库
+				if(newRow){	
+					var dom = $(t).attr('dom')
+	
+					// 查找已有的删除
+					for(var item in L.interfaceQuerys){
+						if(L.interfaceQuerys[item].sortNo === sortNo){	
+							L.interfaceQuerys.splice(item,1)
+							$('#newData_'+sortNo).remove()
+							layer.close(index);
+							return false
+						}
+					}
+				}else{
+					var rowId =  $(t).attr('rowId')
+					// 插入需要上传队列
+					var obj = {
+						'queryCode' : queryCode, // id
+						'queryName' : '',    // 名称
+						'fieldCode' : '',   // 字段代码
+						'fieldType' : '',    // 字段值类型(文本、登录者ID、登录者部门等)
+						'fieldValue' :  '',   // 字段值(字段类型为文本才可编辑)
+						'symbol' : '',    // 比较符(=、&gt;、&lt;等)
+						'interfaceCode' : L.roleDataPermission.interfaceCode,
+						'roleCode' : L.roleDataPermission.roleCode,
+						'type' : 'del',       //参数类型
+						'sortNo' : sortNo  
+					}
+					
+					var dom = $(t).attr('dom')
+					$('#'+dom).dataGrid('delRowData', rowId)
+					// 查找删除的数据是否存在编辑数据
+					for(var item in L.interfaceQuerys){
+						if(L.interfaceQuerys[item].sortNo === sortNo && L.interfaceQuerys[item].type === 'edit'){	
+							L.interfaceQuerys.splice(item,1)
+							L.interfaceQuerys.push(obj)
+							$('#'+dom).dataGrid('delRowData', rowId)
+							layer.close(index);
+							return false
+						}
+					}
+					
+	
+					L.interfaceQuerys.push(obj)
+					console.log(L.interfaceQuerys)
+				}
+				layer.close(index);
+			});       
+			
+		},
+		submitFrom: function(){}  // 提交表单	
+	}
+		
+		
+		
+	// 打开操作弹窗
+	function openOperation(title,editObj,callback){  // 标题 , 调用相关信息
+		$.ajax({
+			url: '${ctx}/userroleconfig/interfaceInfo/getFieldByInterCode?interfaceCode='+L.setInterface,
+			type: 'POST',
+			contentType: 'text/plain;charset=UTF-8',
+			dataType: 'json',
+			success:function(res){
+				var option = '';
+				for(var a in res){
+					var num = parseInt(a) + 1
+					option += '<option value="'+num+'" fieldCode="'+res[a].fieldCode+'" queryCode="'+res[a].id+'">'+res[a].fieldName+'</option>'
+				}
+	
+				$('#dataGrid-bottom-operation #selParameter').html(option)
+	
+				var fieldCode = $('#dataGrid-bottom-operation #selParameter option').eq(0)
+				$('#dataGrid-bottom-operation').find('input[name="fieldCode"]').val(fieldCode.attr('fieldCode')).attr('selParameter',fieldCode.html())
+	
+				
+	
+				layer.open({
+					type: 1,
+					shade : 0.1,
+					title: title,
+					area: ['25%', ''], //宽高
+					content: $('#dataGrid-bottom-operation'),
+					btn: ['保存', '取消'],
+					yes:function(index,layero){
+						if($('#dataGrid-bottom-operation').find('input[name="fieldValue"]').val() === ''){
+							layer.msg('请填写文本')
+							return false
+						}
+						callback(layero, index)
+					},
+					success:function(layero, index){
+						$('.selectBox').click(function(){
+							$('.select2-container').css('z-index',parseInt(layero.css('z-index'))+1)
+						})
+						
+						// 初始化
+						if($.isEmptyObject(editObj)){  // 判断当前是新增还是编辑
+							var selSymbol_op1 = $('#dataGrid-bottom-operation #selSymbol option:first')
+							selSymbol_op1.attr('selected','selected').change() // 比较符
+							$('#dataGrid-bottom-operation #selFieldType option:first').attr('selected','selected').change()   // 字段类型
+	
+							$('#dataGrid-bottom-operation').find('input[name="symbol"]').val(selSymbol_op1.html()).attr('symbol',selSymbol_op1.val())  // 比较符
+							$('#dataGrid-bottom-operation').find('input[name="fileType"]').val('文本')  // 文本类型
+							$('#dataGrid-bottom-operation').find('input[name="fieldValue"]').val('')  // 文本空白
+						}else{  // 编辑状态下
+							var dom = editObj._this.attr('dom')
+							var strHtml = editObj._this.closest('tr').find('td[aria-describedby="'+dom+'_queryName"]').html(),
+								strArr = strHtml.split(' ')  // 分隔名字  [ "bb", "大于", "登陆者角色" ]
+	
+								// 拿取已有数据
+								$('#dataGrid-bottom-operation #selParameter option').each(function(){  // 比较符
+									if($(this).html() === strArr[0]){
+										$(this).attr('selected','selected').change()
+										$('#dataGrid-bottom-operation').find('input[name="fieldCode"]').val($(this).attr('fieldCode')).attr('selParameter',$(this).html())
+										return
+									}
+								})
+	
+	
+								$('#dataGrid-bottom-operation #selSymbol option').each(function(){  // 比较符
+									if($(this).html() === strArr[1]){
+										$(this).attr('selected','selected').change()
+										$('#dataGrid-bottom-operation').find('input[name="symbol"]').val($(this).html()).attr('symbol',$(this).val())
+										return
+									}
+								})
+	
+								$('#dataGrid-bottom-operation #selFieldType option').each(function(){  // 字段类型
+									if($(this).html() === strArr[2]){
+										$(this).attr('selected','selected').change()
+										$('#dataGrid-bottom-operation').find('input[name="fieldValue"]')[0].disabled = true
+										return
+									}else if($(this).html() === '文本'){
+										$(this).attr('selected','selected').change()
+										$('#dataGrid-bottom-operation').find('input[name="fieldValue"]').val(strArr[2])[0].disabled = false  // 文本空白
+									}
+								})
+	
+						}                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  
+	
+						// 选择参数改变
+						$('#dataGrid-bottom-operation #selParameter').change(function(){	
+							var val = $(this).val(),
+								op = $(this).find('option[value="'+val+'"]'),
+								fieldCode = op.attr('fieldCode')
+	
+							$('#dataGrid-bottom-operation').find('input[name="fieldCode"]').val(fieldCode).attr('selParameter',op.html())
+						})
+						
+						// 比较符改变
+						$('#dataGrid-bottom-operation #selSymbol').change(function(){	
+							var val = $(this).val(),
+								op = $(this).find('option[value="'+val+'"]')
+	
+							$('#dataGrid-bottom-operation').find('input[name="symbol"]').val(op.html()).attr('symbol',op.val())
+						})
+						
+						// 字段类型改变
+						$('#dataGrid-bottom-operation #selFieldType').change(function(){	
+							var val = $(this).val(),
+								op = $(this).find('option[value="'+val+'"]').html()
+							
+							if(op === "文本"){
+								$('#dataGrid-bottom-operation').find('input[name="fieldValue"]')[0].disabled = false
+								$('#dataGrid-bottom-operation').find('input[name="fieldValue"]').val('')
+							}
+							else {	
+								$('#dataGrid-bottom-operation').find('input[name="fieldValue"]')[0].disabled = true
+								$('#dataGrid-bottom-operation').find('input[name="fieldValue"]').val(op)
+							}
+	
+							$('#dataGrid-bottom-operation').find('input[name="fileType"]').val(op).attr('selParameter',op)
+						})
+					}
+				});
+			}
+		})	
+	}
+		
+		
+	</script>

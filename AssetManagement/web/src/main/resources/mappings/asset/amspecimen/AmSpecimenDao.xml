@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.amspecimen.dao.AmSpecimenDao">
+
+	<!-- 查询数据 -->
+	<select id="findList" resultType="AmSpecimen">
+		SELECT ${sqlMap.column.toSql()},
+		b.product_code as "amSpecimenProduct.code",
+		b.product_name as "amSpecimenProduct.productName",
+		b.count as "amSpecimenProduct.count",
+		b.material as "amSpecimenProduct.material",
+		b.es as "amSpecimenProduct.es",
+		b.photo as "amSpecimenProduct.photo",
+		b.specimen_code as "amSpecimenProduct.specimenCode.specimen_code"
+		FROM ${sqlMap.table.toSql()}
+		left join ${_prefix}am_specimen_product b
+		on a.specimen_code=b.specimen_code
+		<where>
+			${sqlMap.where.toSql()} and b.status='0'
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<delete id="deleteDb" >
+	DELETE from js_am_specimen WHERE specimen_code=#{specimenCode}
+	</delete>
+	<select id="getOfferList" resultType="com.jeesite.modules.sys.entity.Office">
+		SELECT  * from js_sys_office where status='0' and parent_codes like #{offerCode}
+	</select>
+
+</mapper>

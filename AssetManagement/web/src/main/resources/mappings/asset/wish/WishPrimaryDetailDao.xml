@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.wish.dao.WishPrimaryDetailDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="WishPrimaryDetail">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<insert id="insertDetail" parameterType="java.util.List">
+		INSERT INTO js_wish_primary_detail
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.detailCode,jdbcType=VARCHAR},
+			#{item.userid,jdbcType=VARCHAR},
+			#{item.votersUserId,jdbcType=VARCHAR},
+			#{item.userName,jdbcType=VARCHAR},
+			#{item.jobNumber,jdbcType=VARCHAR},
+			#{item.position,jdbcType=VARCHAR},
+			#{item.departmentId,jdbcType=VARCHAR},
+			#{item.department,jdbcType=VARCHAR},
+			#{item.reason,jdbcType=VARCHAR},
+			#{item.createTime,jdbcType=TIMESTAMP})
+		</foreach>
+	</insert>
+
+	<select id="exportData" resultType="WishPrimaryDetail">
+		SELECT
+			*, count(1) nominateNum
+		FROM
+		js_wish_primary_detail
+
+		GROUP BY
+			voters_user_id
+		ORDER BY nominateNum DESC
+
+	</select>
+</mapper>

@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.tianmao.dao.TbSkuDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="TbSku">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="findList" resultType="TbSku">
+		SELECT
+		b.properties_name,
+		b.properties,
+		b.outer_id,
+		b.sku_id,
+		b.price,
+		b.real_price,
+		a.title,
+		a.pic_url,
+		c.sku_name
+		FROM
+		tb_product a
+		LEFT JOIN tb_sku b ON a.num_iid = b.num_iid
+		LEFT JOIN tb_sku_k3_name c ON b.sku_id = c.sku_id
+		<where>
+			<if test="outerId !=null and outerId!=''">
+				b.outer_id lIKE '%${outerId}%'
+			</if>
+			<if test="title !=null and title!=''">
+				AND a.title like '%${title}%'
+			</if>
+			<if test="skuName != null and skuName != ''">
+				AND c.sku_name LIKE '%${skuName}%'
+			</if>
+			AND a.approve_status='onsale'
+			AND b.quantity > 0
+			AND a.nick != 'saladliang'
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+
+	<select id="getSku" resultType="TbSku">
+		SELECT a.*,
+		b.sku_name skuName
+		FROM tb_sku a
+		LEFT JOIN tb_sku_k3_name b ON a.sku_id = b.sku_id
+		WHERE a.num_iid = #{numIid}
+	</select>
+
+	<update id="updateSku">
+		update tb_sku
+		<set>
+			k3_name=#{arg1}
+		</set>
+		<where>
+			outer_id=#{arg0}
+		</where>
+	</update>
+	<select id="findByNumIid" resultType="TbSku">
+SELECT * from tb_sku where num_iid=#{arg0}</select>
+
+	<!-- 批量插入数据-->
+	<insert id="insertSkuList" parameterType="java.util.List">
+		INSERT INTO tb_sku
+		VALUES
+		<foreach collection="list" item="item" index="index" separator=",">
+			(#{item.skuId,jdbcType=INTEGER},
+			#{item.numIid,jdbcType=INTEGER},
+			#{item.propertiesName,jdbcType=VARCHAR},
+			#{item.price,jdbcType=VARCHAR},
+			#{item.quantity,jdbcType=INTEGER},
+			#{item.properties,jdbcType=VARCHAR},
+			#{item.created,jdbcType=VARCHAR},
+			#{item.modified,jdbcType=VARCHAR},
+			#{item.status,jdbcType=VARCHAR},
+			#{item.barcode,jdbcType=VARCHAR},
+			#{item.outerId,jdbcType=VARCHAR},
+			#{item.k3Name,jdbcType=VARCHAR},
+			#{item.realPrice,jdbcType=VARCHAR},
+			#{item.preSale,jdbcType=VARCHAR})
+		</foreach>
+	</insert>
+
+	<!-- 批量更新数据-->
+	<update id="updateSkuList" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			update tb_sku
+			<set>
+				num_iid = #{item.numIid},
+				properties_name = #{item.propertiesName},
+				price = #{item.price},
+				quantity = #{item.quantity},
+				properties = #{item.properties},
+				created = #{item.created},
+				modified = #{item.modified},
+				status = #{item.status},
+				barcode = #{item.barcode},
+				outer_id = #{item.outerId},
+				real_price = #{item.realPrice},
+				pre_sale = #{item.preSale}
+			</set>
+			where sku_id = ${item.skuId}
+		</foreach>
+	</update>
+
+	<!-- 更新库存为0-->
+	<update id="updateQuantity" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			update tb_sku
+			<set>
+				quantity = 0,
+			</set>
+			where sku_id = ${item.skuId}
+		</foreach>
+	</update>
+</mapper>

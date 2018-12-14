@@ -1,0 +1,248 @@
+<% layout('/layouts/default.html', {title: '耗材仓库进出汇总表管理', libs: ['dataGrid']}){ %>
+<style>
+    /* 价格列表 */
+    .countBtn{min-width: 100%;table-layout: fixed;word-wrap: break-word;padding: 20px 0;display: none;position: absolute;bottom: 0;left: 0;background: rgb(242, 242, 242);border: 1px solid rgb(232, 232, 232);}
+	.ui-jqgrid-bdiv{position: relative;padding-bottom: 50px!important}
+    .countBtn th{min-width: 150px;text-align: center;color: #333;overflow: hidden;white-space: nowrap;text-overflow: ellipsis}
+    .countBtn tr th:first-child{min-width: 30px;max-width: 30px;width: 30px;}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('耗材仓库进出汇总表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${summaryReport}" action="${ctx}/warehioreport/summaryReport/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+            <div class="form-group">
+                <label class="control-label">日期时间：</label>
+                <div class="control-inline">
+                    <#form:input path="beginDate" readonly="true" maxlength="20" class="form-control Wdate-date"
+                    dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:function(){date_lte.click()}});"/>
+                    &nbsp;--&nbsp;
+                    <#form:input path="endDate" readonly="true" maxlength="20" class="form-control Wdate-date"
+                    dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">仓库：</label>
+                <div class="control-inline">
+                    <#form:treeselect id="amWarehouse" title="${text('仓库选择')}"
+                    path="warehouseCode" labelPath="warehouseName"
+                    url="${ctx}/warehouse/amWarehouse/treeData" class="form-control" allowClear="true"/>
+                </div>
+            </div>
+			<div class="form-group">
+				<label class="control-label"></label>
+				<div class="control-inline">
+					<#form:input path="codeORname" placeholder="物品编码或者名称" maxlength="64" class="form-control width-150"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+            <table id="dataGrid"></table>
+            
+            <!--  价格列表 -->
+            <table class="countBtn">
+                <tr>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th></th>
+                    <th>期初数量：<span id="allbgingCount"></span></th>
+                    <th></th>
+                    <th>期初金额：<span id="allbgingAmount"></span></th>
+                    <th>入库数量：<span id="allinstorageCount"></span></th>
+                    <th></th>
+                    <th>入库金额：<span id="allinstorageAmount"></span></th>
+                    <th>出库数量：<span id="alloutCount"></span></th>
+                    <th></th>
+                    <th>出库金额：<span id="alloutAmount"></span></th>
+                    <th>结余数量：<span id="allbalanceCount"></span></th>
+                    <th></th>
+                    <th>结余金额：<span id="allbalanceAmount"></span></th>
+                </tr>
+            </table>
+            
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+</div><div id="mask"><span style="text-align: center"></span></div>
+
+<style>
+	#mask{
+		display: none;
+		background-color: rgba(0,0,0,0.3);
+		color: #ffffff;
+		font-size: 30px;
+		font-weight: bold;
+		text-align: center;
+		position: absolute;
+		top:0;
+		left:0;
+		z-index: 9999;
+	}
+
+	.big{
+		width: 700px;
+		height: 700px;
+		margin: 0 auto;
+	}
+
+</style>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+
+        {header:'仓库', name:'amWarehouse.warehouseName', index:'a.warehouse_code', width:150, align:"left"},
+        {header:'图片', name:'imgPath', sortable:false, index:'a.update_date', width:150, align:"left",
+            formatter: function(val, obj, row, act){
+                if(row.imgPath==null){
+                    return "";
+                }
+                else{ return  "<img src='"+val+"' class=\"thumbnail\" onclick=\"getVal('"+val+"')\" height=\"80\" width=\"80\"/>"}
+            }
+        },
+        {header:'耗材编号', name:'consumablesCode', index:'a.consumables_code', width:150, align:"left"},
+        {header:'耗材名称', name:'consumables.consumablesName', index:'b.consumables_name', width:150, align:"left"},
+        {header:'规格型号', name:'consumables.specifications', index:'b.specifications', width:150, align:"left"},
+        {header:'计量单位', name:'consumables.measureUnit', index:'b.measure_unit', width:150, align:"center",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_measure_unit')}, val, '未知', true);
+            }},
+        {header:'数量', name:'beginningCount', sortable:false, width:150, align:"center"},
+        {header:'单价', name:'beginningPrice', sortable:false,width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+        {header:'金额', name:'beginningAmount', sortable:false, width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+        {header:'数量', name:'instorageCount', sortable:false, width:150, align:"center"},
+        {header:'单价', name:'instoragePrice', sortable:false, width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+        {header:'金额', name:'instorageAmount', sortable:false,  width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+        {header:'数量', name:'outstorageCount', sortable:false, width:150, align:"center"},
+        {header:'单价', name:'outstoragePrice', sortable:false, width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+        {header:'金额', name:'outstorageAmount', sortable:false, width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+        {header:'数量', name:'balanceCount', sortable:false, width:150, align:"center"},
+        {header:'单价', name:'balancePrice', sortable:false, width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+        {header:'金额', name:'balanceAmount', sortable:false, width:150, align:"right", formatter: function(val, obj, row, act){
+                return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+            }},
+
+	],
+    shrinkToFit:false,
+    autoScroll:false,
+    autowidth:false,
+    groupHeaders: {
+        twoLevel:[
+            {startColumnName: 'beginningCount', numberOfColumns: 3, titleText: '期初'},
+            {startColumnName: 'instorageCount', numberOfColumns: 3, titleText: '入库'},
+            {startColumnName: 'outstorageCount', numberOfColumns: 3, titleText: '出库'},
+            {startColumnName: 'balanceCount', numberOfColumns: 3, titleText: '结余'}
+        ]
+
+    },
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        if(data.list.length>0){
+            $("#allbgingCount").html(data.list[0].allbgingCount);
+            $("#allbgingAmount").html(data.list[0].allbgingAmount);
+            $("#allinstorageCount").html(data.list[0].allinstorageCount);
+            $("#allinstorageAmount").html(data.list[0].allinstorageAmount);
+            $("#alloutCount").html(data.list[0].alloutCount);
+            $("#alloutAmount").html(data.list[0].alloutAmount);
+            $("#allbalanceCount").html(data.list[0].allbalanceCount);
+            $("#allbalanceAmount").html(data.list[0].allbalanceAmount);
+            // 价格列表
+        countBtn()
+        }else{
+            $("#allbgingCount").html("");
+            $("#allbgingAmount").html("");
+            $("#allinstorageCount").html("");
+            $("#allinstorageAmount").html("");
+            $("#alloutCount").html("");
+            $("#alloutAmount").html("");
+            $("#allbalanceCount").html("");
+            $("#allbalanceAmount").html("");
+        }
+        var grid = $("#dataGrid");
+        var ids = grid.getDataIDs();
+        for (var i = 0; i < ids.length; i++) {
+            grid.setRowData ( ids[i], false, {height: 80} );
+        }
+        
+        
+
+        
+	}
+});
+var valp;
+function getVal(val){
+    valp = val;
+}
+$(document).on("click",".thumbnail",function() {
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src="+valp+" class='big'></div>");
+    $(".big").bind("click",function () {
+        return false;
+    });
+    $("#mask").bind("click", function () {
+        hideMask("#mask");
+        $(".big").remove();
+    })
+})
+function showMask(ele,words){
+    $(ele).show().text(words).css({
+        "width":$(window).width()+"px",
+        "height":$(window).height()+"px",
+        "lineHeight":$(window).height()+"px"
+    })
+}
+function hideMask(ele){
+    $(ele).hide();
+}
+
+
+// 价格列表
+var countBtn = function(){
+    // 表格拖动后动态改变
+    $('#dataGrid').on('jqGridResizeStop',function(table,Stopwidth,index){   // ? /改变后大小/被拖动的索引
+        $('.countBtn').width($('.ui-jqgrid-htable').width())
+        $('.countBtn th').eq(index).width(Stopwidth)
+    })
+    // 初始值
+    $('.countBtn').appendTo($('.ui-jqgrid-bdiv')).show()
+    $('.countBtn').width($('.ui-jqgrid-htable').width())
+
+    $('.ui-jqgrid-bdiv').on('scroll',function(e){
+        var top = $(this).scrollTop()
+        $('.countBtn').css('bottom','-'+top+'px')
+    })
+}
+
+</script>

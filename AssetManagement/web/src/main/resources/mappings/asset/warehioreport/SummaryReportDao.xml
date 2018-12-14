@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.warehioreport.dao.SummaryReportDao">
+
+	<select id="findList" resultType="SummaryReport">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<!--<if test="instorageCode!= null and instorageCode != ''">	-->
+			<!--</if>-->
+			<if test="beginDate != null">
+			and  a.bill_date &gt;=#{beginDate}
+			</if>
+			<if test="endDate != null">
+				and a.bill_date  &lt;=#{endDate}
+			</if>
+
+			<if test="codeORname != null and codeORname != ''">
+				AND (b.consumables_code LIKE '%${codeORname}%' OR b.consumables_name LIKE '%${codeORname}%')
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+
+	<!--<select id="findList" resultType="SummaryReport">-->
+		<!--SELECT ${sqlMap.column.toSql()}-->
+		<!--FROM ${sqlMap.table.toSql()}-->
+		<!--<where>-->
+			<!--${sqlMap.where.toSql()}-->
+			<!--&lt;!&ndash;<if test="instorageCode!= null and instorageCode != ''">	&ndash;&gt;-->
+			<!--&lt;!&ndash;</if>&ndash;&gt;-->
+			<!--and  a.bill_date &gt;=#{beginDate} and a.bill_date  &lt;=#{endDate}-->
+		<!--</where>-->
+		<!--ORDER BY ${sqlMap.order.toSql()}-->
+	<!--</select>-->
+
+	<select id="getCountByDate" resultType="SummaryReport">
+		SELECT sum(a.instorage_count) AS beginningInCount,SUM(a.outstorage_count) AS beginningOutCount,
+		SUM(a.instorage_amount) as beginningInAmount,SUM(a.outstorage_amount) as beginningOutAmount
+		 FROM js_am_wareh_iodetails a WHERE a.bill_date &lt;=#{arg0} and a.consumables_code=#{arg1}and a.warehouse_code=#{arg2}
+	</select>
+</mapper>

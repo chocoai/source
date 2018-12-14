@@ -1,0 +1,89 @@
+<% layout('/layouts/default.html', {title: '有效人员维护表管理', libs: ['validate']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amPersonnel.isNewRecord ? '新增有效人员维护表' : '编辑有效人员维护表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amPersonnel}" action="${ctx}/ampersonnel/amPersonnel/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="isNewRecord"/>
+				<#form:hidden path="personnelCode"/>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 联系电话：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="phone" maxlength="32" class="form-control mobile"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 有效人员：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="personnel"  maxlength="32" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+	</#form:form>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('ampersonnel:amPersonnel:edit')){ %>
+							<button type="button" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+
+	</div>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+
+$(function () {
+$("#btnSubmit").click(function () {
+    var a =$("#phone").val();
+    $.ajax({
+        type : "post",
+        url: "${ctx}/ampersonnel/amPersonnel/update?phone="+$("#phone").val()+"&isNewRecord="+$("#isNewRecord").val() ,
+        //data : {showStatus:showStatus.value},
+        contentType : "application/json;charset=UTF-8",
+        success: function (result) {
+            if(JSON.parse(result).message=="1"){
+                alert("手机号码已存在!!!");
+                return;
+			}else{
+                $("#inputForm").submit();
+			}
+
+        }
+    });
+});
+});
+
+</script>

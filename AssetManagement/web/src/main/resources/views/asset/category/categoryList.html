@@ -1,0 +1,89 @@
+<% layout('/layouts/default.html', {title: '耗材分类表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('耗材分类表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<a href="#" class="btn btn-default" id="btnRefreshTree" title="${text('刷新')}"><i class="fa fa-refresh"></i> ${text('刷新')}</a>
+				<a href="#" class="btn btn-default" id="btnExpandTreeNode" title="${text('展开一级')}"><i class="fa fa-angle-double-down"></i> ${text('展开')}</a>
+				<a href="#" class="btn btn-default" id="btnCollapseTreeNode" title="${text('折叠全部')}"><i class="fa fa-angle-double-up"></i> ${text('折叠')}</a>
+				<% if(hasPermi('category:category:edit')){ %>
+					<a href="${ctx}/category/category/form" class="btn btn-default btnTool" title="${text('新增耗材分类表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${category}" action="${ctx}/category/category/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">分类编码：</label>
+					<div class="control-inline">
+						<#form:input path="categoryCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">分类名称：</label>
+					<div class="control-inline">
+						<#form:input path="categoryName" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'分类名称', name:'categoryName', index:'a.category_name', width:250, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '( '+row.categoryCode+' ) '+'<a href="${ctx}/category/category/form?categoryCode='+row.categoryCode+'" class="btnList" data-title="${text('编辑耗材分类表')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'本级排序号', name:'treeSort', index:'a.tree_sort', width:150, align:"center"},
+		{header:'创建者', name:'createBy', index:'a.create_by', width:150, align:"center"},
+		{header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'更新者', name:'updateBy', index:'a.update_by', width:150, align:"center"},
+		{header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+        {header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+        }},
+
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('category:category:edit')){ %>
+				actions.push('<a href="${ctx}/category/category/form?categoryCode='+row.categoryCode+'" class="btnList" title="${text('编辑耗材分类表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/category/category/disable?categoryCode='+row.categoryCode+'" class="btnList" title="${text('停用耗材分类表')}" data-confirm="${text('确认要停用该耗材分类表吗？')}"><i class="glyphicon glyphicon-ban-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/category/category/enable?categoryCode='+row.categoryCode+'" class="btnList" title="${text('启用耗材分类表')}" data-confirm="${text('确认要启用该耗材分类表吗？')}"><i class="glyphicon glyphicon-ok-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/category/category/delete?categoryCode='+row.categoryCode+'" class="btnList" title="${text('删除耗材分类表')}" data-confirm="${text('确认要删除该耗材分类表及所有子耗材分类表吗？')}" data-deltreenode="'+row.id+'"><i class="fa fa-trash-o"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/category/category/form?parentCode='+row.id+'&flg=true" class="btnList" title="${text('新增下级耗材分类表')}"><i class="fa fa-plus-square"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	treeGrid: true,			// 启用树结构表格
+	defaultExpandLevel: 0,	// 默认展开的层次
+	expandNodeClearPostData: 'categoryCode,categoyrName,status,', // 展开节点清理请求参数数据（一般设置查询条件的字段属性，否则在查询后，不能展开子节点数据）	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

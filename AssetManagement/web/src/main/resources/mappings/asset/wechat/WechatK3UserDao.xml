@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.wechat.dao.WechatK3UserDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="WechatK3User">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+<select id="getWechatK3UserByOenId" resultType="WechatK3User">
+select * from js_wechat_k3_user where  open_id=#{openId};
+</select>
+	<select id="getUserRoleByLoginCode" resultType="String">
+-- select a.role_code from js_sys_user_role a left join js_sys_role b
+-- on a.role_code=b.role_code left join js_sys_user c on a.user_code=c.user_code where c.login_code=#{loginCode} ;
+select b.role_name from js_sys_user_role a left join js_sys_role b
+on a.role_code=b.role_code left join js_sys_user c on a.user_code=c.user_code where c.login_code=#{loginCode} ;
+</select>
+
+</mapper>

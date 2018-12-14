@@ -1,0 +1,256 @@
+<% layout('/layouts/default.html', {title: '加减分管理管理', libs: ['validate']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(achScore.isNewRecord ? '新增加减分管理' : '编辑加减分管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${achScore}" action="${ctx}/score/achScore/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="billCode"/>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('来源部门')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<% if (achScore.dataType != '2'){ %>
+								<#form:treeselect id="department" title="${text('部门选择')}"
+								path="sourceDepartCode" labelPath="department.name" canSelectRoot="true" canSelectParent="true"
+								url="${ctx}/fz/ding/dingDepartment/treeData" class="required" allowClear="true"/>
+								<#form:hidden path="sourceDepartName" class="form-control" readonly="true"/>
+								<% } else { %>
+								<#form:input path="sourceDepartName" id="sourceDepartName" class="form-control" readonly="true"/>
+								<% } %>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('类型')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<% if (achScore.dataType != '2'){ %>
+								<#form:select path="scoreType" dictType="ach_add_sub_type" blankOption="true" class="form-control required"/>
+								<% } else { %>
+								<#form:input path="scoreVal" class="form-control" readonly="true"/>
+								<% } %>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('员工')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<% if (achScore.dataType != '2'){ %>
+								<#form:listselect id="dingUser" title="员工"
+								path="staffCode" labelPath="dingUser.name" itemCode="userid" itemName="name"
+								url="${ctx}/fz/ding/dingUser/userSelect" allowClear="true" class="form-control required"/>
+								<#form:hidden path="staffName" class="form-control" readonly="true"/>
+								<% } else { %>
+								<#form:input path="staffName" class="form-control" readonly="true"/>
+								<% } %>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('部门')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="departName" id="departName" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('职位')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="postName" id="postName" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('绩效月份')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<% if (achScore.dataType != '2'){ %>
+								<#form:input path="achMonth" readonly="true" maxlength="7" class="form-control Wdate required"
+								onclick="WdatePicker({dateFmt:'yyyy-MM',isShowClear:false,isShowToday: false});"/>
+								<% } else { %>
+								<#form:input path="achMonth" readonly="true" maxlength="20" class="form-control" />
+								<% } %>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('加扣分值')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="addSubScore" class="form-control number required" readonly="${achScore.isAudit}"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('加扣分理由')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="addSubReason" maxlength="1000" class="form-control required" readonly="${achScore.isAudit}"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> ${text('备注')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="remarks" rows="4" maxlength="1000" class="form-control" readonly="${achScore.isAudit}"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('创建人')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="createBy" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('创建时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="createDate" dataFormat="datetime" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('数据状态')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="dataVal" readonly="true" class="form-control" />
+								<#form:hidden path="dataType" readonly="true" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('审核人')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="auditBy" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('审核时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="auditDate" class="form-control"  dataFormat="datetime" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('score:achScore:edit')){ %>
+						<a href="#" onclick="save(0)"  data-title="${text('保 存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button></a>&nbsp;
+						<% } %>
+						<% if (achScore.dataType == '0' || achScore.dataType == '1'){ %>
+						<a href="#" onclick="save(2)"  data-title="${text('审 核')}"><button type="submit" class="btn btn-sm btn-primary" ><i class="fa fa-check"></i> ${text('审 核')}</button></a>&nbsp;
+						<% } %>
+						<% if (achScore.dataType == '2'){ %>
+						<a href="#" onclick="save(1)"  data-title="${text('反审核')}"><button type="submit" class="btn btn-sm btn-primary" ><i class="fa fa-check"></i> ${text('反审核')}</button></a>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				// js.closeCurrentTabPage(function(contentWindow){
+				// 	contentWindow.page();
+				// });
+				location.reload();
+			}
+		}, "json");
+    }
+})
+// 员工选择框
+function listselectCallback(id, action, index, layero, selectData) {
+    if (id == "dingUser") {
+        $.each(selectData, function(key, value){
+            $('#staffName').val(value.name);
+            $('#departName').val(value.departmentNames);
+            $('#postName').val(value.position);
+        });
+    }
+}
+
+/**
+ * 部门的选择框
+ * @param id
+ * @param action
+ * @param index
+ * @param layero
+ * @param selectData
+ */
+function treeselectCallback(id, action, index, layero, selectData) {
+    if (id == "department") {
+        $.each(selectData, function(key, value){
+            $('#sourceDepartName').val(value.name);
+        });
+    }
+}
+
+
+function save(flag) {
+    var inputForm = document.getElementById("inputForm");
+    if (flag == '1') {
+        inputForm.action = '${ctx}/score/achScore/save?flag=1';
+    } else if (flag == '2') {
+        inputForm.action = '${ctx}/score/achScore/save?flag=2';
+    } else {
+        inputForm.action = '${ctx}/score/achScore/save';
+    }
+}
+
+</script>

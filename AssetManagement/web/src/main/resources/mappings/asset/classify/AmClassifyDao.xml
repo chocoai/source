@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.classify.dao.AmClassifyDao">
+    <!-- 删除数据-->
+    <delete id="deleteDb">
+		DELETE FROM js_am_classify
+		WHERE classify_code=#{classifyCode}
+	</delete>
+</mapper>

@@ -1,0 +1,465 @@
+<% layout('/layouts/default.html', {title: '耗材出库表管理', libs: ['validate','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amOutStorage.isNewRecord ? '新增耗材出库表' : '编辑耗材出库表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amOutStorage}" action="${ctx}/consumables/amOutStorage/save" method="post" class="form-horizontal" >
+		<div class="box-body">
+			<div class="form-unit">${text('基本信息')}</div>
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 出库单号：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+
+							<#form:hidden path="isNewRecord" id="isNewRecord"/>
+							<#form:input path="outstorageCode" maxlength="64" readonly="true" id ="outstorageCode" class="form-control required abc"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 出库日期：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:input path="outDate" readonly="true" maxlength="20" class="form-control Wdate required"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 单据类型：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:select path="billType" dictType="am_out_lib" class="form-control required" />
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 出库仓库：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:select path="warehouseCode" items="${amWarehouse}" id="warehouseCode"
+							itemLabel="warehouseName" itemValue="warehouseCode" blankOption="true" class="form-control required"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 领用部门：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:hidden path="officeCode" id="officeCode" value=""/>
+							<#form:input path="office.officeName" id="officeName" value="" maxlength="100" class="form-control required" readonly="true"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 领用人：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:listselect id="amStaff" title="员工"
+							path="staffCode" labelPath="amStaff.staffName" itemCode="staffCode" itemName="staffName"
+							url="${ctx}/staff/amStaff/staffSelect" allowClear="true" class="form-control required"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-8">
+					<div class="form-group">
+						<label class="control-label col-sm-2" title="">
+							<span class="required hide">*</span> 出库备注：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-10">
+							<#form:textarea path="remarks" rows="1" maxlength="1000" class="form-control"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:hidden path="billStatus" class="form-control required"/>
+							<#form:input path="statusLabel" class="form-control required" readonly="true"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<h4 class="form-unit">物品信息</h4>
+			<div class="ml10 mr10">
+				<% if (hasPermi('consumables:amOutStorage:edit')){ %>
+				<a href="#" id="amOutStorageDetailsDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+				<% } %>
+				<table id="amOutStorageDetailsDataGrid"></table>
+				<div style="color: red"><label class="control-label col-sm-10">合计：<span id="a_countAll"></span></label>
+					<div class="col-sm-8">
+
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="box-footer">
+			<div class="row">
+				<div class="col-sm-offset-9 col-sm-5">
+					<% if (hasPermi('consumables:amOutStorage:edit')){ %>
+					<a href="#" onclick="save(false)"  data-title="${text('保 存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check">
+					</i> ${text('保 存')}</button></a>&nbsp;
+					<% } %>
+					<a href="#" onclick="save(true)"  data-title="${text('审 核')}">  <button type="submit" class="btn btn-sm btn-primary" id="examine" onclick="">
+						${text('审 核')}</button></a>
+					<a href="#" onclick="save(false)"  data-title="${text('反 审 核')}">  <button type="submit" class="btn btn-sm btn-primary" id="unexamine" onclick="">
+						${text('反 审 核')}</button></a>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+	</#form:form>
+</div>
+</div>
+<% } %>
+<script>
+    // 检查订单是否已结束操作
+function checkConcurrency(){
+    clearInterval(this.times)
+    this.times = setInterval(function(){
+        $.ajax({
+            url: '${ctx}/redisUnits/updataTime',
+            data: {
+                'code': GetRequest().outstorageCode
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json'
+        })
+    },1000)
+
+    // 截取url
+    function GetRequest() {
+        var url = location.search; //获取url中"?"符后的字串
+
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+            for (var i = 0; i < strs.length; i++) {
+                if (strs[i].split("=")[0] === 'beginTime') {
+                    theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                } else {
+                    theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                }
+
+            }
+        }
+        return theRequest;
+    }
+}
+
+//初始化耗材出库表(明细)DataGrid对象
+$("#amOutStorageDetailsDataGrid").dataGrid({
+
+	data: ${toJson(amOutStorage.amOutStorageDetailsList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+        {header:'${text('操作')}', name:'actions', width:60, align:"center", sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                var actions = [];
+                if (val == 'new'){
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOutStorageDetailsDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\');sq.countAll();});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }else{
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOutStorageDetailsDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'});sq.countAll();});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }
+                return actions.join('');
+            }, editoptions: {defaultValue: 'new'}},
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'出库单号', name:'outstorageCode.outstorageCode', editable:true, hidden:true},
+		{header:'库位编码', name:'locationCode', width:150, editable:true, hidden:true, editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'库位', name:'locationName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'耗材编号', name:'consumablesCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'耗材名称', name:'consumablesName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control required'}},
+		{header:'规格型号', name:'specifications', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'耗材分类编码', name:'categoryCode', width:150, editable:true, hidden:true, editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'耗材分类', name:'categoryName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'计量单位', name:'measureUnit', width:150, editable:true, hidden:true, editoptions:{'maxlength':'1', 'class':'form-control required'}},
+        {header:'计量单位', name:'measureValue', width:150, editable:true, edittype:'text',editoptions:{'maxlength':'1', 'class':'form-control required'}},
+        {header:'出库数量', name:'outstorageCount', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'20', 'class':'form-control required digits'}},
+		{header:'出库单价', name:'outstoragePrice', width:150, hidden:true, editoptions:{'class':'form-control required number'}},
+		{header:'出库金额', name:'outstorageAmount', width:150, hidden:true, editoptions:{'class':'form-control required number'}},
+		{header:'备注', name:'remarks', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}}
+	],
+	
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amOutStorageDetailsDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amOutStorageDetailsList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,outstorageCode.outstorageCode,locationCode,consumablesCode,consumablesName,specifications,categoryCode,measureUnit,outstorageCount,outstoragePrice,outstorageAmount,remarks,detailCode,staffCode,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        checkConcurrency();
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+            var flag = $("#isNewRecord").val();
+            if (flag === "true") {
+                $('#examine').attr("disabled", true);
+                $('#unexamine').attr("disabled", true);
+            } else if (flag === "false"){
+                $('#unexamine').attr("disabled", true);
+            }
+			if(data.result == Global.TRUE){
+                if (flag === "true") {
+                    js.closeCurrentTabPage(function(contentWindow){
+                        contentWindow.page();
+                    });
+				} else {
+                    location.reload();
+				}
+                // var outStorageCode = document.getElementById("outstorageCode").value;
+                // if (flag === "true") {
+                //     $.ajax({
+					// 	type:'POST',
+                //         url: "${ctx}/consumables/amOutStorage/form?outStorageCode='+outStorageCode+'&isNewRecord=false",
+                //         success: function () {
+					// 	    location.reload();
+                //         }
+                //     });
+                // }
+			}
+		}, "json");
+    }
+});
+
+function listselectCallback(id, action, index, layero, selectData) {
+	if (id == "amStaff") {
+        $.each(selectData, function(key, value){
+            $('#officeCode').val(value.office.officeCode);
+            $('#officeName').val(value.office.officeName);
+        });
+	}
+}
+
+$('#amOutStorageDetailsDataGrid').on('input propertychange', function(e) { // e是事件event
+    var targetName = $(e.target).attr('name'); // 当前输入框的name
+    if (targetName.indexOf('outstorageCount') > -1) {
+        sq.countAll();
+    }
+});
+
+$('#amOutStorageDetailsDataGrid').on('click', function(e) { // e是事件event
+    var targetName = $(e.target).attr('name');                                   //得到列的name
+    var targetId   = $(e.target).attr('id');                                       //得到列的ID
+	if(targetId.indexOf('_') > -1) {
+        var targetArr  = targetId.split('_');
+        var rowId      = targetArr[0];
+    } else {
+        var rowId      = targetId;
+    }
+    if (targetName.indexOf("locationName") > -1 ) {
+        var colName = ['locationCode', 'locationName', 'categoryCode', 'categoryName', 'consumablesCode', 'consumablesName', 'specifications', 'measureUnit', 'measureValue'];
+        clickToOpenWindow(colName, rowId);
+    }
+});
+var sq = {};
+sq.countAll = function() { // 合计
+    var tdNodes = $('#amOutStorageDetailsDataGrid tr:not(:first-child) td:nth-child(15)>input');
+    var count = 0;
+    tdNodes.each(function(index, item){
+        if($(item).closest('tr').css('display') !== 'none') {
+            count = sq.add(count, item.value);
+        }
+    });
+    $('#a_countAll').html(count); // 赋值
+}
+
+sq.setInputReadonly = function(node) {       //改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+    $(node).each(function(index, item){
+        $(item).attr('readonly', 'true');
+    });
+}
+
+$(function() {
+    sq.countAll();
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=consumablesCode]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=consumablesName]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=categoryName]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=specifications]'));
+    sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=measureValue]'));
+
+    $('#amOutStorageDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=measureValue]'));
+    });
+    $('#amOutStorageDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=consumablesCode]'));
+    });
+    $('#amOutStorageDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=consumablesName]'));
+    });
+    $('#amOutStorageDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=categoryName]'));
+    });
+    $('#amOutStorageDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amOutStorageDetailsDataGrid input[name=specifications]'));
+    });
+});
+sq.add = function (arg1, arg2) {
+    var r1, r2, m;
+    try {
+        r1 = arg1.toString().split(".")[1].length
+    } catch (e) {
+        r1 = 0
+    }
+    try {
+        r2 = arg2.toString().split(".")[1].length
+    } catch (e) {
+        r2 = 0
+    }
+    m = Math.pow(10, Math.max(r1, r2))
+    return (arg1 * m + arg2 * m) / m
+}
+
+window.onload=function(){
+    var flag = $("#isNewRecord").val();
+    if (flag === "true") {
+        $('#examine').attr("disabled", true);
+        $('#unexamine').attr("disabled", true);
+	} else if (flag === "false"){
+        $('#unexamine').attr("disabled", true);
+	}
+};
+
+var clickToOpenWindow = function(colName, trId){
+    var warehouseCode = document.getElementById("warehouseCode").value;
+    if ($("#consumablesCodeButton").hasClass("disabled")){
+        return true;
+    }
+    var selectData = {},
+        boxWidth = $(top.window).width() - 100,
+        boxHeight = $(top.window).height() - 100;
+    boxWidth = boxWidth < 350 ? 350 : boxWidth;
+    boxHeight = boxHeight < 250 ? 250 : boxHeight;
+    if(typeof listselectGetSelectData == 'function'){
+        selectData = listselectGetSelectData('consumablesCode');
+    }
+    var options = {
+        type: 2,
+        maxmin: true,
+        shadeClose: true,
+        title: '库位',
+        area: [boxWidth+'px', boxHeight+'px'],
+        content: '${ctx}/locationreport/locationReport/listSelect?warehouseCode='+warehouseCode+'',
+        contentFormData: {
+            checkbox: 'false',
+            selectData: js.encodeUrl(JSON.stringify(selectData))
+        },
+        success: function(layero, index){
+            if ($(js.layer.window).width() < boxWidth
+                || $(js.layer.window).height() < boxHeight){
+                js.layer.full(index);
+            }
+        },
+        btn: ['<i class="fa fa-check"></i> 确定'],
+        btn1: function(index, layero){
+            var win = js.layer.iframeWindow(index);
+            selectData = win.getSelectData();
+            if(typeof listselectCheck == 'function'){
+                if (!listselectCheck('consumablesCode', selectData)){
+                    return false;
+                }
+            }
+            // 点击确定，获取用户选择数据
+            if(typeof listselectSetSelectData == 'function'){
+                listselectSetSelectData('consumablesCode', selectData);
+            }
+            try { $('#instorageCodeCode,#instorageCodeName').valid(); }catch(e){}
+            /** 传值到目标表单 START */
+            var colCount = selectData.length; // 行数
+
+            for (var index in selectData) {
+                var subItem = selectData[index];
+                for(var subIndex in subItem) {
+
+                    for(var colIndex in colName) {
+
+                        if(subIndex == colName[colIndex]) { // 将列名称数组遍历，填充值
+                            var selector = '#' + trId + '_' + colName[colIndex];
+                            $(selector).val(subItem[subIndex]);
+                        }
+                        
+                    }
+                }
+            }
+            /** END */
+            if(typeof listselectCallback == 'function'){
+                listselectCallback('consumablesCode', 'ok', index, layero, selectData);
+            }
+        }
+    };
+    options.btn.push('<i class="fa fa-close"></i> 关闭');
+    options['btn'+options.btn.length] = function(index, layero){
+        if(typeof listselectCallback == 'function'){
+            listselectCallback('consumablesCode', 'cancel', index, layero);
+        }
+    };
+    js.layer.open(options);
+};
+
+
+function save(flag) {
+    var inputForm = document.getElementById("inputForm");
+    if (flag == true) {
+        inputForm.action = '${ctx}/consumables/amOutStorage/save?examine=1';
+    } else {
+        inputForm.action = '${ctx}/consumables/amOutStorage/save';
+    }
+}
+
+// function save(flag){
+//     alert(flag)
+//     if (flag == true) {
+//         $.ajax({
+//             type: "POST",//方法类型
+//             async: false,
+//             // dataType: "String",//预期服务器返回的数据类型
+//             url: '${ctx}/consumables/amOutStorage/save?examine=1',   //url
+//             data: $("#inputForm").serialize(),
+//             success: function (result) {
+//                 result = result.split(',');
+//                 var message = result[1].split(':')
+//                 message = message[1]
+//                 alert(message);
+//                 result = result[0].split(':')
+//                 if (result[1].toString() == '"true"') {
+//                     location.reload();
+//                 }
+//             },
+//         });
+//     }
+// }
+
+
+</script>

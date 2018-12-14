@@ -1,0 +1,313 @@
+<% layout('/layouts/default.html', {title: '调拨单管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('调拨单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('consumables:amTransfer:edit')){ %>
+					<a href="${ctx}/consumables/amTransfer/form" class="btn btn-default btnTool" title="${text('新增调拨单')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+					<a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除入库表')}"> ${text('删除')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amTransfer}" action="${ctx}/consumables/amTransfer/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">调拨单号：</label>
+					<div class="control-inline">
+						<#form:input path="documentsCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">调拨日期：</label>
+					<div class="control-inline">
+						<#form:input path="transferDate" readonly="true" id="transferDate"  maxlength="20" class="form-control Wdate required width-120"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据类型：</label>
+					<div class="control-inline width-120">
+						<#form:select path="documentType" dictType="am_tf_documents_type" maxlength="60" blankOption="true" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">入库仓库：</label>
+					<div class="control-inline width-120">
+						<#form:select path="inWarehouseCode"  id='inWarehouseCode' items="${warehouseList}"
+						itemLabel="warehouseName" itemValue="warehouseCode"  multiple="false" blankOption="true" class="form-control "/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">出库仓库：</label>
+					<div class="control-inline width-120">
+						<#form:select path="outWarehouseCode"  id='outWarehouseCode' items="${warehouseList}"
+						itemLabel="warehouseName" itemValue="warehouseCode"  multiple="false" blankOption="true" class="form-control "/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">处理人：</label>
+					<div class="control-inline">
+						<#form:input path="staffCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="documentStatus" dictType="am_document_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'调拨单号', name:'documentsCode', index:'a.documents_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+		    return '<a href="${ctx}/consumables/amTransfer/form?documentsCode='+row.documentsCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑调拨单')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+			// return '<a href="${ctx}/consumables/amTransfer/form?documentsCode='+row.documentsCode+'" class="btnList" data-title="${text('编辑调拨单')}">'+(val||row.id)+'</a>';
+		}},
+        {header:'单据状态', name:'documentStatus', index:'a.document_status', width:150, align:"left",formatter: function(val, obj, row, act) {
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_document_status')}, val, '未知', true);
+            }},
+        {header:'单据类型', name:'documentType', index:'a.document_type', width:150, align:"left",formatter: function(val, obj, row, act) {
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_tf_documents_type')}, val, '未知', true);
+            }},
+		{header:'调拨日期', name:'transferDate', index:'a.transfer_date', width:150, align:"center"},
+        {header:'出库仓库', name:'outWarehouseName', index:'a.out_warehouse_code', width:150, align:"left"},
+		{header:'入库仓库', name:'inWarehouseName', index:'a.in_warehouse_code', width:150, align:"left"},
+		{header:'处理人', name:'staffCode', index:'a.staff_code', width:150, align:"left"},
+
+        {header:'耗材编号', name:'amTransferDetails.consumablesCode',index:'c.consumables_code', width:150,  align:"left" },
+        {header:'耗材名称', name:'amTransferDetails.consumablesName',index:'c.consumables_name', width:150,  align:"left" },
+        {header:'规格型号', name:'amTransferDetails.specifications',index:'c.specifications', width:150, align:"left" },
+        {header:'分类编码', name:'amTransferDetails.categoryCode',index:'c.category_code', width:150, align:"left"},
+        {header:'计量单位', name:'amTransferDetails.measureUnit',index:'c.measure_unit', width:150,  align:"left", formatter: function(val, obj, row, act) {
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_measure_unit')}, val, '未知', true);
+            }},
+        {header:'出库数量', name:'amTransferDetails.transferCount',index:'c.transfer_count', width:150, align:"left"},
+        {header:'出库单价', name:'amTransferDetails.transferPrice', index:'c.transfer_price',width:150,  align:"left"},
+        {header:'出库金额', name:'amTransferDetails.transferAmount', index:'c.transfer_amount', width:150,  align:"left"},
+
+		{header:'调拨备注', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'创建者', name:'createBy', index:'a.create_by', width:150, align:"left"},
+		{header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'更新着', name:'updateBy', index:'a.update_by', width:150, align:"left"},
+		{header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+
+	],
+    showCheckbox:true,
+    shrinkToFit:false,
+	autoScroll:true,
+    autowidth:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        rowCheckBox()
+        // $('#dataGrid').dataGrid('mergeCell', 'documentsCode');
+      /*  var btnSearch=document.getElementById("btnSearch");
+        btnSearch.click();*/
+        Concurrency();
+	}
+});
+
+
+// 合并表格  
+var rowCheckBox = function(){
+	var a = [], // 暂存
+		num = 1,  // 序号 
+		dataId=''
+
+	$('#dataGrid tr').each(function(index,item){
+		var id = $(item).attr('id'),
+			par = $('#dataGrid tr#'+ id);
+		
+		if(!id) return
+		
+		// css优化
+		$(item).on({
+			'mouseenter':function(){par.addClass('ui-state-hover')},
+			'mouseleave':function(){par.removeClass('ui-state-hover')},
+			'click':function(){par.toggleClass('ui-state-highlight')}
+		})
+
+		if(a.indexOf(id) === -1){  // 不存在
+			a.push(id)	
+			$(item).addClass('parFaather').attr('data-RowNum',1).find('td').eq(0).html(num++)
+		}else{  // 已存在进行合并操作
+			var b = [],  // 暂存	
+				_tPar = $('#dataGrid .parFaather#'+ a[a.indexOf(id)]),
+				_t = $(item)
+				
+
+			_tPar.attr('data-RowNum',_tPar.data().rownum++)  // 更新需要合并的列数
+			$(item).insertAfter(_tPar)  // 重新整理排序
+
+			// 隐藏多余的
+			_t.find('td.jqgrid-rownum').hide() // 序号
+			_t.find('td[aria-describedby="dataGrid_cb"]').hide()  // 复选
+			_t.find('td[aria-describedby="dataGrid_documentsCode"]').hide()  // 调拨单号
+			_t.find('td[aria-describedby="dataGrid_documentStatus"]').hide()  // 调拨状态
+			_t.find('td[aria-describedby="dataGrid_documentType"]').hide()  // 单据状态 		
+			_t.find('td[aria-describedby="dataGrid_transferDate"]').hide()  // 调拨日期
+			_t.find('td[aria-describedby="dataGrid_outWarehouseName"]').hide()  // 出库仓库
+			_t.find('td[aria-describedby="dataGrid_inWarehouseName"]').hide()  // 入库仓库
+			_t.find('td[aria-describedby="dataGrid_staffCode"]').hide()  // 处理人	
+			_t.find('td[aria-describedby="dataGrid_createBy"]').hide()  // 创建者
+			_t.find('td[aria-describedby="dataGrid_createDate"]').hide()  // 创建时间
+			_t.find('td[aria-describedby="dataGrid_updateBy"]').hide()  // 更新者
+			_t.find('td[aria-describedby="dataGrid_updateDate"]').hide()  // 更新时间
+			_t.find('td[aria-describedby="dataGrid_actions"]').hide()  // 操作
+			
+			// 合并		
+			_tPar.find('td.jqgrid-rownum').attr('rowspan',_tPar.data().rownum)  // 序号
+			_tPar.find('td[aria-describedby="dataGrid_cb"]').attr('rowspan',_tPar.data().rownum)  // 复选
+			_tPar.find('td[aria-describedby="dataGrid_documentsCode"]').attr('rowspan',_tPar.data().rownum)  // 单号
+			_tPar.find('td[aria-describedby="dataGrid_documentStatus"]').attr('rowspan',_tPar.data().rownum)  // 调拨状态
+			_tPar.find('td[aria-describedby="dataGrid_documentType"]').attr('rowspan',_tPar.data().rownum)  // 单据类型
+			_tPar.find('td[aria-describedby="dataGrid_transferDate"]').attr('rowspan',_tPar.data().rownum)  // 调拨日期
+			_tPar.find('td[aria-describedby="dataGrid_outWarehouseName"]').attr('rowspan',_tPar.data().rownum)  // 出库仓库
+			_tPar.find('td[aria-describedby="dataGrid_inWarehouseName"]').attr('rowspan',_tPar.data().rownum)  // 入库仓库
+			_tPar.find('td[aria-describedby="dataGrid_staffCode"]').attr('rowspan',_tPar.data().rownum)  // 处理人		
+			_tPar.find('td[aria-describedby="dataGrid_createBy"]').attr('rowspan',_tPar.data().rownum)  // 创建者
+			_tPar.find('td[aria-describedby="dataGrid_createDate"]').attr('rowspan',_tPar.data().rownum)  // 创建时间
+			_tPar.find('td[aria-describedby="dataGrid_updateBy"]').attr('rowspan',_tPar.data().rownum)  // 更新者
+			_tPar.find('td[aria-describedby="dataGrid_updateDate"]').attr('rowspan',_tPar.data().rownum)  // 更新时间
+			_tPar.find('td[aria-describedby="dataGrid_actions"]').attr('rowspan',_tPar.data().rownum)  // 操作		
+		}
+	})
+}
+
+
+
+// $('#dataGrid input[type=checkbox]').on('click', function(e){
+//     var nodes = $('#dataGrid').find('input[type=checkbox]');
+//     var temp = [];
+//     alert('ok');
+//     $(nodes).each(function(index, item){
+//         var checked = $(item).attr('checked'); // 是否被选中
+//         if(checked) {
+//             var id = $(item).attr('id');
+//
+//             if(id.indexOf('_')) { // 如果有分割符的话，先分割
+//                 id = id.split('_');
+//                 id = id[2];
+//             }
+//
+//             if(!arrHasValue(id, temp)) { // 检查数组是否已经有该值，如果有，不存到数组里面
+//                 temp.push(id);
+//             }
+//         }
+//     });
+//     temp = temp.join(',');
+//     $('#asDelBtn').attr('href', temp);
+// });
+
+
+function arrHasValue(v, arr) {
+    var output = false;
+    for (var i in arr) {
+        if (v == arr[i]) {
+            output = true;
+            return output;
+        }
+    }
+    output = false;
+    return output;
+}
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_documentsCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                console.log(res)
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+$('#asDelBtn').click( function(e){
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/consumables/amTransfer/deleteDb?ids='+str,
+                            success:function (result) {
+                                var obj = JSON.parse(result);
+                                // alert(obj.message);
+                                if(obj.result=='true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                }else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一张订单进行删除')
+    }
+
+
+
+
+
+});
+</script>

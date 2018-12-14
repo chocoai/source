@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.fz.report.dao.FzFollowReportDao">
+
+	<select id="findList" resultType="FzFollowReport">
+		SELECT
+		a.userid AS userid,
+		a.name AS name,
+		a.position AS position,
+		a.in_department_gold AS inDepartmentGold,
+		a.out_department_gold AS outDepartmentGold,
+		sum(b.coin_number) AS coinNum
+		FROM
+		js_ding_user a
+		LEFT JOIN   fz_appreciation_follow b ON b.presenter_id=a.userid
+		<if test="departmentId!= null and departmentId != ''">
+			left join js_ding_user_department c on a.userid = c.user_id
+			left join js_ding_department d on d.department_id = c.department_id
+		</if>
+		<where>
+			${sqlMap.where.toSql()}
+			AND a.left='0'
+			<if test="date_gte != null">
+				and	b.create_date &gt;= #{date_gte}
+			</if>
+			<if test="date_lte != null">
+				and	b.create_date &lt;= #{date_lte}
+			</if>
+			<if test="departmentId!= null and departmentId != ''">
+				and (d.department_id = #{departmentId} or d.parent_codes LIKE CONCAT('%,',#{departmentId},',%'))
+			</if>
+		</where>
+		GROUP BY
+		a.name
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	
+</mapper>

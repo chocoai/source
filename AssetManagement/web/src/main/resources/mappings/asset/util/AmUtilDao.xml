@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.util.dao.AmUtilDao">
+
+    <!-- 查询数据
+    <select id="findList" resultType="AmSeq">
+        SELECT ${sqlMap.column.toSql()}
+        FROM ${sqlMap.table.toSql()}
+        <where>
+            ${sqlMap.where.toSql()}
+        </where>
+        ORDER BY ${sqlMap.order.toSql()}
+    </select> -->
+
+    <select id="findDictLabel" resultType="String">
+  SELECT a.dict_label
+    FROM js_sys_dict_data a
+    WHERE a.dict_value = #{arg0}
+    and a.dict_type= #{arg1}
+    </select>
+	<select id="checkDictValue" resultType="int">
+  SELECT count('dict_code')
+    FROM js_sys_dict_data a
+    WHERE a.dict_value = #{arg0}
+    and a.dict_type= #{arg1}
+    </select>
+    <!--查询数据期间-->
+    <select id="getSection" resultType="AmPeriodState">
+		SELECT
+	a.begin_data,
+	a.end_data,
+	a.period_stutrs
+		FROM
+	js_am_period_state a
+		WHERE
+	a.data_period = #{dataPeriod}
+	</select>
+</mapper>

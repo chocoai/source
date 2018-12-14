@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.sale.dao.SaleReceptionDao">
+	
+	<!-- 查询数据 -->
+	<select id="findList" resultType="SaleReception">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="officeCode != null and officeCode !=''">
+				AND a.login_code IN (
+				SELECT
+				b.emp_code
+				FROM
+				js_sys_employee b
+				WHERE
+				b.office_code IN (
+				SELECT
+				c.office_code
+				FROM
+				js_sys_office c
+				WHERE
+				c.parent_codes LIKE CONCAT('%,',#{officeCode},',%')
+				OR c.office_code = #{officeCode}
+				))
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	
+</mapper>

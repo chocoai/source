@@ -1,0 +1,1005 @@
+<% layout('/layouts/default.html', {title: '退货跟踪单管理', libs: ['validate','dataGrid']}){ %>
+<style>
+    .form-unitHd span {
+        margin-right: 20px;
+        color: #999a9b;
+        cursor: pointer;
+    }
+
+    .form-unitHd span.on {
+        color: #6379bb;
+    }
+</style>
+<style>
+    .form-unitD span {
+        margin-right: 20px;
+        color: #999a9b;
+        cursor: pointer;
+    }
+
+    .form-unitD span.on {
+        color: #6379bb;
+    }
+</style>
+<div class="main-content">
+    <div class="box box-main">
+        <div class="box-header with-border">
+            <div class="box-title">
+                <i class="fa fa-list-alt"></i> ${text(amTrack.isNewRecord ? '新增退货跟踪单' : '编辑退货跟踪单')}
+            </div>
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        <#form:form id="inputForm" model="${amTrack}" action="${ctx}/track/amTrack/save" method="post"
+        class="form-horizontal">
+        <div class="box-body">
+            <div class="form-unit form-unitHd" id="div1">
+                <span class="on">${text('基本信息')}</span>
+                <span>${text('收件信息')}</span>
+                <span>${text('图片信息')}</span>
+            </div>
+            <div class="form-unitTab">
+                <div class="item">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required ">*</span> 单据编号：<i class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:hidden path="userName" id ="userName"/>
+                                    <#form:hidden path="isNewRecord"/>
+                                    <#form:input path="documentCode" maxlength="64" readonly="${!amTrack.isNewRecord}"
+                                    class="form-control required abc"/>
+                                </div>
+                            </div>
+                        </div>
+                        <#form:hidden path="fid"/>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 单据状态：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="documentStatus" maxlength="10" class="form-control" readonly="true" id="documentStatus"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退回点：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="retreat" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 三包师傅：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="threeWorker" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 师傅电话：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="workerPhone" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 物流公司：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="logisticsCompany" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 物流单号：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="logisticsCode" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 仓库：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="warehouse" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退回地址：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="returnAddress" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退货类型：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="deliveryType" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 店铺：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="stores" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 平台：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="platform" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退货说明：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="returnPolicy" maxlength="2000" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退货责任方：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="responsibility" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 预计到货时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <% if (amTrack.documentStatus != '已完结'){ %>
+                                    <#form:input path="estimateDate" class="form-control Wdate"
+                                    dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});" />
+                                    <%} else { %>
+                                    <#form:input path="estimateDate" class="form-control" readonly="true"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退货物流单号：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="returnLogisticsCode" maxlength="100" class="form-control" readonly="${amTrack.isEnd}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退货入仓方式：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <% if (amTrack.documentStatus != '已完结'){ %>
+                                    <#form:select path="returnMethod" maxlength="100" class="form-control" dictType="refund_method"/>
+                                    <% } else { %>
+                                    <#form:input path="returnMethod" maxlength="100" class="form-control" readonly="${amTrack.isEnd}"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 退货备注：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="returnRemarks" maxlength="2000" class="form-control" readonly="${amTrack.isEnd}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 物流费用：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="logisticsCost" class="form-control number" readonly="${amTrack.isEnd}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 物流结算方式：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <% if (amTrack.documentStatus != '已完结'){ %>
+                                    <#form:select path="settlementMode" maxlength="10" class="form-control" dictType="logistics_settle_method"/>
+                                    <% } else { %>
+                                    <#form:input path="settlementMode" maxlength="10" class="form-control" readonly="${amTrack.isEnd}"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 创建时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="createDate" readonly="true" class="form-control"
+                                    dataFormat="datetime" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 处理人：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="processingPerson" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 受理人：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="acceptPerson" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 受理时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="acceptDate" class="form-control" dataFormat="datetime" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 完结人：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="completionPerson" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 完结时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="completionDate" class="form-control" dataFormat="datetime" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item" style="display: none">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 售后单号：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="afterSaleCode" maxlength="64" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 出库单号：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="outstorageCode" maxlength="64" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 订单状态：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="orderStatus" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 销售员：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="seller" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 客户：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="client" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 配送方式：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="deliveryMethod" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 物流公司：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="logisticsCompany1" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 客户姓名：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="clientName" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 移动电话：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="mobilePhone" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 详细地址：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="address" maxlength="2000" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 问题描述：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="problemDescription" maxlength="2000" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 省份：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="province" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 城市：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="city" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 区县：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="region" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item" style="display: none">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2" title="">
+                                    <span class="required hide">*</span> 图片1：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-10">
+                                    <% if (amTrack.fileid1 != ''){ %>
+                                    <img src="/img/track/${amTrack.fileid1}.jpg" height="300" width="450"
+                                         class="thumbnail" id="fileid1">
+                                    <% } %>
+                                    <#form:hidden path="fileid1" maxlength="100" class="form-control" id="img1"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2" title="">
+                                    <span class="required hide">*</span> 图片2：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-10">
+                                    <% if (amTrack.fileid2 != ''){ %>
+                                    <img src="/img/track/${amTrack.fileid2}.jpg" height="300" width="450"
+                                         class="thumbnail" id="fileid2">
+                                    <% } %>
+                                    <#form:hidden path="fileid2" maxlength="100" class="form-control" id ="img2"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2" title="">
+                                    <span class="required hide">*</span> 图片3：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-10">
+                                    <% if (amTrack.fileid3 != ''){ %>
+                                    <img src="/img/track/${amTrack.fileid3}.jpg" height="300" width="450"
+                                         class="thumbnail" id="fileid3">
+                                    <% } %>
+                                    <#form:hidden path="fileid3" maxlength="100" class="form-control" id="img3"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2" title="">
+                                    <span class="required hide">*</span> 图片4：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-10">
+                                    <% if (amTrack.fileid4 != ''){ %>
+                                    <img src="/img/track/${amTrack.fileid4}.jpg" height="300" width="450"
+                                         class="thumbnail" id="fileid4">
+                                    <% } %>
+                                    <#form:hidden path="fileid4" maxlength="100" class="form-control" id="img4"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2" title="">
+                                    <span class="required hide">*</span> 图片5：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-10">
+                                    <% if (amTrack.fileid5 != ''){ %>
+                                    <img src="/img/track/${amTrack.fileid5}.jpg" height="300" width="450"
+                                         class="thumbnail" id="fileid5">
+                                    <% } %>
+                                    <#form:hidden path="fileid5" maxlength="100" class="form-control" id="img5"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2" title="">
+                                    <span class="required hide">*</span> 图片6：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-10">
+                                    <% if (amTrack.fileid6 != ''){ %>
+                                    <img src="/img/track/${amTrack.fileid6}.jpg" height="300" width="450"
+                                         class="thumbnail" id="fileid6">
+                                    <% } %>
+                                    <#form:hidden path="fileid6" maxlength="100" class="form-control" id="img6"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-unit form-unitD">
+                <span class="on">${text('明细信息')}</span>
+                <span>${text('进度跟踪')}</span>
+                <span>${text('调货信息')}</span>
+            </div>
+            <div class="form-unitTable">
+                <div class="item">
+                    <table id="amTrackDetailDataGrid"></table>
+                    <!--<% if (hasPermi('track:amTrack:edit')){ %>-->
+                    <!--<a href="#" id="amTrackDetailDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>-->
+                    <!--<% } %>-->
+                </div>
+                <div class="item" style="display: none">
+                    <% if (amTrack.documentStatus == '受理'){ %>
+                    <% if (hasPermi('track:amTrack:edit')){ %>
+                    <a href="#" id="amTrackSpeedDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i
+                            class="fa fa-plus"></i> ${text('增行')}</a>
+                    <% } %>
+                    <% } %>
+                    <table id="amTrackSpeedDataGrid"></table>
+                </div>
+                <div class="item" style="display: none">
+                    <table id="amTrackTransferDataGrid"></table>
+                    <!--<% if (hasPermi('track:amTrack:edit')){ %>-->
+                    <!--<a href="#" id="amTrackTransferDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>-->
+                    <!--<% } %>-->
+                </div>
+            </div>
+            <div class="box-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <% if (hasPermi('track:amTrack:edit')){ %>
+                        <a href="#" onclick="save()"  data-title="${text('保 存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i>
+                        ${text('保 存')} </button>&nbsp;
+                        </a>
+                        <% } %>
+                        <a href="#" onclick="save(1)"  data-title="${text('受 理')}">  <button type="submit" class="btn btn-sm btn-primary btnList" id="btnAccept"><i class="fa fa-check"></i>
+                            ${text('受 理')}
+                        </button>&nbsp;</a>
+                        <a href="#" onclick="save(2)"  data-title="${text('完 结')}">  <button type="submit" class="btn btn-sm btn-primary btnList" id="btnEnd"><i class="fa fa-check"></i>
+                            ${text('完 结')}
+                        </button>&nbsp;</a>
+                        <button type="button" class="btn btn-sm btn-default" id="btnCancel"
+                                onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </#form:form>
+    </div>
+</div>
+</div><div id="mask"><span style="text-align: center"></span></div>
+<style>
+    #mask{
+        display: none;
+        background-color: rgba(0,0,0,0.3);
+        color: #ffffff;
+        font-size: 30px;
+        font-weight: bold;
+        text-align: center;
+        position: absolute;
+        top:0;
+        left:0;
+        z-index: 9999;
+    }
+
+    .big{
+        width: 800px;
+        height: 600px;
+        margin: 0 auto;
+    }
+
+</style>
+<% } %>
+<script>
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().documentCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+//初始化退货跟踪明细表DataGrid对象
+$("#amTrackDetailDataGrid").dataGrid({
+
+	data: ${toJson(amTrack.amTrackDetailList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'单据编码', name:'documentCode.documentCode', editable:false, hidden:true},
+		{header:'物料编码', name:'consumablesCode', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+		{header:'物料名称', name:'consumablesName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'200', 'class':'form-control'}},
+		{header:'规格型号', name:'specifications', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'是否赠品', name:'isGifts', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'是否配件', name:'isParts', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'配件说明', name:'partsExplain', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'2000', 'class':'form-control'}},
+		{header:'实发数量', name:'actualNumber', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'实退数量', name:'retreatNumber', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'包件数', name:'packageNumber', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'体积', name:'volume', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'备注', name:'remarks', width:150, editable:false, edittype:'textarea', editoptions:{'maxlength':'2000', 'class':'form-control', 'rows':'1'}}
+	],
+
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amTrackDetailDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amTrackDetailList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,documentCode.documentCode,entryId,consumablesCode,consumablesName,specifications,isGifts,isParts,partsExplain,actualNumber,retreatNumber,packageNumber,volume,remarks,detailCode,', // 提交数据列表的属性字段
+
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+
+	}
+});
+//初始化调货信息表DataGrid对象
+$("#amTrackTransferDataGrid").dataGrid({
+
+	data: ${toJson(amTrack.amTrackTransferList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'单据编号', name:'documentCode.documentCode', editable:false, hidden:true},
+		{header:'物料编码', name:'consumablesCode', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'物料名称', name:'consumablesName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'200', 'class':'form-control'}},
+		{header:'调货数量', name:'transferNumber', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'20', 'class':'form-control'}},
+		{header:'销售订单', name:'salesOrder', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'200', 'class':'form-control'}},
+		{header:'客户', name:'client', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'200', 'class':'form-control'}},
+		{header:'销售员', name:'seller', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'200', 'class':'form-control'}},
+		{header:'备注', name:'remarks', width:150, editable:false, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},
+		{header:'地址', name:'address', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'1000', 'class':'form-control'}},
+		{header:'客户姓名', name:'clientName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'移动电话', name:'mobilePhone', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'详细地址', name:'detailAddress', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'1000', 'class':'form-control'}}
+	],
+
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amTrackTransferDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amTrackTransferList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,documentCode.documentCode,consumablesCode,consumablesName,transferNumber,salesOrder,client,seller,remarks,address,clientName,mobilePhone,detailAddress,entityId,detailCode,', // 提交数据列表的属性字段
+
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+
+	}
+});
+//初始化退货进度跟踪表DataGrid对象
+$("#amTrackSpeedDataGrid").dataGrid({
+
+	data: ${toJson(amTrack.amTrackSpeedList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'单据编号', name:'documentCode.documentCode', editable:true, hidden:true},
+		{header:'跟踪人', name:'trackPerson', width:300, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'跟进时间', name:'followDate', width:300, editable:true, edittype:'text', editoptions:{'class':'form-control'}},
+		// {header:'进度', name:'progressSpeed', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+        {header:'进度', name:'progressSpeed', width:200,
+            editable:true, edittype:'select', editoptions:{'class':'form-control',
+                items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('am_schedule')}),
+                itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+                    $(element).select2().on("change",function(){$(this).valid()});
+                }
+            }
+        },
+		{header:'进度说明', name:'progressExplain', width:680, editable:true, edittype:'text', editoptions:{'maxlength':'2000', 'class':'form-control'}},
+		// {header:'下次跟进日期', name:'nextDate', width:440, editable:true, edittype:'text', editoptions:{'class':'form-control'}},
+        {header:'下次跟进日期', name:'nextDate', width:200,
+            formatter:'date', formatoptions:{srcformat:'Y-m-d H:i:s',newformat:'Y-m-d'},
+            editable:true, edittype:'text', editoptions:{'class':'form-control',
+                dataInit: function(element){ $(element).on('focus', function(){
+                    WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});
+                });
+                }}
+        }
+	],
+
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amTrackSpeedDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amTrackSpeedList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,documentCode.documentCode,trackPerson,followDate,progressSpeed,progressExplain,nextDate,detailCode,', // 提交数据列表的属性字段
+
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        checkConcurrency()
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			} else {
+                location.reload();
+            }
+		}, "json");
+    }
+});
+$(function() {
+    slidtab();
+    slidtable();
+    var documentStatus = $('#documentStatus').val();
+    if (documentStatus != '受理') {
+        sq.setInputDisabled($('#amTrackSpeedDataGrid [name=progressSpeed]'));
+        sq.setInputReadonly($('#amTrackSpeedDataGrid input[name=progressExplain]'));
+        sq.setInputDisabled($('#amTrackSpeedDataGrid input[name=nextDate]'));
+    }
+    sq.setInputReadonly($('#amTrackSpeedDataGrid input[name=trackPerson]'));
+    sq.setInputReadonly($('#amTrackSpeedDataGrid input[name=followDate]'));
+    $('#amTrackSpeedDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTrackSpeedDataGrid input[name=trackPerson]'));
+    });
+    $('#amTrackSpeedDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTrackSpeedDataGrid input[name=followDate]'));
+    });
+});
+var sq = {};
+sq.setInputReadonly = function(node) {
+    $(node).each(function(index, item){
+        $(item).attr('readonly', 'true');
+    });
+}
+sq.setInputDisabled = function(node) {
+    $(node).each(function(index, item){
+        $(item).attr('disabled', 'true');
+    });
+}
+// tab切换
+var slidtab = function(){
+    $('.form-unitHd span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTab .item').hide()
+        $('.form-unitTab .item').eq(_t.index()).fadeIn()
+    });
+};
+var slidtable = function(){
+    $('.form-unitD span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTable .item').hide()
+        $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+    });
+};
+function save(flag) {
+    var inputForm = document.getElementById("inputForm");
+    if (flag == '1') {
+        inputForm.action = '${ctx}/track/amTrack/save?flag=1';
+    } else if (flag == '2') {
+        inputForm.action = '${ctx}/track/amTrack/save?flag=2';
+    } else {
+        inputForm.action = '${ctx}/track/amTrack/save';
+    }
+}
+
+$('#amTrackSpeedDataGridAddRowBtn').click(function () {
+    var d = new Date(),
+        yy = d.getFullYear(),
+        mm = d.getMonth()+1,
+        dd = d.getDate(),
+        hh = d.getHours(),
+        min = d.getMinutes(),
+        second = d.getSeconds();
+
+    if(second < 10){ second = '0'+ d.getSeconds() }
+    if(min < 10){ min = '0'+ d.getMinutes() }
+    if(hh < 10){ hh = '0'+ d.getHours() }
+    if(mm < 10){ mm = '0'+ (d.getMonth()+1) }
+    if(dd < 10){ dd = '0'+ d.getDate() }
+    var ret = yy+'-'+mm+'-'+dd+' '+hh+':'+min+':'+second;    // 年月日时分
+    var userName = $('#userName').val();         // 当前用户
+
+    // 新增行跟进时间的id取得
+    var temp = [];
+    var nodes = $('#amTrackSpeedDataGrid').find('input[name=followDate]');
+    $(nodes).each(function(index, item){
+        var id = $(item).attr('id');
+        temp.push(id);
+    });
+    temp = temp.join(',');
+    temp = temp.split(',');
+    var followDate= temp[temp.length-1];   // 最后一行的id
+
+    // 新增行跟踪人的id取得
+    var tmp = [];
+    var nodes = $('#amTrackSpeedDataGrid').find('input[name=trackPerson]');
+    $(nodes).each(function(index, item){
+        var id = $(item).attr('id');
+        tmp.push(id);
+    });
+    tmp = tmp.join(',');
+    tmp = tmp.split(',');
+    var trackPerson = tmp[tmp.length-1];
+    $('#'+followDate).val(ret);
+    $('#'+trackPerson).val(userName);
+
+});
+/**
+ * 图片点击放大事件
+ */
+$("#fileid1").click(function () {
+    var fileid1 = $('#img1').val();
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src='/img/track/"+fileid1+".jpg' class='big'></div>");
+    openImg();
+})
+$("#fileid2").click(function () {
+    var fileid2 = $('#img2').val();
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src='/img/track/"+fileid2+".jpg' class='big'></div>");
+    openImg();
+})
+$("#fileid3").click(function () {
+    var fileid3 = $('#img3').val();
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src='/img/track/"+fileid3+".jpg' class='big'></div>");
+    openImg();
+})
+
+$("#fileid4").click(function () {
+    var fileid4 = $('#img4').val();
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src='/img/track/"+fileid4+".jpg' class='big'></div>");
+    openImg();
+})
+$("#fileid5").click(function () {
+    var fileid5 = $('#img5').val();
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src='/img/track/"+fileid5+".jpg' class='big'></div>");
+    openImg();
+})
+$("#fileid6").click(function () {
+    var fileid6 = $('#img6').val();
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><img src='/img/track/"+fileid6+".jpg' class='big'></div>");
+    openImg();
+})
+function openImg() {
+    $(".big").bind("click",function () {
+        return false;
+    });
+    $("#mask").bind("click", function () {
+        hideMask("#mask");
+        $(".big").remove();
+    })
+}
+function showMask(ele,words){
+    $(ele).show().text(words).css({
+        "width":$(window).width()+"px",
+        "height":$(window).height()+"px",
+        "lineHeight":$(window).height()+"px"
+    })
+}
+function hideMask(ele){
+    $(ele).hide();
+}
+</script>

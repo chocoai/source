@@ -1,0 +1,1457 @@
+<% layout('/layouts/default.html', {title: '订单管理管理', libs: ['validate','dataGrid']}){ %>
+<style>
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+	.position {
+		position: relative;
+	}
+	.dot{
+		position: absolute;
+		right: 25px;
+		bottom: 2px;
+		color: #888;
+		font-size: 12px;
+	}
+
+</style>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+</style>
+<style>
+	#animation{
+		position: fixed;
+		top: 40%;
+		left: 40%;
+		width: 140px;
+		height: 100px;
+		padding-top: 8px;
+		background-color: #fff;
+		box-shadow: 0 0 4px #ccc;
+		display : none;
+		z-index: 200;
+	}
+	#animation .img{
+		width:100%;
+		display: flex;
+		justify-content: center;
+		align-content: center;
+		margin-top: 15px;
+	}
+	#animation img{
+		margin-bottom:2px;
+	}
+	#animation p{
+		color: #333333;
+		font-size:12px;
+		display: flex;
+		justify-content: center;
+		align-content: center;
+	}
+	.img-box{
+		display: inline-block;
+	}
+	.img-box-list{
+		width: 95vw;
+		padding-left: 37%;
+	}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amOrder.isNewRecord ? '新增订单管理' : '编辑订单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amOrder}" action="${ctx}/order/amOrder/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-1 col-sm-10">
+					<% if (amOrder.documentStatus == '创建'){ %>
+					<% if (hasPermi('order:amOrder:edit')){ %>
+					<a href="#" onclick="save(2)"  data-title="${text('保 存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check">
+					</i> ${text('保 存')}</button></a>&nbsp;
+					<% } %>
+					<% }%>
+					<% if (amOrder.documentStatus == '创建' && !amOrder.isNewRecord){ %>
+					<a href="#" onclick="save(0)"  data-title="${text('确 认')}">  <button type="submit" class="btn btn-sm btn-primary btnList" ><i class="fa fa-check"></i>
+						${text('确 认')}
+					</button>&nbsp;</a>
+					<% }%>
+					<% if (amOrder.documentStatus == '确认'){ %>
+					<a href="#" onclick="save(1)"  data-title="${text('取消确认')}">  <button type="submit" class="btn btn-sm btn-primary btnList" ><i class="fa fa-check"></i>
+						${text('取消确认')}
+					</button>&nbsp;</a>
+					<% if (hasPermi('order:amOrder:deliver')){ %>
+					<a href="#" onclick="save(4)"  data-title="${text('提交优梵')}">  <button type="button" class="btn btn-sm btn-primary btnList" ><i class="fa fa-check"></i>
+						${text('提交优梵')}
+					</button>&nbsp;</a>
+					<% }%>
+					<% }%>
+					<% if (!amOrder.isNewRecord && amOrder.documentStatus != '创建'){ %>
+					<a href="javascript:void(0)" onclick="printDetail()" data-title="${text('打印清单')}">  <button type="button" class="btn btn-sm btn-primary btnList" ><i class="fa fa-check"></i>
+						${text('打印清单')}
+					</button>&nbsp;</a>
+					<% }%>
+					<% if (hasPermi('order:amOrder:inventoryStock')){ %>
+					<a href="javascript:void(0)" onclick="save(6)"  data-title="${text('查货期')}">  <button type="submit" class="btn btn-sm btn-primary btnList" ><i class="fa fa-check"></i>
+						${text('查货期')}
+					</button>&nbsp;</a>
+					<% }%>
+					<!--<% if (hasPermi('order:amOrder:concession')){ %>-->
+					<!--<% if (amOrder.documentStatus == '创建'){ %>-->
+					<!--<a href="#" onclick="save(3)">  <button type="submit" class="btn btn-sm btn-primary btnList" ><i class="fa fa-check"></i>-->
+					<!--${text('计算优惠')}-->
+					<!--</button>&nbsp;</a>-->
+					<!--<% }%>-->
+					<!--<% }%>-->
+					<% if (hasPermi('order:amOrder:quotation')){ %>
+					<% if (amOrder.documentStatus == '创建'){ %>
+					<a href="#" onclick="save(5)">  <button type="submit" class="btn btn-sm btn-primary btnList" ><i class="fa fa-check"></i>
+						${text('动态报价')}
+					</button>&nbsp;</a>
+					<% }%>
+					<% }%>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<div class="form-unit form-unitHd" id="div1">
+				<span class="on">${text('基本信息')}</span>
+				<span>${text('其他信息')}</span>
+				<span>${text('操作信息')}</span>
+				<span>${text('图片信息')}</span>
+			</div>
+			<div id="animation">
+				<div class="img"><img src="https://after-sales-photo.oss-cn-shanghai.aliyuncs.com/stores/after-ales-photo/data/b4fa5bb31a9f487c9e42b1315d5992a5"/></div>
+				<p>正在查询，请耐心等待</p>
+			</div>
+			<div class="form-unitTab">
+				<div class="item">
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 订单编号：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:hidden path="treasure" id="treasure"/>
+									<#form:hidden path="otherDiscount" id="otherDiscount"/>
+									<#form:hidden path="isNewRecord" id="isNewRecord"/>
+									<#form:input path="documentCode" maxlength="64"
+									readonly="true" id ="documentCode"
+									class="form-control required abc"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 客户姓名：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="customerName" maxlength="100" class="form-control required" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 商品总额：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="totalPrice" class="form-control number" id= "totalPrice" readonly="true" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 合计应收：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="totalFee" class="form-control number" id="totalFee" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 客户昵称：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="customerNick" maxlength="100" class="form-control" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 支付方式：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentStatus != '创建'){ %>
+									<#form:input path="payType" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<#form:select path="payType" dictType="js_pay_type" blankOption="true" readonly="${amOrder.isConfirm}"
+									class="form-control" />
+									<% }%>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 优惠金额：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="preferential" class="form-control number" id="preferential" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 物流费：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="logisticsFee" class="form-control number" id="logisticsFee" onblur="price()" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 固定电话：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="fixedPhone" maxlength="20" class="form-control" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 移动电话：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="mobilePhone" maxlength="20" class="form-control required" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 客户来源：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentStatus != '创建'){ %>
+									<#form:input path="customerSource" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<#form:select path="customerSource" dictType="am_customer_source"
+									blankOption="true" readonly="${amOrder.isConfirm}"
+									class="form-control" />
+									<% }%>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 三包费：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="threeCharges" class="form-control number" id="threeCharges" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 特权金总额：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="privilegesTotal" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 是否享受油补：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentStatus != '创建'){ %>
+									<#form:hidden path="isEnjoy" readonly="true" class="form-control"/>
+									<#form:input path="enjoyVal" readonly="true" class="form-control"/>
+									<% } else { %>
+									<#form:select path="isEnjoy" id="isEnjoy" dictType="written" class="form-control"/>
+									<% } %>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 油费补贴：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="oilSubsidy" id="oilSubsidy" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 取价时间：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentStatus != '创建'){ %>
+									<#form:input path="quoteTime" readonly="true" maxlength="20" class="form-control"
+									dataFormat="datetime" />
+									<% } else { %>
+									<#form:input path="quoteTime" maxlength="20" class="form-control Wdate"
+									dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false});"/>
+									<% } %>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 省：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:hidden path="province" id="province2"/>
+									<% if (amOrder.documentStatus != '创建' && !amOrder.isNewRecord){ %>
+									<#form:input path="province" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<select id="province" name="province" class="form-control select2-hidden-accessible"  tabindex="-1" aria-hidden="true" ></select>
+									<% } %>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 市：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:hidden path="city" id="city2"/>
+									<% if (amOrder.documentStatus != '创建' && !amOrder.isNewRecord){ %>
+									<#form:input path="city" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<select id="city" name="city" class="form-control select2-hidden-accessible" tabindex="-1" aria-hidden="true"></select>
+									<% } %>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 区：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:hidden path="region" id="region2"/>
+									<% if (amOrder.documentStatus != '创建' && !amOrder.isNewRecord){ %>
+									<#form:input path="region" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<select id="area" name="region" class="form-control select2-hidden-accessible" blankOption="true" tabindex="-1" aria-hidden="true"></select>
+									<% } %>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									<span class="required ">*</span> 详细地址：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="detailedAddress" maxlength="1000" class="form-control required" readonly="${amOrder.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									<span class="required hide">*</span> 备注：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8 position">
+									<#form:textarea path="remarks" maxlength="255" class="form-control" id="remarks" rows="4"
+									readonly="${amOrder.isConfirm}"/>
+									<div class="dot"><span id="result">0</span>/255</div>
+								</div>
+								<br>
+
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<div class="row">
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 订单类型：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="documentType" dictType="am_order_type" blankOption="true"
+									class="form-control" readonly="true" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 订单来源：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentStatus != '创建'){ %>
+									<#form:input path="orderSource" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<#form:select path="orderSource" dictType="am_order_source" blankOption="true"
+									class="form-control" />
+									<% } %>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 配送方式：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentStatus != '创建'){ %>
+									<#form:input path="distribution" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<#form:select path="distribution" dictType="js_send_type" blankOption="true"
+									class="form-control" />
+									<% } %>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 订单状态：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="documentStatus" dictType="am_order_status"
+									blankOption="true" readonly="true" id ="documentStatus"
+									class="form-control" />
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 分阶段状态：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentStatus != '创建'){ %>
+									<#form:input path="stageStatus" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } else { %>
+									<#form:select path="stageStatus" dictType="am_stage_status" blankOption="true"
+									class="form-control" readonly="true" />
+									<% } %>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 特权定金1：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentType == '新零售合作订单'){ %>
+									<#form:input path="privilege1" maxlength="100" class="form-control" readonly="true"/>
+									<% } else {  %>
+									<#form:input path="privilege1" maxlength="100" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } %>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 特权定金2：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentType == '新零售合作订单'){ %>
+									<#form:input path="privilege2" maxlength="100" class="form-control" readonly="true"/>
+									<% } else {  %>
+									<#form:input path="privilege2" maxlength="100" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } %>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 特权定金3：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<% if (amOrder.documentType == '新零售合作订单'){ %>
+									<#form:input path="privilege3" maxlength="100" class="form-control" readonly="true"/>
+									<% } else {  %>
+									<#form:input path="privilege3" maxlength="100" class="form-control" readonly="${amOrder.isConfirm}"/>
+									<% } %>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 创建人：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="createBy" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 创建时间：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="createTime" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 确认人：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="confirmBy" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 确认时间：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="confirmDate" class="form-control" readonly="true" />
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 提交人：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="submitBy" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 提交时间：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="submitDate" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 打印人：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="printingBy" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 打印时间：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="printingDate" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 查货人：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="checkBy" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 查货时间：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="checkDate" dataFormat="datetime" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<!-- 图片信息 -->
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group" id="imageDiv">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 凭证图片：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8 img-box-list" id="images">
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-unit form-unitD">
+				<span class="on">${text('明细信息')}</span>
+				<span>${text('优惠信息')}</span>
+			</div>
+			<div class="form-unitTable">
+				<div class="item">
+					<div class="ml10 mr10">
+						<% if (hasPermi('order:amOrder:edit')){ %>
+						<% if (amOrder.documentStatus == '创建'){ %>
+						<a href="#" id="amOrderDetailDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i
+								class="fa fa-plus"></i> ${text('增行')}</a>
+						<% } %>
+						<% } %>
+						<table id="amOrderDetailDataGrid"></table>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<div class="width-960" style="position:relative;width:400px;">
+						<% if (amOrder.documentStatus == '创建'){ %>
+						<% if (hasPermi('order:amOrder:edit')){ %>
+						<a href="javascript:void(0)" id="amOrderDiscountDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+						<% } %>
+						<% } %>
+						<table id="amOrderDiscountDataGrid"></table>
+					</div>
+				</div>
+			</div>
+			<div class="box-footer">
+
+			</div>
+		</#form:form>
+	</div>
+</div>
+</div><div id="mask"><span style="text-align: center"></span></div>
+<style>
+	#mask{
+		display: none;
+		background-color: rgba(0,0,0,0.3);
+		color: #ffffff;
+		font-size: 30px;
+		font-weight: bold;
+		text-align: center;
+		position: fixed;
+		bottom:0;
+		left:0;
+		height: 100%;
+		z-index: 9999;
+	}
+	.big{
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate3d(-50%,-50%,0);
+		-ms-transform: translate3d(-50%,-50%,0);
+		-moz-transform: translate3d(-50%,-50%,0);
+		-webkit-transform: translate3d(-50%,-50%,0);
+		-o-transform: translate3d(-50%,-50%,0);
+	}
+</style>
+<% } %>
+<script>
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().documentsCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+    //初始化js_am_order_discountDataGrid对象
+    $("#amOrderDiscountDataGrid").dataGrid({
+
+        data: ${toJson(amOrder.amOrderDiscountList)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            // {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+            //         var actions = [];
+            //         if (val == 'new'){
+            //             actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOrderDiscountDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+            //         }else{
+            //             actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOrderDiscountDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+            //         }
+            //         return actions.join('');
+            //     }, editoptions: {defaultValue: 'new'}},
+            {header:'状态', name:'status', editable:true, hidden:true},
+            {header:'主键', name:'detailCode', editable:true, hidden:true},
+            {header:'单据编码', name:'documentCode.documentCode', editable:true, hidden:true},
+            {header:'优惠活动', name:'discount', width:600, editable:true,sortable:false, edittype:'text', editoptions:{'maxlength':'2000','defaultValue': '其它优惠', 'class':'form-control'}},
+            {header:'优惠金额', name:'discountPrice', width:360, sortable:false, editable:true, edittype:'text', editoptions:{'defaultValue': '0', 'class':'form-control number'}}
+        ],
+
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#amOrderDiscountDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amOrderDiscountList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,detailCode,documentCode.documentCode,discount,discountPrice,', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+    //初始化js_am_order_detailDataGrid对象
+    $("#amOrderDetailDataGrid").dataGrid({
+
+        data: ${toJson(amOrder.amOrderDetailList)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                    var actions = [];
+                    if (val == 'new'){
+                        actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOrderDetailDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\');sq.countAll();});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                    }else{
+                        actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOrderDetailDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'});$(\'#'+obj.rowId+'_quantity\').removeClass(\'digits required isIntGtZero\');' +
+						'$(\\\'#\'+obj.rowId+\'_sku\\\').removeClass(\'required\');$(\'#\'+obj.rowId+\'_price\').removeClass(\'number required\');sq.countAll();});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                    }
+                    return actions.join('');
+                }, editoptions: {defaultValue: 'new'}},
+            {header:'状态', name:'status', editable:true, hidden:true},
+            {header:'主键', name:'detailCode', editable:true, hidden:true},
+            {header:'单据编号', name:'documentCode.documentCode', editable:true, hidden:true},
+            {header:'商品名称', name:'goodsName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+            {header:'sku', name:'skuId', width:150, editable:true, hidden:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+            {header:'SKU', name:'sku', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+            {header:'规格', name:'spec', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'500', 'class':'form-control'}},
+            {header:'数量', name:'quantity', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'11',defaultValue: '1', 'class':'form-control digits required isIntGtZero'}},
+            {header:'标准售价', name:'standPrice', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control number'}},
+            {header:'单价', name:'price', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control number required'}},
+            {header:'金额', name:'amount', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control number'}},
+            {header:'店铺', name:'shop', width:200,
+                editable:true, edittype:'select', editoptions:{'class':'form-control',
+                    items: $.merge([], ${@DictUtils.getDictListJson('shop_list')}),
+                    itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+                        $(element).select2().on("change",function(){$(this).valid()});
+                    }
+                }
+            },
+            {header:'预计交期', name:'expectedDelivery', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control'}},
+            {header:'采购周期', name:'purchaseCycle', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control'}},
+        ],
+
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#amOrderDetailDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amOrderDetailList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,detailCode,documentCode.documentCode,goodsName,skuId,sku,spec,quantity,standPrice,price,amount,shop,expectedDelivery,purchaseCycle,', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+</script>
+<script>
+    $("#inputForm").validate({
+        submitHandler: function(form){
+            js.ajaxSubmitForm($(form), function(data){
+                js.showMessage(data.message);
+                var flag = $('#isNewRecord').val();
+                if(data.result == Global.TRUE){
+                    if (flag == 'true') {
+                        js.closeCurrentTabPage(function(contentWindow){
+                            contentWindow.page();
+                        });
+                    } else {
+                        location.reload();
+                    }
+
+                } else {
+                    var inputss = document.getElementById("animation");
+                    inputss.style.display = 'none'
+                    if (data.message == '没有匹配到优惠信息!') {
+                        location.reload();
+                    }
+                }
+            }, "json");
+        }
+    });
+    $(function() {
+        var isNewRecord = $('#isNewRecord').val();
+        if (isNewRecord == 'false') {
+            setTimeout(function () {
+                $('#province').val($('#province2').val());
+                $('#province').trigger("change")
+
+                $('#city').val($('#city2').val());
+                $('#city').trigger("change")
+
+                $('#area').val($('#region2').val());
+                $('#area').trigger("change")
+            }, 1);
+            checkConcurrency();
+        }
+
+        remarks();
+        sq.countAll(); // 统计
+        slidtab();
+        slidtable();
+        var otherDiscount = $('#otherDiscount').val();
+        if (otherDiscount != '') {
+            $('#amOrderDiscountDataGridAddRowBtn').remove();
+        }
+        var documentStatus = $('#documentStatus').val();
+        var data = ${toJson(amOrder.imageList)};
+        if (data.length == 0) {
+            $('#imageDiv').html('')
+		}
+        if (documentStatus == '创建') {
+            for(var i = 0; i < data.length; i++) {
+                var imgCode = data[i].imgCode;
+                var imgUrl = data[i].imgUrl
+                $("#images").append("<div><div onmouseover=\"$(this).find('span').show()\" onmouseout=\"$(this).find('span').hide()\"  id="+imgCode+ " style=\"height: 220px;width: 180px;position:relative;margin-right: 10px;float: left\" ><span onclick=\"deleteCode(\'"+imgCode+"\')\" style=\"position:absolute;font-size:15px;right:-4px;top:-20px;display: none;cursor:pointer\">删除</span><img onclick= \"getVal(\'"+imgUrl+"\')\" class=\"thumbnail img-box\" src=\'"+imgUrl+"\' id="+ imgCode +" style=\"height: 220px;width: 180px;margin-right: 10px;float: left\" ></div></div>");
+            }
+        } else {
+            for(var i = 0; i < data.length; i++) {
+                var imgCode = data[i].imgCode;
+                var imgUrl = data[i].imgUrl;
+                $("#images").append("<div ><img class=\"thumbnail img-box\" src=\'"+imgUrl+"\' id="+ imgCode +" style=\"height: 220px;width: 180px;margin-right: 10px;float: left\" onclick=\"getVal(\'"+imgUrl+"\')\"></div>");
+            }
+        }
+        var isNewRecord = $('#isNewRecord').val();
+        if (isNewRecord == 'true' || documentStatus == '创建') {
+            addressInit('province', 'city', 'area');
+        }
+        if (documentStatus != '创建' && isNewRecord == 'false') {
+            $('#amOrderDiscountDataGridAddRowBtn').remove();
+            setInputReadonly($('#amOrderDetailDataGrid input[name=price]'))
+            setInputReadonly($('#amOrderDetailDataGrid input[name=sku]'))
+            setInputReadonly($('#amOrderDetailDataGrid input[name=standPrice]'))
+            setInputReadonly($('#amOrderDetailDataGrid input[name=goodsName]'))
+            setInputReadonly($('#amOrderDetailDataGrid input[name=quantity]'))
+            setInputDisabled($('#amOrderDetailDataGrid [name=shop]'));
+            setInputReadonly($('#amOrderDiscountDataGrid input[name=discountPrice]'))
+            $('#amOrderDetailDataGrid_actions').hide();
+            $('#amOrderDetailDataGrid .jqgfirstrow>td:eq(1)').hide();
+            $('td[aria-describedby=amOrderDetailDataGrid_actions]').hide();
+        }
+        setInputReadonly($('#amOrderDetailDataGrid input[name=expectedDelivery]'))
+        setInputReadonly($('#amOrderDetailDataGrid input[name=purchaseCycle]'))
+        // setInputReadonly($('#amOrderDetailDataGrid input[name=price]'))
+        setInputReadonly($('#amOrderDetailDataGrid input[name=standPrice]'))
+        setInputReadonly($('#amOrderDetailDataGrid input[name=spec]'))
+        setInputReadonly($('#amOrderDetailDataGrid input[name=goodsName]'))
+        setInputReadonly($('#amOrderDetailDataGrid input[name=amount]'))
+        // $('#amOrderDetailDataGrid').on('DOMNodeInserted', function() {
+        //     setInputReadonly($('#amOrderDetailDataGrid input[name=price]'));
+        // });
+        inputReadonly($('#amOrderDiscountDataGrid input[name=discountPrice]'), otherDiscount)
+        setInputReadonly($('#amOrderDiscountDataGrid input[name=discount]'))
+        $('#amOrderDiscountDataGrid').on('DOMNodeInserted', function() {
+            setInputReadonly($('#amOrderDiscountDataGrid input[name=discount]'));
+        });
+        $('#amOrderDetailDataGrid').on('DOMNodeInserted', function() {
+            setInputReadonly($('#amOrderDetailDataGrid input[name=expectedDelivery]'));
+        });
+        $('#amOrderDetailDataGrid').on('DOMNodeInserted', function() {
+            setInputReadonly($('#amOrderDetailDataGrid input[name=purchaseCycle]'));
+        });
+        $('#amOrderDetailDataGrid').on('DOMNodeInserted', function() {
+            setInputReadonly($('#amOrderDetailDataGrid input[name=spec]'));
+        });
+        $('#amOrderDetailDataGrid').on('DOMNodeInserted', function() {
+            setInputReadonly($('#amOrderDetailDataGrid input[name=goodsName]'));
+        });
+        $('#amOrderDetailDataGrid').on('DOMNodeInserted', function() {
+            setInputReadonly($('#amOrderDetailDataGrid input[name=amount]'));
+        });
+        $('#amOrderDetailDataGrid').on('DOMNodeInserted', function() {
+            setInputReadonly($('#amOrderDetailDataGrid input[name=standPrice]'));
+        });
+    })
+
+    $('#amOrderDiscountDataGridAddRowBtn').click(function () {
+        // var temp = [];
+        // var nodes = $('#amOrderDiscountDataGrid').find('input[name=discount]');
+        // $(nodes).each(function(index, item){
+        //     var id = $(item).attr('id');
+        //     temp.push(id);
+        // });
+        // var discount = temp[temp.length - 1];  // 最后一行的id
+        // $('#' + discount).val('其它优惠');
+        $('#amOrderDiscountDataGridAddRowBtn').remove();
+
+    })
+    // tab切换
+    var slidtab = function(){
+        $('.form-unitHd span').click(function(e){
+            var _t = $(e.target)
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTab .item').hide()
+            $('.form-unitTab .item').eq(_t.index()).fadeIn()
+        });
+    };
+    var slidtable = function(){
+        $('.form-unitD span').click(function(e){
+            var _t = $(e.target)
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTable .item').hide()
+            $('.form-unitTable .item').eq(_t.index()).fadeIn()
+            $('.html_content',window.parent.document).css('overflow','scroll')
+            setTimeout(function(){
+                $('.html_content',window.parent.document).css('overflow','visible')
+            },10)
+        });
+    };
+    function save(flag) {
+        var inputForm = document.getElementById("inputForm");
+        if (flag == '0') {
+            inputForm.action = '${ctx}/order/amOrder/save?flag=0';
+        } else if (flag == '1') {
+            inputForm.action = '${ctx}/order/amOrder/save?flag=1';
+        } else if (flag == '2') {
+            inputForm.action = '${ctx}/order/amOrder/save';
+        } else if (flag == '3') {
+            inputForm.action = '${ctx}/order/amOrder/concession';
+        } else if (flag == '4') {
+            var treasure = $('#treasure').val();
+            if (treasure == '1') {
+                var privilegesTotal = $('#privilegesTotal').val();
+                var totalFee = $('#totalFee').val();
+                if (parseFloat(privilegesTotal) != parseFloat(totalFee)) {
+                    layer.confirm('本订单的合计应收与特权金总额不一致，是否坚持提交优梵？', {
+                        btn: ['确定', '取消'] //可以无限个按钮
+                    }, function (index, layero) {
+                        submitToK3();
+                    }, function (index) {
+
+                    });
+                } else {
+                    submitToK3();
+                }
+            } else {
+                submitToK3();
+            }
+        } else if (flag == '5') {
+            inputForm.action = '${ctx}/order/amOrder/quotation';
+        } else if (flag == '6') {
+            js.loading = function () {
+                var inputss = document.getElementById("animation");
+                inputss.style.display = 'block'
+            }
+            inputForm.action = '${ctx}/order/amOrder/inventoryStock';
+        }
+    }
+
+    function submitToK3() {
+        var documnetCode = $('#documentCode').val();
+        $.ajax({
+            url:'${ctx}/order/amOrder/submitToK3?documentCode='+documnetCode,
+            success: function (result) {
+                var dataObj = JSON.parse(result);
+                if (dataObj.result == 'true') {
+                    js.showMessage(dataObj.message)
+                    window.location.reload()
+                } else {
+                    js.showMessage(dataObj.message)
+                }
+            }
+        })
+    }
+
+    var inputReadonly = function(node, other) {
+        $(node).each(function(index, item){
+            var id = $(item).attr('id');
+            id = id.replace("_discount", "");
+            id = id.replace("Price", "");
+            if (id != other) {
+                $(item).attr('readonly', 'true');
+            }
+        });
+    }
+    var setInputReadonly = function(node) {
+        $(node).each(function(index, item){
+            $(item).attr('readonly', 'true');
+        });
+    }
+    var setInputDisabled = function(node) {
+        $(node).each(function(index, item){
+            $(item).attr('disabled', 'true');
+        });
+    }
+
+    /**
+     * 優惠信息页金额合计
+     * */
+    $('#amOrderDiscountDataGrid').on('input propertychange', function(e) { // e是事件event 监听某个值，当有变化就做操作
+        var targetName = $(e.target).attr('name'); // 当前输入框的name
+        if (targetName.indexOf('discountPrice') > -1) { // 优惠金额
+            disCountAll();
+        }
+    });
+
+    // 合计
+    var disCountAll = function() {
+
+        var tdNodes = $('#amOrderDiscountDataGrid input[name$=discountPrice]');
+        var count = 0;
+        tdNodes.each(function(index, item){
+            if($(item).closest('tr').css('display') !== 'none'){
+                var itemValue = item.value; // 获得当前item的值
+                if (isNaN(itemValue) || !itemValue) { // 如果不是数字，则当前值设置为0，用来正常的相加
+                    itemValue = 0;
+                }
+                count = sq.add(count, parseFloat(itemValue));
+            }
+        });
+        count = parseFloat(count).toFixed(2);
+        if(isNaN(count)) count = 0 . toFixed(2);
+        $('#preferential').val(count); // 赋值
+    }
+
+
+    var sq = {};
+    $('#amOrderDetailDataGrid').on('input propertychange', function(e) { // e是事件event 监听某个值，当有变化就做操作
+        var targetName = $(e.target).attr('name'); // 当前输入框的name
+        var targetId   = $(e.target).attr('id');
+        if(targetId.indexOf('_') > -1) {
+            var targetArr  = targetId.split('_');
+            targetId       = targetArr[0];
+        }
+        if (targetName.indexOf('price') > -1) { // 单价
+            var instorageCount = $('#' + targetId).find('input[name$=quantity]').val();
+            /** 下面是可编辑的状态可以监听值变化并赋值 */
+            var instorageAmountNode = $('#' + targetId).find('input[name$=amount]');
+            // var instorageAmountNode = $('#' + targetId).find('td:nth-child(13)'); // 不可编辑状态
+            var targetVal  = $(e.target).val();
+            targetVal      = !isNaN(targetVal) ? targetVal : 0;  // 判断是否数字
+            instorageCount = !isNaN(instorageCount) ? instorageCount : 0;
+            /** 下面是不可编辑的状态可以监听值变化并赋值 */
+            instorageAmountNode.val(sq.mul(instorageCount, targetVal));
+            // instorageAmountNode.html(sq.mul(instorageCount, targetVal));
+
+            // sq.countAll();
+        }
+        if (targetName.indexOf('quantity') > -1) { // 点击入库数量
+            var instoragePrice = $('#' + targetId).find('input[name$=price]').val();  //获取入库单价
+            /** 下面是可编辑的状态可以监听值变化并赋值 */
+            var instorageAmountNode = $('#' + targetId).find('input[name$=amount]');   //获取入库金额
+            var targetVal  = $(e.target).val();//变化的值
+            targetVal = !isNaN(targetVal) ? targetVal : 0; // 判断是否数字
+            instoragePrice = !isNaN(instoragePrice) ? instoragePrice : 0;
+            /** 下面是不可编辑的状态可以监听值变化并赋值 */
+            instorageAmountNode.val(sq.mul(instoragePrice, targetVal));  //赋值
+            // sq.countAll();
+        }
+        sq.countAll();
+        price();
+    });
+    // 合计
+    sq.countAll = function() {
+
+        var tdNodes = $('#amOrderDetailDataGrid input[name$=amount]');
+        // var par = $('#amInstorageDetailsDataGrid input[name$=instorageAmount]').closest('tr');
+        var count = 0;
+        tdNodes.each(function(index, item){
+            if($(item).closest('tr').css('display') !== 'none'){
+                var itemValue = item.value; // 获得当前item的值
+                if (isNaN(itemValue) || !itemValue) { // 如果不是数字，则当前值设置为0，用来正常的相加
+                    itemValue = 0;
+                }
+                count = sq.add(count, parseFloat(itemValue));
+            }
+        });
+        count = parseFloat(count).toFixed(2);
+        if(isNaN(count)) count = 0 . toFixed(2);
+        $('#totalPrice').val(count); // 赋值
+        price();
+    }
+    /** 浮点处理函数 */
+//处理双精度相乘
+    sq.mul = function (a, b) {
+        var c = 0,
+            d = a.toString(),
+            e = b.toString();
+        try {
+            c += d.split(".")[1].length;
+        } catch (f) {}
+        try {
+            c += e.split(".")[1].length;
+        } catch (f) {}
+        // alert(Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c));
+        var float = Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c);
+        return float.toFixed(2)
+    }
+    //处理双精度相除
+    sq.division = function (a, b) {
+        var c = 0,
+            d = a.toString(),
+            e = b.toString();
+        try {
+            c += d.split(".")[1].length;
+        } catch (f) {}
+        try {
+            c += e.split(".")[1].length;
+        } catch (f) {}
+        // alert(Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c));
+        var float = Number(d.replace(".", "")) / Number(e.replace(".", "")) / Math.pow(10, c);
+        return float.toFixed(2)
+    }
+    //处理浮点类型相加
+    sq.add = function(arg1,arg2){
+        var r1,r2,m;
+        try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+        try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+        m=Math.pow(10,Math.max(r1,r2))
+        return (arg1*m+arg2*m)/m
+    }
+
+    $('#amOrderDetailDataGrid').on('click', function(e) { // e是事件event
+        var targetName = $(e.target).attr('name');                                   //得到列的name
+        var targetId   = $(e.target).attr('id');                                       //得到列的ID
+        if(targetId.indexOf('_') > -1) {
+            var targetArr  = targetId.split('_');
+            var rowId      = targetArr[0];
+        } else {
+            var rowId      = targetId;
+        }
+        var count = $('#' + rowId).find('input[name$=quantity]').val();   //获取入库金额
+        var documentStatus = $('#documentStatus').val();
+        if (documentStatus == '创建') {
+            if (targetName.indexOf("sku") > -1) {
+                var colName = ['title', 'outerId', 'properties', 'skuId', 'price', 'realPrice'];
+                var url = "${ctx}/tianmao/tbSku/listSelect";
+                var callback = function (val, paramName) {
+                    if (paramName == 'title') {
+                        $('#' + rowId + '_goodsName').val(val);
+                    } else if (paramName == 'outerId') {
+                        $('#' + rowId + '_sku').val(val);
+                    } else if (paramName == 'properties') {
+                        $('#' + rowId + '_spec').val(val);
+                    } else if (paramName == 'skuId') {
+                        $('#' + rowId + '_skuId').val(val);
+                    } else if (paramName == 'price') {
+                        $('#' + rowId + '_standPrice').val(val);
+                    } else if (paramName == 'realPrice') {
+                        $('#' + rowId + '_price').val(val);
+                        /**
+                         * 弹框选择sku后带回单价并计算金额
+                         */
+                        var realPrice = val;  //获取单价
+                        var amountNode = $('#' + rowId).find('input[name$=amount]');   //获取单价
+                        count = !isNaN(count) ? count : 0; // 判断是否数字
+                        realPrice = !isNaN(realPrice) ? realPrice : 0;
+                        amountNode.val(sq.mul(realPrice, count));  //赋值
+                        sq.countAll();
+                        price();
+                    }
+                }
+                clickToOpenWindow(url, colName, rowId, callback);
+            }
+        }
+    });
+    /** 弹框*/
+    /**
+     @squid 2018年5月22日10:24:48
+     @param string url 目标数据的页面
+     @param array colName 目标数据的属性名，不是input框的name
+     @param string trId 点击的行数id
+     @param function callback 如果目标数据的属性名和input框的name不一样，需要用callback处理
+     **/
+    var clickToOpenWindow = function(url, colName, trId, callback){
+        if ($("#documentsCodeButton").hasClass("disabled")){
+            return true;
+        }
+        var selectData = {},
+            boxWidth = $(top.window).width() - 100,
+            boxHeight = $(top.window).height() - 100;
+        boxWidth = boxWidth < 350 ? 350 : boxWidth;
+        boxHeight = boxHeight < 250 ? 250 : boxHeight;
+        if(typeof listselectGetSelectData == 'function'){
+            selectData = listselectGetSelectData('sku'); // 如果你需要打开其他的列表，你得自己定义一个code，目前的话是打开耗材的列表
+        }
+        var options = {
+            type: 2, // 弹窗类型，2是iframe，content必须是url，一个正常显示的页面
+            maxmin: true,
+            shadeClose: true,
+            title: '商品资料',
+            area: [boxWidth+'px', boxHeight+'px'],
+            content: url,
+            contentFormData: {
+                checkbox: 'false',
+                selectData: js.encodeUrl(JSON.stringify(selectData))
+            },
+            success: function(layero, index){
+                if ($(js.layer.window).width() < boxWidth
+                    || $(js.layer.window).height() < boxHeight){
+                    js.layer.full(index);
+                }
+            },
+            btn: ['<i class="fa fa-check"></i> 确定'],
+            btn1: function(index, layero){
+                var win = js.layer.iframeWindow(index);
+                selectData = win.getSelectData();
+                if(typeof listselectCheck == 'function'){
+                    if (!listselectCheck('sku', selectData)){
+                        return false;
+                    }
+                }
+                // 点击确定，获取用户选择数据
+                if(typeof listselectSetSelectData == 'function'){
+                    listselectSetSelectData('sku', selectData);
+                }
+
+                try { $('#sku,#goodsName').valid(); }catch(e){}
+
+                /** 传值到目标表单 START */
+                var colCount = selectData.length; // 行数
+
+                for (var index in selectData) { // selectData 是弹窗后选中的值
+                    var subItem = selectData[index]; //
+                    for(var subIndex in subItem) {
+
+                        for(var colIndex in colName) { // 要替换的值的input name属性
+
+                            if(subIndex == colName[colIndex]) { // 将列名称数组遍历，填充值, subIndex是选中数据的属性
+                                var selector = '#' + trId + '_' + colName[colIndex];
+                                var val = subItem[subIndex];
+                                if(callback) { // 如果有callback，执行callback去处理
+                                    callback(val, subIndex);
+                                } else { // 如果没有，直接用selector的定位去赋值
+                                    $(selector).val(val);
+                                }
+                            }
+
+                        }
+                    }
+                }
+                /** END */
+
+            }
+        };
+        options.btn.push('<i class="fa fa-close"></i> 关闭');
+        options['btn'+options.btn.length] = function(index, layero){
+            if(typeof listselectCallback == 'function'){
+                listselectCallback('sku', 'cancel', index, layero);
+            }
+        };
+        js.layer.open(options);
+    };
+
+    $('#inputForm').change(function(e){
+        var targetName = $(e.target).attr('name');                                   //得到列的name
+        // var targetId   = $(e.target).attr('id');
+        if (targetName.indexOf('totalFee') > -1 || targetName.indexOf('preferential') > -1 ||
+            targetName.indexOf('logisticsFee') > -1 || targetName.indexOf('threeCharges') > -1 ||
+            targetName.indexOf('province') > -1 || targetName.indexOf('isEnjoy') >-1) {
+            if (targetName.indexOf('isEnjoy') >-1) {
+                var isEnjoy = $('#isEnjoy').val();
+                if (isEnjoy == '0') {
+                    $('#oilSubsidy').val(0)
+                }
+            }
+            // sq.countAll();
+            price();
+        }
+    });
+    function price() {
+        var totalPrice = $('#totalPrice').val();
+        totalPrice = !isNaN(totalPrice) ? totalPrice : 0; // 判断是否数字
+        var preferential = $('#preferential').val();
+        preferential = !isNaN(preferential) ? preferential : 0; // 判断是否数字
+        var logisticsFee = $('#logisticsFee').val();
+        logisticsFee = !isNaN(logisticsFee) ? logisticsFee : 0; // 判断是否数字
+        var threeCharges = $('#threeCharges').val();
+        threeCharges = !isNaN(threeCharges) ? threeCharges : 0; // 判断是否数字
+        // 油补
+        var oilSubsidy = $('#oilSubsidy').val();
+        oilSubsidy = !isNaN(oilSubsidy) ? oilSubsidy : 0; // 判断是否数字
+        // var totalFee = $('#totalFee').val();
+        var totalFee = sq.add(sq.add(totalPrice,logisticsFee),threeCharges) - preferential - oilSubsidy;
+
+        totalFee = parseFloat(totalFee).toFixed(2);
+        $('#totalFee').val(totalFee);
+        $('#div1').click();
+    }
+
+    function printDetail() {
+        var documentCode = $('#documentCode').val();
+        window.open("${ctx}/order/amOrder/print?documentCode="+documentCode);
+    }
+
+
+    $("#remarks").bind('input',function(){
+        remarks();
+    })
+    function remarks() {
+        var bb = $('#remarks').val();//
+
+        var cc=bb.substring(0,255);//
+
+        $('#remarks').val(cc);//该三行写在“input”函数外面也可以
+        var aa= bb.length;
+        if(aa<255){
+            $('#result').html(255-bb.length);
+        }else{
+            $('#result').html("0");
+        }
+    }
+
+    jQuery.validator.addMethod("isIntGtZero", function(value, element) {
+        value=parseInt(value);
+        return this.optional(element) || value>0;
+    }, "数量必须大于0");
+
+    var valp;
+    function getVal(val){
+        valp = val;
+    }
+    $(document).on("click",".thumbnail",function() {
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><a href=\"javascript:void(0)\" style=\"opacity: 1;position: fixed;top: 0;right: 0;\" class=\"close\"><img style=\"width: 5vw;\" src=\"/static/easyUpload/images/del.png\"/></a><img src=\'"+valp+"\'  style=\"width: 22%;\"  ></div>");
+        $(".big").bind("click",function () {
+            return false;
+        });
+        $("#mask").bind("click", function () {
+            hideMask("#mask");
+            $(".big").remove();
+        })
+    })
+    function showMask(ele,words){
+        $(ele).show().text(words).css({
+            "width":$(window).width()+"px",
+            "height":$(window).height()+"px",
+            "lineHeight":$(window).height()+"px"
+        })
+    }
+    function hideMask(ele){
+        $(ele).hide();
+    }
+
+    function deleteCode(id) {
+        var documentCode = $('#documentCode').val();
+        layer.confirm('图片删除后将无法恢复，确定删除吗？', {
+            btn: ['确定', '取消'] //可以无限个按钮
+        }, function(index, layero){
+            $.ajax({
+                url: '${ctx}/order/amOrder/deleteImg?imgCode='+id+'&documentCode='+documentCode,
+                async : false,
+                timeout:1000,
+                success: function (result) {
+                    var dataObj = JSON.parse(result);
+                    $("#images").html('');
+                    var data = dataObj.data;
+                    if (data.length == 0) {
+                        $('#imageDiv').html('');
+					}
+                    for (var i = 0; i<data.length; i++) {
+                        var imgCode = data[i].imgCode;
+                        var imgUrl = data[i].imgUrl
+                        $("#images").append("<div><div onmouseover=\"$(this).find('span').show()\" onmouseout=\"$(this).find('span').hide()\"  id="+imgCode+ " style=\"height: 220px;width: 180px;position:relative;margin-right: 10px;float: left\" ><span onclick=\"deleteCode(\'"+imgCode+"\')\" style=\"position:absolute;font-size:15px;right:-4px;top:-20px;display: none;cursor:pointer\">删除</span><img onclick= \"getVal(\'"+imgUrl+"\')\" class=\"thumbnail img-box\" src=\'"+imgUrl+"\' id="+ imgCode +" style=\"height: 220px;width: 180px;margin-right: 10px;float: left\" ></div></div>");
+                    }
+                }
+            })
+        }, function(index){
+            //按钮【按钮二】的回调
+        });
+    }
+</script>
+<script type="text/javascript" src="${ctxStatic}/area/area.js?ver0.2"></script>

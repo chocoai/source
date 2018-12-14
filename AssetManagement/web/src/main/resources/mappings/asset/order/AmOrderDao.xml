@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.order.dao.AmOrderDao">
+	
+	<!-- 查询数据 -->
+	<!--<select id="findList" resultType="AmOrder">-->
+		<!--SELECT ${sqlMap.column.toSql()}-->
+		<!--FROM ${sqlMap.table.toSql()}-->
+		<!--LEFT JOIN js_sys_office b ON a.office_code = b.office_code-->
+		<!--<where>-->
+			<!--${sqlMap.where.toSql()}-->
+			<!--<if test="parentCodes != null and parentCodes !='' and parentCodes != 'ZB'">-->
+			<!--AND b.parent_code LIKE '%${parentCodes}%'-->
+			<!--</if>-->
+		<!--</where>-->
+		<!--ORDER BY ${sqlMap.order.toSql()}-->
+	<!--</select>-->
+
+	<select id="findList" resultType="AmOrder">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="officeCodes != null and officeCodes !=''">
+				AND (a.office_code = #{officeCodes}
+				OR
+				a.office_code IN
+				(SELECT
+				b.office_code
+				FROM
+				js_sys_office b
+				WHERE
+				b.parent_codes LIKE '%,${officeCodes},%')
+				OR a.create_by in
+				(SELECT
+				c.user_name
+				FROM
+				js_sys_user c
+				LEFT JOIN js_sys_employee d ON c.user_code = d.emp_code
+				AND d.status='0'
+				WHERE
+				d.office_code IN (
+				SELECT
+				e.office_code
+				FROM
+				js_sys_office e
+				WHERE
+				e.parent_codes LIKE '%,${officeCodes},%'))
+				OR (a.create_by = #{userName} AND a.document_type='平台原始订单'))
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	
+	<select id="getUser" resultType="com.jeesite.modules.sys.entity.User">
+		SELECT user_code,login_code,user_name,user_type
+		FROM js_sys_user
+		WHERE user_name= #{userName} AND status != '1'
+	</select>
+
+	<select id="getOffice" resultType="String">
+		SELECT office_code
+		FROM js_sys_employee
+		WHERE emp_code= #{loginCode} AND status != '1'
+	</select>
+
+	<delete id="deleteOrder">
+		DELETE FROM js_am_order
+		WHERE document_code = #{documentCode}
+	</delete>
+
+	<select id="getGuideOrder" resultType="AmOrder">
+	SELECT
+	document_code,
+	document_status,
+	total_fee,
+	customer_name,
+	create_time
+	FROM
+	js_am_order
+	WHERE
+	create_by = #{userName}
+	</select>
+
+	<select id="selectByPrivilege" parameterType="java.util.Set" resultType="AmOrder">
+		SELECT document_code,total_fee
+		FROM js_am_order
+		WHERE document_code IN
+		<foreach collection="set" index="index" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</select>
+
+</mapper>

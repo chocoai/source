@@ -1,0 +1,185 @@
+<% layout('/layouts/default.html', {title: '同步淘宝商品列表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('同步淘宝商品列表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+                <% if(hasPermi('tianmao:tbSku:batchPrint')){ %>
+				    <a href="javascript:void(0)" class="btn btn-sm btn-primary btnList" id="btnPrint" title="${text('打印价签')}">${text('打印价签')}</a>
+                <% } %>
+				<!--<% if(hasPermi('tianmao:tbProduct:edit')){ %>-->
+					<!--<a href="${ctx}/tianmao/tbProduct/form" class="btn btn-default btnTool" title="${text('新增同步淘宝商品列表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<!--<% } %>-->
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${tbProduct}" action="${ctx}/tianmao/tbProduct/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">商品名称：</label>
+					<div class="control-inline">
+						<#form:input path="title" maxlength="128" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">天猫ID：</label>
+					<div class="control-inline">
+						<#form:input path="numIid" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商家外部编码：</label>
+					<div class="control-inline">
+						<#form:input path="outerCode" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">sku：</label>
+					<div class="control-inline">
+						<#form:input path="outerId" maxlength="128" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="approveStatus" dictType="tb_approveStatus" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">天猫ID：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="numIid" maxlength="255" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">cid：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="cid" maxlength="32" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">商品上传后的状态。onsale出售中，instock库中：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="approveStatus" maxlength="32" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">价格：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="price" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">商品url：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="detailUrl" maxlength="255" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">上架时间：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="listTime" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">下架时间：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="delistTim" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">商品修改时间：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="modified" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<div class="hide"><#form:listselect id="skuSelect" title="sku选择"
+	url="${ctx}/tianmao/tbSku/skuSelect" allowClear="true"
+	checkbox="true" itemCode="skuId" itemName="sku"/></div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'商品名称', name:'title', index:'a.title', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/tianmao/tbProduct/form?numIid='+row.numIid+'" class="btnList" data-title="${text('编辑同步淘宝商品列表')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'商品主图', name:'picUrl', index:'a.pic_url', width:150, align:"center",formatter: function(val, obj, row, act){
+			if(row.picUrl==null){
+				return "";
+			}
+			else{ return  "<img src='"+row.picUrl+"' class=\"thumbnail\" onclick=\"getVal('"+row.picUrl+"')\" height=\"110\" width=\"110\"/>"}
+		}},
+        {header:'价格', name:'price', index:'a.price', width:150, align:"center"},
+        {header:'商品类目名称', name:'cid', index:'a.cid', width:150, align:"center"},
+		{header:'天猫ID', name:'numIid', index:'a.num_iid', width:150, align:"center"},
+		{header:'商品状态', name:'approveStatus', index:'a.approve_status', width:150, align:"center",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('tb_approveStatus')}, val, '', true)}
+        },
+
+		// {header:'商品url', name:'detailUrl', index:'a.detail_url', width:150, align:"center"},
+		{header:'上架时间', name:'listTime', index:'a.list_time', width:150, align:"center"},
+		// {header:'下架时间', name:'delistTim', index:'a.delist_tim', width:150, align:"center"},
+		{header:'商品修改时间', name:'modified', index:'a.modified', width:150, align:"center"},
+        {header:'卖家昵称', name:'nick', index:'a.nick', width:150, align:"center"},
+        {header:'商品分类', name:'productCategory.categoryName', index:'b.category_name', width:150, align:"center"},
+        {header:'商品系列', name:'productSeries.seriesName', index:'c.series_name', width:150, align:"center"},
+
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('tianmao:tbProduct:edit')){ %>
+		// 		actions.push('<a href="${ctx}/tianmao/tbProduct/form?numIid='+row.numIid+'" class="btnList" title="${text('编辑同步淘宝商品列表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 		if (row.status == Global.STATUS_NORMAL){
+		// 			actions.push('<a href="${ctx}/tianmao/tbProduct/disable?numIid='+row.numIid+'" class="btnList" title="${text('停用同步淘宝商品列表')}" data-confirm="${text('确认要停用该同步淘宝商品列表吗？')}"><i class="glyphicon glyphicon-ban-circle"></i></a>&nbsp;');
+		// 		}
+		// 		if (row.status == Global.STATUS_DISABLE){
+		// 			actions.push('<a href="${ctx}/tianmao/tbProduct/enable?numIid='+row.numIid+'" class="btnList" title="${text('启用同步淘宝商品列表')}" data-confirm="${text('确认要启用该同步淘宝商品列表吗？')}"><i class="glyphicon glyphicon-ok-circle"></i></a>&nbsp;');
+		// 		}
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+
+$('#btnPrint').click(function(){
+    $('#skuSelectName').click();
+});
+function listselectCallback(id, action, index, layero){
+    location.reload();
+    // if (id == 'skuSelect' && action == 'ok'){
+    //     if ($('#skuSelectCode').val() != '') {
+    //         $.ajax({
+    //             url: '${ctx}/tianmao/tbSku/print',
+    //             type: 'post',
+    //             data: JSON.stringify(selectData),
+    //             contentType: 'text/plain;charset=UTF-8',
+    //             dataType: 'json',
+    //             success: function (result) {
+    //                 console.log(result)
+    //                 var obj = JSON.parse(result);
+    //                 alert(obj.code)
+		// 			js.showMessage(obj.msg)
+    //             }
+    //         })
+    //     }
+    // }
+}
+</script>

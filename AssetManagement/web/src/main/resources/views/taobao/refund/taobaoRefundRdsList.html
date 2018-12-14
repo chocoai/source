@@ -1,0 +1,124 @@
+<% layout('/layouts/default.html', {title: 'RDS退款单管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('RDS退款单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${taobaoRefundRds}" action="${ctx}/refund/taobaoRefundRds/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">${text('退款单号')}：</label>
+				<div class="control-inline">
+					<#form:input path="pkey" maxlength="32" class="form-control width-120"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<label class="control-label">${text('卖家昵称')}：</label>
+					<div class="control-inline">
+						<#form:input path="sellerNick" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('买家昵称')}：</label>
+					<div class="control-inline">
+						<#form:input path="buyerNick" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<!--<div class="form-group">
+					<label class="control-label">${text('退款状态')}：</label>
+					<div class="control-inline">
+						<#form:input path="refundStatus" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>-->
+			<!--	<div class="form-group">
+					<label class="control-label">${text('created')}：</label>
+					<div class="control-inline">
+						<#form:input path="created_gte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false,onpicked:function(){created_lte.click()}});"/>
+						&nbsp;&#45;&#45;&nbsp;
+						<#form:input path="created_lte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});"/>
+					</div>
+				</div>-->
+				<!--<div class="form-group">
+					<label class="control-label">${text('淘宝交易单号')}：</label>
+					<div class="control-inline">
+						<#form:input path="tid" maxlength="8" class="form-control width-120"/>
+					</div>
+				</div>-->
+				<!--<div class="form-group">
+					<label class="control-label">${text('子订单号')}：</label>
+					<div class="control-inline">
+						<#form:input path="oid" maxlength="8" class="form-control width-120"/>
+					</div>
+				</div>-->
+				<!--<div class="form-group">
+					<label class="control-label">${text('modified')}：</label>
+					<div class="control-inline">
+						<#form:input path="modified_gte" readonly="true" maxlength="20" class="form-control Wdate-date"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:function(){modified_lte.click()}});"/>
+						&nbsp;&#45;&#45;&nbsp;
+						<#form:input path="modified_lte" readonly="true" maxlength="20" class="form-control Wdate-date"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>-->
+			<!--	<div class="form-group">
+					<label class="control-label">${text('更新时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="jdpModified_gte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false,onpicked:function(){jdpModified_lte.click()}});"/>
+						&nbsp;&#45;&#45;&nbsp;
+						<#form:input path="jdpModified_lte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('同步时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="synTime_gte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false,onpicked:function(){synTime_lte.click()}});"/>
+						&nbsp;&#45;&#45;&nbsp;
+						<#form:input path="synTime_lte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});"/>
+					</div>
+				</div>-->
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('退款单号')}', name:'pkey', index:'a.pkey', width:150, align:"center", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/refund/taobaoRefundRds/form?pkey='+row.pkey+'" class="btnList" data-title="${text('查看RDS退款单')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'${text('卖家昵称')}', name:'sellerNick', index:'a.seller_nick', width:150, align:"center"},
+		{header:'${text('买家昵称')}', name:'buyerNick', index:'a.buyer_nick', width:150, align:"center"},
+		{header:'${text('退款状态')}', name:'refundStatus', index:'a.refund_status', width:150, align:"center"},
+		{header:'${text('创建时间')}', name:'created', index:'a.created', width:150, align:"center"},
+		{header:'${text('淘宝交易单号')}', name:'tid', index:'a.tid', width:150, align:"center"},
+		{header:'${text('子订单号')}', name:'oid', index:'a.oid', width:150, align:"center"},
+		{header:'${text('交易修改时间')}', name:'modified', index:'a.modified', width:150, align:"center"},
+		{header:'${text('退款申请时间')}', name:'jdpCreated', index:'a.jdp_created', width:150, align:"center"},
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

@@ -1,0 +1,83 @@
+<% layout('/layouts/default.html', {title: '客户接待表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('客户接待表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<!--<% if(hasPermi('sale:saleReception:edit')){ %>
+					<a href="${ctx}/sale/saleReception/form" class="btn btn-default btnTool" title="${text('新增客户接待表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>-->
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${saleReception}" action="${ctx}/sale/saleReception/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">客户：</label>
+					<div class="control-inline">
+						<#form:input path="customer" maxlength="64" class="form-control width-150"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">移动电话：</label>
+					<div class="control-inline">
+						<#form:input path="phonenum" maxlength="25" class="form-control width-150"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'客户', name:'customer', index:'a.customer', width:150, align:"center", frozen:true},
+		{header:'性别', name:'gender', index:'a.gender', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_user_sex')}, val, '${text('未知')}', true);
+		}},
+		{header:'移动电话', name:'phonenum', index:'a.phonenum', width:150, align:"center"},
+		{header:'家具需求', name:'demands', index:'a.demands', width:150, align:"center"},
+        {header:'购买状态', name:'buyingStatus', index:'a.buying_status', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('buying_status')}, val, '${text('未知')}', true);
+            }},
+		{header:'客户来源', name:'customerType', index:'a.customer_type', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('customer_type')}, val, '${text('未知')}', true);
+		}},
+        {header:'接待时间', name:'createDate', index:'a.create_date', width:180, align:"center"},
+		{header:'导购员', name:'empUser.userName', index:'b.user_name', width:150, align:"center"},
+        {header:'备注', name:'remarks', index:'a.remarks', width:250, align:"center"},
+		{header:'结束时间', name:'endDate', index:'a.end_date', width:150, align:"center"},
+        {header:'接待状态', name:'receptionStatus', index:'a.reception_status', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('reception_status')}, val, '${text('未知')}', true);
+            }},
+
+		/*{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('sale:saleReception:edit')){ %>
+				actions.push('<a href="${ctx}/sale/saleReception/form?receptionCode='+row.receptionCode+'" class="btnList" title="${text('编辑客户接待表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/sale/saleReception/delete?receptionCode='+row.receptionCode+'" class="btnList" title="${text('删除客户接待表')}" data-confirm="${text('确认要删除该客户接待表吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}*/
+	],
+	// 加载成功后执行事件
+    shrinkToFit:false,
+    autoScroll:true,
+    autowidth:true,
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

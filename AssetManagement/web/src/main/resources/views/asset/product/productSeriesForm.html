@@ -1,0 +1,163 @@
+<% layout('/layouts/default.html', {title: '商品系列表管理', libs: ['validate','fileupload']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(productSeries.isNewRecord ? '新增商品系列表' : '编辑商品系列表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${productSeries}" action="${ctx}/product/productSeries/save" method="post" class="form-horizontal">
+		<div class="box-body">
+			<div class="form-unit">${text('基本信息')}</div>
+			<#form:hidden path="isNewRecord"/>
+			<#form:hidden path="proseriesCode"/>
+			<div class="row">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label class="control-label col-sm-4">${text('风格名称')}</label>
+						<div class="col-sm-8">
+							<#form:treeselect id="parent" title="${text('风格名称')}"
+							path="parent.id" labelPath="parent.seriesName"
+							url="${ctx}/product/productSeries/treeData?excludeCode=${productSeries.id}"
+							class="" allowClear="true" canSelectRoot="true" canSelectParent="true"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 系列名称<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:input path="seriesName" maxlength="100" class="form-control required"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 序号<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:input path="treeSort" class="form-control required digits"/>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="row">
+				<div class="col-xs-6">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 状态<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:select path="proseriesStatus" dictType="procategory_status" class="form-control required" />
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="row" id="upload">
+				<div class="col-xs-12">
+					<div class="form-group">
+						<label class="control-label col-sm-2">图片上传</label>
+						<div class="col-sm-10">
+							<#form:fileupload id="uploadImage" bizKey="${productSeries.id}" bizType="productSeries_image" maxUploadNum="1"
+							uploadType="image" class="" readonly="false"/>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="box-footer">
+			<div class="row">
+				<div class="col-sm-offset-2 col-sm-10">
+					<% if (hasPermi('product:productSeries:edit')){ %>
+					<button type="button" class="btn btn-sm btn-primary" onclick="save()"><i class="fa fa-check"></i> ${text('保 存')}</button>
+					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit" style="display: none"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+	</#form:form>
+</div>
+</div>
+<% } %>
+<script>
+    $("#inputForm").validate({
+        submitHandler: function(form){
+            js.ajaxSubmitForm($(form), function(data){
+                js.showMessage(data.message);
+                if(data.result == Global.TRUE){
+                    js.closeCurrentTabPage(function(contentWindow){
+                        contentWindow.$('#dataGrid').dataGrid('refreshTreeChildren',
+                            $('#parentCode').val(), '${productSeries.id}');
+                    });
+                }
+            }, "json");
+        }
+    });
+
+    // 选择父级菜单回调方法
+    function treeselectCallback(id, act, index, layero){
+        if (id == 'parent' && (act == 'ok' || act == 'clear')){
+            // 创建并初始化下一个节点信息，如：排序号、默认值
+            $.get('${ctx}/product/productSeries/createNextNode?parentCode='
+                +$('#parentCode').val(), function(data){
+                $('#treeSort').val(data.treeSort);
+            });
+        }
+    }
+    $(function(){
+        if($("#parentName").val()==""){
+            $("#upload").hide();
+        }else{
+            $("#upload").show();
+            // 手动添加滚动条触发reszie事件解决 点击选择图片定位
+            $('.html_content',window.parent.document).css('overflow','scroll')
+            setTimeout(function(){
+                $('.html_content',window.parent.document).css('overflow','visible')
+            },1)
+        }
+        $("#parentName").change(function(){
+            if($("#parentName").val()==""){
+                $("#upload").hide();
+            }else{
+                $("#upload").show();
+                // 手动添加滚动条触发reszie事件解决 点击选择图片定位
+                $('.html_content',window.parent.document).css('overflow','scroll')
+                setTimeout(function(){
+                    $('.html_content',window.parent.document).css('overflow','visible')
+                },1)
+            }
+        });
+    })
+
+    function save(t){
+        if($('#seriesName').val() === '' || $('#treeSort').val() === ''){
+            layer.msg('请完善必须信息')
+            return
+        }
+        var type="^[0-9]*[1-9][0-9]*$";
+        var r=new RegExp(type);
+        var flag=r.test($("#treeSort").val());
+        if(!flag){
+            layer.msg('序号应为正整数！')
+            return
+        }
+        $(t).attr('disabled','disabled')
+        $.fn.webUpLoaderFun(function(code){
+            if(code === 200){
+                $('#btnSubmit').trigger('click')
+            }else{
+                $(t).attr('disabled','')
+            }
+        })
+    }
+</script>

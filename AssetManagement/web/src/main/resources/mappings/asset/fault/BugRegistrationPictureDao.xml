@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.fault.dao.BugRegistrationPictureDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="BugRegistrationPicture">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="findPicsByBugCode" resultType="BugRegistrationPicture">
+	SELECT * from js_bug_registration_picture where registration_code=#{arg0}
+	</select>
+	<update id="updateBugCode">
+		update js_bug_registration_picture set registration_code=#{arg0}
+		where bugpic_code=#{arg1}
+
+	</update>
+	
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.category.dao.CategoryDao">
+
+    <!-- 查询仓库名称-->
+    <select id="getCategoryByName" resultType="Category">
+		SELECT *
+			FROM js_am_category a
+		WHERE a.category_name = #{categoryName}
+	</select>
+	<!-- 删除数据-->
+	<delete id="deleteDb">
+		DELETE FROM js_am_category
+		WHERE category_code=#{categoryCode}
+	</delete>
+</mapper>

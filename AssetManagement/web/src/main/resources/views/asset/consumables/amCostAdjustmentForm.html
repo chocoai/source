@@ -1,0 +1,246 @@
+<% layout('/layouts/default.html', {title: '耗材成本调整单管理', libs: ['validate','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amCostAdjustment.isNewRecord ? '新增耗材成本调整单' : '编辑耗材成本调整单')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amCostAdjustment}" action="${ctx}/consumables/amCostAdjustment/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="documentCode"/>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据日期：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="adjustmentData" readonly="true"  dataFormat="date" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据类型：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="documentType" readonly="true" maxlength="10" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 仓库编码：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="warehouseCode" readonly="true" maxlength="64" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 仓库名称：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="warehouseName" readonly="true" maxlength="100" class="form-control"/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="documentStatus" disabled="true" dictType="am_document_status" class="form-control required" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> 备注：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="remarks" rows="4" readonly="true" maxlength="1000" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<h4 class="form-unit">耗材成本调整明细表</h4>
+				<div class="ml10 mr10">
+					<table id="amAdjustDetailDataGrid"></table>
+					<!--<% if (hasPermi('consumables:amCostAdjustment:edit')){ %>-->
+						<!--<a href="#" id="amAdjustDetailDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>-->
+					<!--<% } %>-->
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-10 col-sm-2">
+					<div id="bottom_instorageAmount" >
+						合计：￥
+						<span id="sq_count_all"></span>
+					</div>
+					</div>
+					<div class="col-sm-offset-11 col-sm-1">
+
+						<!--<% if (hasPermi('consumables:amCostAdjustment:edit')){ %>-->
+							<!--<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;-->
+						<!--<% } %>-->
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('返回')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().documentCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+
+//初始化耗材成本调整明细表DataGrid对象
+$("#amAdjustDetailDataGrid").dataGrid({
+
+	data: ${toJson(amCostAdjustment.amAdjustDetailList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:false, hidden:true},
+		{header:'主键', name:'detailCode', editable:false, hidden:true},
+		{header:'调整单据编码', name:'documentCode.documentCode', editable:false, hidden:true},
+		{header:'耗材编码', name:'consumablesCode', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'耗材名称', name:'consumablesName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control required'}},
+		{header:'规格型号', name:'specifications', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'分类编码', name:'categoryCode', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'调整金额', name:'adjustmentAmount', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control required number'}},
+		// {header:'备注', name:'remarks', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},
+		// {header:'${text('操作')}', name:'actions', width:80, sortable:true, fixed:true, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	if (val == 'new'){
+		// 		actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amAdjustDetailDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	}else{
+		// 		actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amAdjustDetailDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	}
+		// 	return actions.join('');
+		// }, editoptions: {defaultValue: 'new'}}
+	],
+	
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amAdjustDetailDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amAdjustDetailList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,detailCode,documentCode.documentCode,consumablesCode,consumablesName,specifications,categoryCode,adjustmentAmount,remarks,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        checkConcurrency()
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+
+window.onload=function(){
+    sq.setInputReadonly($('#amAdjustDetailDataGrid input[name=adjustmentAmount]'));
+    sq.countAll();
+}
+var sq = {};
+// 合计
+sq.countAll = function() {
+    // debugger
+    var tdNodes = $('#amAdjustDetailDataGrid input[name$=adjustmentAmount]');
+    // var par = $('#amInstorageDetailsDataGrid input[name$=instorageAmount]').closest('tr')
+		console.log(tdNodes);
+    var count = 0;
+
+    tdNodes.each(function(index, item){
+        console.log(item);
+        if($(item).closest('tr').css('display') !== 'none'){
+            var itemValue = item.value; // 获得当前item的值
+            if (isNaN(itemValue) || !itemValue) { // 如果不是数字，则当前值设置为0，用来正常的相加
+                itemValue = 0;
+            }
+            count = sq.add(count, parseFloat(itemValue));
+        }
+
+    });
+    count = parseFloat(count).toFixed(2);
+    if(isNaN(count)) count = 0 . toFixed(2);
+    $('#sq_count_all').html(count); // 赋值
+}
+
+//处理浮点类型相加
+sq.add = function(arg1,arg2){
+    var r1,r2,m;
+    try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+    try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+    m=Math.pow(10,Math.max(r1,r2))
+    return (arg1*m+arg2*m)/m
+}
+sq.setInputReadonly = function(node) {       //改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+    $(node).each(function(index, item){
+        $(item).attr('readonly', 'true');
+    });
+}
+</script>

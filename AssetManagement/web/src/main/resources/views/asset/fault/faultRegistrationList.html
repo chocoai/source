@@ -1,0 +1,246 @@
+<% layout('/layouts/default.html', {title: '故障登记单管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('故障登记单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('fault:faultRegistration:edit')){ %>
+					<a href="${ctx}/fault/faultRegistration/form" class="btn btn-default btnTool" title="${text('新增故障登记单')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				    <a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除故障登记单')}"> ${text('删除')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${faultRegistration}" action="${ctx}/fault/faultRegistration/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">影响产品</label>
+				<div class="control-inline">
+					<#form:input path="effectedProduts" maxlength="100" class="form-control width-210"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">责任类型</label>
+				<div class="control-inline width-160">
+					<#form:select path="liableType" dictType="fault_type" blankOption="true" class="form-control"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">责任人</label>
+				<div class="control-inline">
+					<#form:input path="liablePerson" maxlength="15" class="form-control width-300"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">故障规模</label>
+				<div class="control-inline width-120">
+					<#form:select path="faultDimensions" dictType="fault_dimensions" blankOption="true" class="form-control width-160"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<label class="control-label">故障日期</label>
+					<div class="control-inline">
+						<#form:input path="faultDate_gte" readonly="true" maxlength="20" class="form-control Wdate-date width-160"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true,onpicked:function(){faultDate_lte.click()}});"/>
+						&nbsp;--&nbsp;
+						<#form:input path="faultDate_lte" readonly="true" maxlength="20" class="form-control Wdate-date width-160"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true});"/>
+					</div>
+				</div>
+				<!--<div class="form-group">
+					<label class="control-label">反馈人：</label>
+					<div class="control-inline">
+						<#form:input path="feedbackPerson" maxlength="25" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">处理人：</label>
+					<div class="control-inline">
+						<#form:input path="dealer" maxlength="25" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">故障来源：</label>
+					<div class="control-inline">
+						<#form:input path="faultReason" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">项目经理：</label>
+					<div class="control-inline">
+						<#form:input path="projectManager" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label">故障开始时间：</label>
+					<div class="control-inline">
+						<#form:input path="beginTime" readonly="true" maxlength="20" class="form-control Wdate-date"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">故障结束时间：</label>
+					<div class="control-inline">
+						<#form:input path="endTime" readonly="true" maxlength="20" class="form-control Wdate-date"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">故障描述：</label>
+					<div class="control-inline">
+						<#form:input path="faultDescription" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+
+
+				<div class="form-group">
+					<label class="control-label">影响范围：</label>
+					<div class="control-inline">
+						<#form:input path="effectedRange" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label class="control-label">处理过程描述：</label>
+					<div class="control-inline">
+						<#form:input path="processDescription" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">故障原因分析：</label>
+					<div class="control-inline">
+						<#form:input path="faultAnalysis" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">改善方法：</label>
+					<div class="control-inline">
+						<#form:input path="improvementWays" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">备注信息：</label>
+					<div class="control-inline">
+						<#form:input path="remarks" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>-->
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'故障编号', name:'registrationCode', index:'a.registration_code', width:150, align:"center",frozen:true, formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/fault/faultRegistration/form?registrationCode='+row.registrationCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑故障登记单')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+            }},
+		{header:'故障日期', name:'faultDate', index:'a.fault_date', width:150, align:"center",dataFormat:"yyyy-MM-dd",},
+        {header:'影响产品', name:'effectedProduts', index:'a.effected_produts', width:150, align:"center"},
+        {header:'项目经理', name:'projectManager', index:'a.project_manager', width:150, align:"center"},
+        {header:'责任类型', name:'liableType', index:'a.liable_type', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fault_type')}, val, '${text('未知')}', true);
+            }},
+        {header:'责任人', name:'liablePerson', index:'a.liable_person', width:150, align:"center"},
+        {header:'故障规模', name:'faultDimensions', index:'a.fault_dimensions', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fault_dimensions')}, val, '${text('未知')}', true);
+            }},
+	],
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        Concurrency();
+	}
+});
+
+$('#asDelBtn').click( function(e){
+
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/fault/faultRegistration/delete?registrationCode='+str,
+                            success:function (result) {
+                                var obj = JSON.parse(result);
+                                if(obj.result=='true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                }else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一条单据进行删除')
+    }
+});
+
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_registrationCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                console.log(res)
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+</script>

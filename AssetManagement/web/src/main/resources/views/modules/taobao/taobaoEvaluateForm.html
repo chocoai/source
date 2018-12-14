@@ -1,0 +1,274 @@
+<% layout('/layouts/default.html', {title: '图片评价表管理', libs: ['validate']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(taobaoEvaluate.isNewRecord ? '新增图片评价表' : '编辑图片评价表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${taobaoEvaluate}" action="${ctx}/taobao/taobaoEvaluate/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="publishDate"/>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('商品id')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="productId" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('发布时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="publishTime" readonly="true" maxlength="20" class="form-control"
+									dataFormat="datetime"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('发布人')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="authorName" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+
+
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('内容')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:textarea path="content" rows="4" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('商品规格')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="productSku" maxlength="255" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('发布级别')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="authorLevel" maxlength="10" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('图片1')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-lg-9 img-box-list">
+								<% if (taobaoEvaluate.imageUrl1 != null && taobaoEvaluate.imageUrl1 != '' ){ %>
+								<img src="${taobaoEvaluate.imageUrl1}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.imageUrl1}')" />
+								<% } %>
+								<% if (taobaoEvaluate.imageUrl2 != null && taobaoEvaluate.imageUrl2 != '' ){ %>
+								<img src="${taobaoEvaluate.imageUrl2}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.imageUrl2}')"/>
+								<% } %>
+								<% if (taobaoEvaluate.imageUrl3 != null && taobaoEvaluate.imageUrl3 != '' ){ %>
+								<img src="${taobaoEvaluate.imageUrl3}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.imageUrl3}')"/>
+								<% } %>
+								<% if (taobaoEvaluate.imageUrl4 != null && taobaoEvaluate.imageUrl4 != '' ){ %>
+								<img src="${taobaoEvaluate.imageUrl4}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.imageUrl3}')"/>
+								<% } %>
+								<% if (taobaoEvaluate.imageUrl5 != null && taobaoEvaluate.imageUrl5 != '' ){ %>
+								<img src="${taobaoEvaluate.imageUrl5}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.imageUrl3}')"/>
+								<% } %>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('卖家评价内容')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="sellerReplyContent" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('评价发布时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="appendPublishTime" maxlength="20" class="form-control"
+									dataFormat="datetime" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('评价间隔')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="appendInterval" maxlength="100" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-8">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> ${text('评价内容')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="appendContent" rows="4" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('更新时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="updateTime" class="form-control" dataFormat="datetime" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('评价图片')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-lg-9 img-box-list">
+								<% if (taobaoEvaluate.appendImages1 != null && taobaoEvaluate.appendImages1 != '' ){ %>
+								<img src="${taobaoEvaluate.appendImages1}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.appendImages1}')"/>
+								<% } %>
+								<% if (taobaoEvaluate.appendImages2 != null && taobaoEvaluate.appendImages2 != '' ){ %>
+								<img src="${taobaoEvaluate.appendImages2}" height="200" width="170" class="thumbnail img-box"onclick="getVal('${taobaoEvaluate.appendImages2}')"/>
+								<% } %>
+								<% if (taobaoEvaluate.appendImages3 != null && taobaoEvaluate.appendImages3 != '' ){ %>
+								<img src="${taobaoEvaluate.appendImages3}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.appendImages3}')"/>
+								<% } %>
+								<% if (taobaoEvaluate.appendImages4 != null && taobaoEvaluate.appendImages4 != '' ){ %>
+								<img src="${taobaoEvaluate.appendImages4}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.appendImages4}')"/>
+								<% } %>
+								<% if (taobaoEvaluate.appendImages5 != null && taobaoEvaluate.appendImages5 != '' ){ %>
+								<img src="${taobaoEvaluate.appendImages5}" height="200" width="170" class="thumbnail img-box" onclick="getVal('${taobaoEvaluate.appendImages5}')"/>
+								<% } %>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('taobao:taobaoEvaluate:edit')){ %>
+							<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+</div><div id="mask"><span style="text-align: center"></span></div>
+<style>
+	#mask{
+		display: none;
+		background-color: rgba(0,0,0,0.3);
+		color: #ffffff;
+		font-size: 30px;
+		font-weight: bold;
+		text-align: center;
+		position: absolute;
+		top:0;
+		left:0;
+		z-index: 9999;
+	}
+	.big{
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate3d(-50%,-50%,0);
+		-ms-transform: translate3d(-50%,-50%,0);
+		-moz-transform: translate3d(-50%,-50%,0);
+		-webkit-transform: translate3d(-50%,-50%,0);
+		-o-transform: translate3d(-50%,-50%,0);
+	}
+	.img-box{
+		display: inline-block;
+	}
+	.img-box-list{
+		width: 95vw;
+		padding-left: 37%;
+	}
+</style>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+var valp;
+function getVal(val){
+    valp = val;
+}
+$(document).on("click",".thumbnail",function() {
+    //点击弹出全屏遮罩层
+    showMask("#mask", "");
+    $("#mask").append("<div><a href=\"javascript:void(0)\" style=\"opacity: 1;position: fixed;top: 0;right: 0;\" class=\"close\"><img style=\"width: 5vw;\" src=\"/static/easyUpload/images/del.png\"/></a><img src="+valp+" class='big'></div>");
+    $(".big").bind("click",function () {
+        return false;
+    });
+    $("#mask").bind("click", function () {
+        hideMask("#mask");
+        $(".big").remove();
+    })
+})
+function showMask(ele,words){
+    $(ele).show().text(words).css({
+        "width":$(window).width()+"px",
+        // "height":$(window).height()+"px",
+        "height":"2200px",
+        "lineHeight":$(window).height()+"px"
+    })
+}
+function hideMask(ele){
+    $(ele).hide();
+}
+// 预览图片关闭
+$('.photoShow .close').click(function(){
+    $('.photoShow').fadeOut()
+})
+</script>

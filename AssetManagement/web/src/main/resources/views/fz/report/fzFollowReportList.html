@@ -1,0 +1,85 @@
+<% layout('/layouts/default.html', {title: '跟赞数量统计表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('跟赞数量统计表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('report:fzFollowReport:edit')){ %>
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出</a></li>
+					</ul>
+				</div>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzFollowReport}" action="${ctx}/report/fzFollowReport/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('姓名')}：</label>
+					<div class="control-inline">
+						<#form:input path="name" maxlength="225" class="form-control width-120"/>
+					</div>
+				</div>
+			<div class="form-group">
+				<label class="control-label">${text('部门')}：</label>
+				<div class="control-inline width-120" >
+					<#form:treeselect id="dept" title="${text('部门选择')}"
+					path="departmentId" labelPath="deptname" checkbox="false"
+					url="${ctx}/fz/ding/dingDepartment/treeData" class="required " allowClear="true"
+					canSelectRoot="true" canSelectParent="true"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">日期时间：</label>
+				<div class="control-inline">
+					<#form:input path="date_gte" readonly="true" maxlength="20" class="form-control Wdate-date"
+					dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true,onpicked:function(){date_lte.click()}});"/>
+					&nbsp;--&nbsp;
+					<#form:input path="date_lte" readonly="true" maxlength="20" class="form-control Wdate-date"
+					dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true});"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('姓名')}', name:'name', index:'a.name', width:150, align:"left", frozen:true},
+		{header:'${text('部门')}', name:'department',sortable:false, index:'a.department', width:150, align:"left"},
+		{header:'${text('职位')}', name:'position', index:'a.position', width:150, align:"left"},
+		{header:'${text('部门内梵钻')}', name:'inDepartmentGold', index:'a.in_department_gold', width:150, align:"center"},
+		{header:'${text('跨部门梵钻')}', name:'outDepartmentGold', index:'a.out_department_gold', width:150, align:"center"},
+		{header:'${text('总共赠送出去的赞赏数量（不包括赞赏）')}', name:'coinNum', index:'coinNum', width:150, align:"center"},
+
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#searchForm'), {
+        url:'${ctx}/report/fzFollowReport/exportData',
+        downloadFile:true
+    });
+});
+</script>

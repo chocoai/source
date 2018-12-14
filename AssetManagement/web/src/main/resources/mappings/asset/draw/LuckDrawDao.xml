@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.draw.dao.LuckDrawDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="LuckDraw">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<update id="saveDingUser" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+		UPDATE js_ding_user
+		<set>
+			prize_type=#{item.prizeType},
+			winning_prize=#{item.winningPrize}
+		</set>
+			WHERE userid=#{item.userid}
+		</foreach>
+	</update>
+</mapper>

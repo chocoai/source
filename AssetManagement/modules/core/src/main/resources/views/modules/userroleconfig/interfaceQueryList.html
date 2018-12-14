@@ -1,0 +1,94 @@
+<% layout('/layouts/default.html', {title: '接口查询条件管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('接口查询条件管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('userroleconfig:interfaceQuery:edit')){ %>
+					<a href="${ctx}/userroleconfig/interfaceQuery/form" class="btn btn-default btnTool" title="${text('新增接口查询条件')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${interfaceQuery}" action="${ctx}/userroleconfig/interfaceQuery/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">名称：</label>
+					<div class="control-inline">
+						<#form:input path="queryName" maxlength="127" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">字段代码：</label>
+					<div class="control-inline">
+						<#form:input path="fieldCode" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">字段值类型：</label>
+					<div class="control-inline">
+						<#form:input path="fieldType" maxlength="127" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">字段值：</label>
+					<div class="control-inline">
+						<#form:input path="fieldValue" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'名称', name:'queryName', index:'a.query_name', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/userroleconfig/interfaceQuery/form?queryCode='+row.queryCode+'" class="btnList" data-title="${text('编辑接口查询条件')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'字段代码', name:'fieldCode', index:'a.field_code', width:150, align:"left"},
+		{header:'字段值类型', name:'fieldType', index:'a.field_type', width:150, align:"left"},
+		{header:'字段值', name:'fieldValue', index:'a.field_value', width:150, align:"left"},
+		{header:'比较符', name:'symbol', index:'a.symbol', width:150, align:"left"},
+		{header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('userroleconfig:interfaceQuery:edit')){ %>
+				actions.push('<a href="${ctx}/userroleconfig/interfaceQuery/form?queryCode='+row.queryCode+'" class="btnList" title="${text('编辑接口查询条件')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				if (row.status == Global.STATUS_NORMAL){
+					actions.push('<a href="${ctx}/userroleconfig/interfaceQuery/disable?queryCode='+row.queryCode+'" class="btnList" title="${text('停用接口查询条件')}" data-confirm="${text('确认要停用该接口查询条件吗？')}"><i class="glyphicon glyphicon-ban-circle"></i></a>&nbsp;');
+				}
+				if (row.status == Global.STATUS_DISABLE){
+					actions.push('<a href="${ctx}/userroleconfig/interfaceQuery/enable?queryCode='+row.queryCode+'" class="btnList" title="${text('启用接口查询条件')}" data-confirm="${text('确认要启用该接口查询条件吗？')}"><i class="glyphicon glyphicon-ok-circle"></i></a>&nbsp;');
+				}
+				actions.push('<a href="${ctx}/userroleconfig/interfaceQuery/delete?queryCode='+row.queryCode+'" class="btnList" title="${text('删除接口查询条件')}" data-confirm="${text('确认要删除该接口查询条件吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

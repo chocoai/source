@@ -1,0 +1,163 @@
+<% layout('/layouts/default.html', {title: '线上bug登记单管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('线上bug登记单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('fault:bugRegistration:edit')){ %>
+					<a href="${ctx}/fault/bugRegistration/form" class="btn btn-default btnTool" title="${text('新增线上bug登记单')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				   <a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除线上bug登记单')}"> ${text('删除')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${bugRegistration}" action="${ctx}/fault/bugRegistration/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">${text('项目名称')}</label>
+				<div class="control-inline">
+					<#form:input path="projectName" maxlength="100" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('责任类型')}</label>
+				<div class="control-inline width-120">
+					<#form:select path="liableType" dictType="fault_type" blankOption="true" class="form-control"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('测试人员')}</label>
+				<div class="control-inline">
+					<#form:input path="testStaff" maxlength="50" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('严重程度')}</label>
+				<div class="control-inline width-120">
+					<#form:select path="severity" dictType="fault_dimensions" blankOption="true" class="form-control"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<label class="control-label">${text('日期')}</label>
+					<div class="control-inline">
+						<#form:input path="bugDate_gte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:function(){bugDate_lte.click()}});"/>
+						&nbsp;--&nbsp;
+						<#form:input path="bugDate_lte" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true});"/>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'编号', name:'bugCode', index:'a.bug_code', width:150, align:"center",frozen:true, formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/fault/bugRegistration/form?bugCode='+row.bugCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑线上bug登记单')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+                //return '<a href="${ctx}/fault/bugRegistration/form?bugCode='+row.bugCode+'" class="btnList" data-title="${text('编辑故障登记单')}">'+(val||row.id)+'</a>';
+            }},
+		{header:'日期', name:'bugDate', index:'a.bug_date', width:150, align:"center",dataFormat:"yyyy-MM-dd"},
+        {header:'项目名称', name:'projectName', index:'a.project_name', width:150, align:"center"},
+        {header:'责任类型', name:'liableType', index:'a.liable_type', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fault_type')}, val, '${text('未知')}', true);
+            }},
+        {header:'严重程度', name:'severity', index:'a.severity', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fault_dimensions')}, val, '${text('未知')}', true);
+            }},
+        {header:'测试人员', name:'testStaff', index:'a.test_staff', width:150, align:"center"},
+
+	],
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        Concurrency();
+	}
+});
+$('#asDelBtn').click( function(e){
+
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/fault/bugRegistration/delete?bugRegistrationCode='+str,
+                            success:function (result) {
+                                var obj = JSON.parse(result);
+                                if(obj.result=='true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                }else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一条单据进行删除')
+    }
+});
+
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_bugCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                console.log(res)
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+</script>

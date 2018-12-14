@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.product.dao.ProductCategoryDao">
+	
+	<!-- 查询数据 -->
+	<select id="findList" resultType="ProductCategory">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="item != null and item !=''">
+			AND (
+			a.parent_code IN (
+			SELECT
+			b.procategory_code
+			FROM
+			js_product_category b
+			WHERE
+			b.procategory_status = '0'
+			AND b.tree_leaf = '0'
+			)
+			OR a.procategory_code IN (
+			SELECT
+			b.procategory_code
+			FROM
+			js_product_category b
+			WHERE
+			b.procategory_status = '0'
+			AND b.tree_leaf = '0'
+			)
+			)
+			AND a.procategory_status = '0'
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<!--<select id="selectByProcategoryStatus" resultType="Integer">
+		select count(1) from js_product_category WHERE procategory_status=0 and (`procategory_code` =#{arg0} OR parent_codes LIKE concat(concat('%',#{arg0}),'%'))
+	</select>-->
+	<select id="selectByProcategoryStatus" resultType="Integer">
+		select count(1) from js_product_category WHERE procategory_status=0 and `procategory_code` =#{arg0}
+</select>
+	<delete id="delete">
+		delete from js_product_category WHERE `procategory_code` =#{arg0}
+	</delete>
+	<select id="findListOuter" resultType="ProductCategory">
+		SELECT
+	a.procategory_code AS "procategoryCode",
+	a.procategory_status AS "procategoryStatus",
+	a.parent_code AS "parentCode",
+	a.parent_codes AS "parentCodes",
+	a.tree_sort AS "treeSort",
+	a.tree_sorts AS "treeSorts",
+	a.tree_leaf AS "treeLeaf",
+	a.tree_level AS "treeLevel",
+	a.tree_names AS "treeNames",
+	a.category_name AS "categoryName",
+	a. STATUS AS "status",
+	a.create_by AS "createBy",
+	a.create_date AS "createDate",
+	a.update_by AS "updateBy",
+	a.update_date AS "updateDate",
+	a.remarks AS "remarks"
+FROM
+	js_product_category a
+WHERE
+	a.parent_code = 0
+AND a. STATUS = 0
+And a.tree_sort=1
+ORDER BY
+	a.tree_sorts,
+	a.procategory_code
+	</select>
+	<select id="findProductCategory" resultType="int">
+		select count(1) from js_product_category where category_name=#{arg0}
+	</select>
+</mapper>

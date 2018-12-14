@@ -1,0 +1,383 @@
+<% layout('/layouts/default.html', {title: '查看RDS退款单', libs: ['validate','dataGrid']}){ %>
+<style xmlns:c="http://www.w3.org/1999/html">
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+</style>
+
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('查看RDS退款单')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${taobaoRefundRds}" action="${ctx}/refund/taobaoRefundRds/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="box-body">
+					<div class="form-unit form-unitHd" id="div1">
+						<span class="on">${text('基本信息')}</span>
+					</div>
+					<div class="form-unitTab">
+						<#form:hidden path="pkey"/>
+						<div class="item">
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款单号')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refundId" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('交易状态')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.status" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('卖家昵称')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="sellerNick" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('买家昵称')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="buyerNick" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('淘宝交易单号')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.tid" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('子订单号')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.oid" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款申请时间')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.created" readonly="true" class="form-control" dataFormat="datetime"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('更新时间')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.modified" readonly="true" class="form-control" dataFormat="datetime"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('商品SKU信息')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.sku" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款先行垫付默认的未申请状态')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.advanceStatus" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('支付宝交易号')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.alipayNo" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('商品标题')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.title" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('csStatus')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.csStatus" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款说明')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.desc" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('货物状态')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.goodStatus" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('买家是否需要退货')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.hasGoodReturn" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('申请退款的商品数字编号')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.numIid" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款约束')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.operationContraint" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款对应的订单交易状态')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.orderStatus" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('商品外部商家编码')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.outerId" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('交易总金额')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.totalFee" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('支付给卖家的金额')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.payment" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('商品价格')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.price" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款原因')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.reason" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退还给买家的金额')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.refundFee" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款阶段')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.refundPhase" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款扩展属性')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:textarea path="refund.attribute" readonly="true" rows="4" class="form-control"/>
+										</div>
+									</div>
+								</div>
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('买家收货地址')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:textarea path="refund.address" readonly="true" class="form-control"  rows="4"/>
+										</div>
+									</div>
+								</div>
+
+							</div>
+							<div class="row">
+								<div class="col-xs-6">
+									<div class="form-group">
+										<label class="control-label col-sm-4" title="">
+											<span class="required hide">*</span> ${text('退款版本号')}：<i class="fa icon-question hide"></i></label>
+										<div class="col-sm-8">
+											<#form:input path="refund.refundVersion" readonly="true" class="form-control"/>
+										</div>
+									</div>
+								</div>
+
+							</div>
+
+						</div>
+					</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('refund:taobaoRefundRds:edit')){ %>
+							<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+$(function() {
+    slidtab();
+    slidtable();
+
+})
+//切换页签
+var slidtab = function(){
+    $('.form-unitHd span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTab .item').hide()
+        $('.form-unitTab .item').eq(_t.index()).fadeIn()
+    });
+};
+var slidtable = function(){
+    $('.form-unitD span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTable .item').hide()
+        $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+    });
+};
+
+</script>

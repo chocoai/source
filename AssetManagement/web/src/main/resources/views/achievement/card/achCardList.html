@@ -1,0 +1,242 @@
+<% layout('/layouts/default.html', {title: '绩效卡管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('绩效卡管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('ach:card:edit')){ %>
+					<a href="${ctx}/ach/card/form" class="btn btn-default btnTool" title="${text('新增绩效卡')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${achCard}" action="${ctx}/ach/card/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('考核月份')}：</label>
+					<div class="control-inline">
+						<#form:input path="examineMonth" maxlength="8" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('被考核人')}：</label>
+					<div class="control-inline">
+						<#form:input path="examinedStaffCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('所属部门编码')}：</label>
+					<div class="control-inline">
+						<#form:input path="departCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('岗位编码')}：</label>
+					<div class="control-inline">
+						<#form:input path="postCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('所属部门名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="departName" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('是否有下属')}：</label>
+					<div class="control-inline">
+						<#form:input path="hadFollower" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('一级部门编码')}：</label>
+					<div class="control-inline">
+						<#form:input path="firstDepartCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('一级部门名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="firstDepartName" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('考核权重')}：</label>
+					<div class="control-inline">
+						<#form:input path="examineWeight" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('考核得分')}：</label>
+					<div class="control-inline">
+						<#form:input path="examineScore" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('上上级调整分值')}：</label>
+					<div class="control-inline">
+						<#form:input path="secondSuperiorScore" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('考核人')}：</label>
+					<div class="control-inline">
+						<#form:input path="assessorCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('最终得分')}：</label>
+					<div class="control-inline">
+						<#form:input path="finalScore" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('优点')}：</label>
+					<div class="control-inline">
+						<#form:input path="strongPoint" maxlength="2000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('弱点')}：</label>
+					<div class="control-inline">
+						<#form:input path="weakPoint" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('绩效反馈形式')}：</label>
+					<div class="control-inline">
+						<#form:input path="feedbackType" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('上上级调整备注')}：</label>
+					<div class="control-inline">
+						<#form:input path="secondSuperiorRemark" maxlength="2000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('绩效反馈备注')}：</label>
+					<div class="control-inline">
+						<#form:input path="feedbackRemark" maxlength="2000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('HR调整分数')}：</label>
+					<div class="control-inline">
+						<#form:input path="hrScore" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('绩效沟通分钟数')}：</label>
+					<div class="control-inline">
+						<#form:input path="feedbackMinutes" maxlength="3" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('HR调整分数备注')}：</label>
+					<div class="control-inline">
+						<#form:input path="hrScoreRemark" maxlength="2000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('自评优点')}：</label>
+					<div class="control-inline">
+						<#form:input path="selfDoingWell" maxlength="2000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('自评缺点')}：</label>
+					<div class="control-inline">
+						<#form:input path="selfCanBeBetter" maxlength="2000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('审核人')}：</label>
+					<div class="control-inline">
+						<#form:input path="auditBy" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('审核时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="auditDate" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('状态')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('备注')}：</label>
+					<div class="control-inline">
+						<#form:input path="remarks" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('数据状态')}：</label>
+					<div class="control-inline">
+						<#form:input path="dataStatus" maxlength="4" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'${text('绩效卡号')}', name:'carCode', index:'a.card_code', width:150, align:"left", formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/ach/card/form?cardCode='+row.cardCode+'" class="btnList" data-title="${text('查看绩效卡')}">'+(val||row.id)+'</a>';
+        }},
+		{header:'${text('考核月份')}', name:'examineMonth', index:'a.examine_month', width:150, align:"left"},
+		{header:'${text('被考核人')}', name:'examinedStaffCode', index:'a.examined_staff_code', width:150, align:"left"},
+		{header:'${text('岗位编码')}', name:'postCode', index:'a.post_code', width:150, align:"left"},
+		{header:'${text('所属部门名称')}', name:'departName', index:'a.depart_name', width:150, align:"left"},
+		{header:'${text('考核权重')}', name:'examineWeight', index:'a.examine_weight', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('考核得分')}', name:'examineScore', index:'a.examine_score', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('上上级调整分值')}', name:'secondSuperiorScore', index:'a.second_superior_score', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('考核人')}', name:'assessorCode', index:'a.assessor_code', width:150, align:"left"},
+		{header:'${text('最终得分')}', name:'finalScore', index:'a.final_score', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('HR调整分数')}', name:'hrScore', index:'a.hr_score', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'${text('备注')}', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'${text('数据状态')}', name:'dataStatus', index:'a.data_status', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('achievement:achCard:edit')){ %>
+				actions.push('<a href="${ctx}/achievement/achCard/form?cardCode='+row.cardCode+'" class="btnList" title="${text('编辑绩效卡')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/achievement/achCard/delete?cardCode='+row.cardCode+'" class="btnList" title="${text('删除绩效卡')}" data-confirm="${text('确认要删除该绩效卡吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

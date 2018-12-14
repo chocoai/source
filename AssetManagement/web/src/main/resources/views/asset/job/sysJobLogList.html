@@ -1,0 +1,105 @@
+<% layout('/layouts/default.html', {title: '定时任务调度日志表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('定时任务调度日志表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('job:sysJobLog:edit')){ %>
+					<a href="${ctx}/job/sysJobLog/form" class="btn btn-default btnTool" title="${text('新增定时任务调度日志表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${sysJobLog}" action="${ctx}/job/sysJobLog/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('任务名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="jobName" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('任务组名')}：</label>
+					<div class="control-inline">
+						<#form:input path="jobGroup" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('任务方法')}：</label>
+					<div class="control-inline">
+						<#form:input path="methodName" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('方法参数')}：</label>
+					<div class="control-inline">
+						<#form:input path="methodParams" maxlength="200" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('日志信息')}：</label>
+					<div class="control-inline">
+						<#form:input path="jobMessage" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('执行状态')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('异常信息')}：</label>
+					<div class="control-inline">
+						<#form:input path="exceptionInfo" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('创建时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="createTime" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('任务名称')}', name:'jobName', index:'a.job_name', width:150, align:"center"},
+		{header:'${text('任务组名')}', name:'jobGroup', index:'a.job_group', width:150, align:"center"},
+		{header:'${text('任务方法')}', name:'methodName', index:'a.method_name', width:150, align:"center"},
+		{header:'${text('方法参数')}', name:'methodParams', index:'a.method_params', width:150, align:"center"},
+		{header:'${text('日志信息')}', name:'jobMessage', index:'a.job_message', width:150, align:"center"},
+		{header:'${text('执行状态')}', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'${text('异常信息')}', name:'exceptionInfo', index:'a.exception_info', width:150, align:"left"},
+		{header:'${text('创建时间')}', name:'createTime', index:'a.create_time', width:150, align:"center"},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('jobtask:sysJobLog:edit')){ %>
+		// 		actions.push('<a href="${ctx}/jobtask/sysJobLog/form?jobLogId='+row.jobLogId+'" class="btnList" title="${text('编辑定时任务调度日志表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

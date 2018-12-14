@@ -1,0 +1,722 @@
+<% layout('/layouts/default.html', {title: '调拨单管理', libs: ['validate','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amTransfer.isNewRecord ? '新增调拨单' : '编辑调拨单')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amTransfer}" action="${ctx}/consumables/amTransfer/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 调拨单号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:hidden path="isNewRecord" id="isNewRecord"/>
+								<#form:input path="documentsCode" maxlength="64" readonly="true" class="form-control required abc"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 调拨日期：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="transferDate" id="transferDate" readonly="true" maxlength="20" class="form-control Wdate required"
+								dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据类型：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="documentType" id="documentType" dictType="am_tf_documents_type" blankOption="false" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 出库仓库：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="outWarehouseCode"  id='outWarehouseCode' items="${warehouseList}"
+								itemLabel="warehouseName" itemValue="warehouseCode"  multiple="false" blankOption="true" class="form-control required"/>
+
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 入库仓库：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="inWarehouseCode"  id='inWarehouseCode' items="${warehouseList}"
+								itemLabel="warehouseName" itemValue="warehouseCode"  multiple="false" blankOption="true" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required "></span> 处理人：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:listselect id="amStaff" title="员工" readonly="${amTransfer.isRoad}"
+								path="staffCode" labelPath="amStaff.staffName" itemCode="staffCode" itemName="staffName"
+								url="${ctx}/staff/amStaff/staffSelect" allowClear="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-8">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide"></span> 调拨备注：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="remarks" id="remarks" rows="1" maxlength="1000"   class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:hidden path="documentStatus"  id="documentStatus"/>
+								<!--<#form:select path="documentStatus"  id="documentStatus" disabled="true" dictType="am_document_status" blankOption="true" class="form-control"/>-->
+								<#form:input path="documentStatusName" id="documentStatusName" maxlength="64" readonly="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+
+				</div>
+				<h4 class="form-unit">调拨明细</h4>
+
+				<div class="ml10 mr10">
+					<% if (hasPermi('consumables:amTransfer:edit')){ %>
+					<a href="#" id="amTransferDetailsDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+					<% } %>
+					<table id="amTransferDetailsDataGrid"></table>
+
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row" style="position: relative; height: 1.8rem; margin-bottom: 6px;">
+					<div id="bottom_amTransferCount" style="color: red; display: inline-block; position: absolute;">
+						数量：
+						<span id="sq_count_allcount"></span>
+					</div>
+					<!--<div id="bottom_amTransferAmount" style="color: red; display: inline-block; position: absolute;">-->
+						<!--合计：￥-->
+						<!--<span id="sq_count_all"></span>-->
+					<!--</div>-->
+				</div>
+				<div class="row">
+					<div class="col-sm-offset-9 col-sm-3">
+						<% if (hasPermi('consumables:amTransfer:edit')){ %>
+						<a href="#" onclick="save('1')" class="" data-title="${text('保存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;</a>
+						<% } %>
+
+						<a href="#" onclick="save('2')" class="" data-title="${text('审 核')}"><button  type="submit" class="btn btn-sm btn-primary btnList" id="examine" onclick="">${text('审 核')}</button></a>
+						<a href="#" onclick="save('3')"  data-title="${text('反 审 核')}">	<button type="submit" class="btn btn-sm btn-primary btnList " id="unexamine" onclick="">
+							${text('反 审 核')}</button></a>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().documentsCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+//初始化调拨明细DataGrid对象
+$("#amTransferDetailsDataGrid").dataGrid({
+
+	data: ${toJson(amTransfer.amTransferDetailsList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+        {header:'${text('操作')}', name:'actions', width:50, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                var actions = [];
+                if (val == 'new'){
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amTransferDetailsDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\');sq.countAllCount();});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }else{
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amTransferDetailsDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'};sq.countAllCount();)});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }
+                return actions.join('');
+            }, editoptions: {defaultValue: 'new'}},
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailsCode', editable:true, hidden:true},
+		{header:'出库库位', name:'outLocationCode', width:150, editable:true, hidden:true,edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'出库库位', name:'outLocationName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'耗材名称', name:'consumablesName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control required'}},
+		{header:'耗材名字', name:'consumablesCode', width:150, editable:true, hidden:true,edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'规格型号', name:'specifications', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'耗材分类', name:'categoryCode', width:150, editable:true,hidden:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'耗材分类', name:'categoryName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'计量单位', name:'measureUnit', width:150, editable:true,  hidden:true,edittype:'text', editoptions:{'maxlength':'1', 'class':'form-control required'}},
+        {header:'计量单位', name:'measureValue', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'1', 'class':'form-control required'}},
+		{header:'入库库位', name:'inLocationCode', width:150, editable:true,hidden:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'入库库位', name:'inLocationName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'数量', name:'transferCount', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'20', 'class':'form-control required digits'}},
+		{header:'单价', name:'transferPrice', width:150, editable:true,hidden:true, edittype:'text', editoptions:{'class':'form-control required number'}},
+		{header:'总金额', name:'transferAmount', width:150, editable:true, hidden:true,edittype:'text', editoptions:{'class':'form-control required number'}},
+		{header:'备注', name:'remarks', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},
+		{header:'单据编码', name:'documentsCode.documentsCode', editable:true, hidden:true},
+
+	],
+	
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amTransferDetailsDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {transferDetailsCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amTransferDetailsList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,transferDetailsCode,outLocationCode,consumablesCode,consumablesName,specifications,categoryCode,measureUnit,inLocationCode,transferCount,transferPrice,transferAmount,remarks,documentsCode.documentsCode,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        checkConcurrency();
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+            var flag = $("#isNewRecord").val();
+            if (flag === "true") {
+                $('#examine').attr("disabled", true);
+                $('#unexamine').attr("disabled", true);
+            } else if (flag === "false"){
+                var documentStatus = $("#documentStatus").val();
+                if (documentStatus!=='1') {
+                    document.getElementById('unexamine').disabled=true;
+				}else {   $('#examine').attr("disabled", true);
+                    $('#btnSubmit').attr("disabled", true);
+                }
+
+            }
+            if(data.result == Global.TRUE){
+                if (flag === "true") {
+                    js.closeCurrentTabPage(function(contentWindow){
+                        contentWindow.page();
+                    });
+                } else {
+                    location.reload();
+                }
+            // var documentStatus = $("#documentStatus").val();
+            // if (documentStatus!=='1') {
+            //     document.getElementById('unexamine').disabled=true;
+            // }
+            // if(data.result == Global.TRUE){
+            //     var isNewRecord=document.getElementById("isNewRecord").value;
+            //     if (isNewRecord === "true") {
+            //         js.closeCurrentTabPage(function(contentWindow){
+            //             contentWindow.page();
+            //         });
+            //     } else {
+            //         location.reload();
+            //     }}else {
+            //     location.reload();
+            }
+		}, "json");
+    }
+});
+
+
+// 事件代理
+$('#amTransferDetailsDataGrid').on('click', function(e) {                     //全局触发事件，点击
+    var inWarehouseCode=document.getElementById('inWarehouseCode').value;
+    var outWarehouseCode=document.getElementById('outWarehouseCode').value;
+    // console.log($(e.target).prop("className"));
+    var targetName = $(e.target).attr('name');                                   //得到列的name
+    var targetId   = $(e.target).attr('id');                                       //得到列的ID
+
+    if(targetId.indexOf('_') > -1) {
+        var targetArr  = targetId.split('_');
+        var rowId      = targetArr[0];
+    } else {
+        var rowId      = targetId;
+    }
+
+    var documentStatus = $("#documentStatus").val();                      //获取单据状态
+	// alert(documentStatus)
+    if (documentStatus==='1'){
+    }else {
+        // if(targetName.indexOf('consumablesCode') > -1) {
+        //     // clickToOpenWindow('耗材型号', {width: '1200px', height: '800px'}); // 开启窗口
+        //     var colName = ['consumablesCode', 'consumablesName', 'specifications', 'categoryCode', 'measureUnit'];
+        //     clickToOpenWindow('/a/consumables/amInstorage/formUtil', colName, rowId);
+        // }
+        if(targetName == 'outLocationName') { // demo
+            var colName = ['locationCode', 'locationName','categoryCode','categoryName','consumablesCode','consumablesName','specifications', 'measureUnit', 'measureValue','stockPrice','stockAtm','measureValue'];
+            var url='${ctx}/locationreport/locationReport/listSelect?warehouseCode='+outWarehouseCode;
+			var callback = function(val, paramName) {
+				if(paramName == 'locationCode') {
+					$('#' + rowId + '_outLocationCode').val(val);
+				} else if (paramName == 'locationName') {
+					$('#' + rowId + '_outLocationName').val(val);
+				}else if (paramName == 'consumablesCode') {
+                    $('#' + rowId + '_consumablesCode').val(val);
+				} else if (paramName == 'consumablesName') {
+                    $('#' + rowId + '_consumablesName').val(val);
+                } else if (paramName == 'specifications') {
+                    $('#' + rowId + '_specifications').val(val);
+                } else if (paramName == 'measureUnit') {
+                    $('#' + rowId + '_measureUnit').val(val);
+                }else if (paramName == 'measureValue') {
+                    $('#' + rowId + '_measureValue').val(val);
+                } else if (paramName == 'stockPrice') {
+                    $('#' + rowId + '_transferPrice').val(val);
+                } else if (paramName == 'stockAtm') {
+                    $('#' + rowId + '_transferAmount').val(val);
+                } else if (paramName == 'categoryCode') {
+                    $('#' + rowId + '_categoryCode').val(val);
+                } else if (paramName == 'categoryName') {
+                    $('#' + rowId + '_categoryName').val(val);
+                }else if (paramName == 'measureValue') {
+                    $('#' + rowId + '_measureValue').val(val);
+                }
+
+			}
+            clickToOpenWindow(url, colName, rowId, callback);
+        }
+
+
+		if(targetName == 'inLocationName') { // demo
+            var colName = ['locationCode', 'locationName'];
+            var url='/a/amlocation/amLocation/selectAmLocation?warehouseCode='+inWarehouseCode;
+			var callback = function(val, paramName) {
+				if(paramName == 'locationCode') {
+					$('#' + rowId + '_inLocationCode').val(val);
+				} else if (paramName == 'locationName') {
+					$('#' + rowId + '_inLocationName').val(val);
+				}
+			}
+            clickToOpenWindow(url, colName, rowId, callback);
+        }
+    }
+});
+
+/**
+ @squid 2018年5月22日10:24:48
+ @param string url 目标数据的页面
+ @param array colName 目标数据的属性名，不是input框的name
+ @param string trId 点击的行数id
+ @param function callback 如果目标数据的属性名和input框的name不一样，需要用callback处理 
+**/
+var clickToOpenWindow = function(url, colName, trId, callback){
+    if ($("#documentsCodeButton").hasClass("disabled")){
+        return true;
+    }
+    var selectData = {},
+        boxWidth = $(top.window).width() - 100,
+        boxHeight = $(top.window).height() - 100;
+    boxWidth = boxWidth < 350 ? 350 : boxWidth;
+    boxHeight = boxHeight < 250 ? 250 : boxHeight;
+    if(typeof listselectGetSelectData == 'function'){
+        selectData = listselectGetSelectData('instorageCode'); // 如果你需要打开其他的列表，你得自己定义一个code，目前的话是打开耗材的列表
+    }
+    var options = {
+        type: 2, // 弹窗类型，2是iframe，content必须是url，一个正常显示的页面
+        maxmin: true,
+        shadeClose: true,
+        title: '分类编号',
+        area: [boxWidth+'px', boxHeight+'px'],
+        content: url,
+        contentFormData: {
+            checkbox: 'false',
+            selectData: js.encodeUrl(JSON.stringify(selectData))
+        },
+        success: function(layero, index){
+            if ($(js.layer.window).width() < boxWidth
+                || $(js.layer.window).height() < boxHeight){
+                js.layer.full(index);
+            }
+        },
+        btn: ['<i class="fa fa-check"></i> 确定'],
+        btn1: function(index, layero){
+            var win = js.layer.iframeWindow(index);
+            selectData = win.getSelectData();
+            if(typeof listselectCheck == 'function'){
+                if (!listselectCheck('instorageCode', selectData)){
+                    return false;
+                }
+            }
+            // 点击确定，获取用户选择数据
+            if(typeof listselectSetSelectData == 'function'){
+                listselectSetSelectData('instorageCode', selectData);
+            }
+
+            try { $('#instorageCodeCode,#instorageCodeName').valid(); }catch(e){}
+
+            /** 传值到目标表单 START */
+            var colCount = selectData.length; // 行数
+
+			console.log(selectData)
+
+            for (var index in selectData) { // selectData 是弹窗后选中的值
+                var subItem = selectData[index]; // 
+				console.log(subItem);
+                for(var subIndex in subItem) {
+
+                    for(var colIndex in colName) { // 要替换的值的input name属性
+
+                        if(subIndex == colName[colIndex]) { // 将列名称数组遍历，填充值, subIndex是选中数据的属性
+                            var selector = '#' + trId + '_' + colName[colIndex];
+                            var val = subItem[subIndex];
+                            if(callback) { // 如果有callback，执行callback去处理
+                                callback(val, subIndex);
+                            } else { // 如果没有，直接用selector的定位去赋值
+								$(selector).val(val);
+							}
+                        }
+
+                    }
+                }
+            }
+            /** END */
+
+        }
+    };
+    options.btn.push('<i class="fa fa-close"></i> 关闭');
+    options['btn'+options.btn.length] = function(index, layero){
+        if(typeof listselectCallback == 'function'){
+            listselectCallback('instorageCode', 'cancel', index, layero);
+        }
+    };
+    js.layer.open(options);
+};
+function save(isSH){
+    var testform = document.getElementById("inputForm");
+    if(isSH==='2') {
+        // document.getElementById("isNewRecord").value=false;
+        testform.action = "${ctx}/consumables/amTransfer/save?documentStatusSH=1";
+
+
+    }else if (isSH=='3') { var isNewRecord=document.getElementById("isNewRecord").value;
+        // document.getElementById("isNewRecord").value=false;
+        testform.action = "${ctx}/consumables/amTransfer/save?documentStatusSH=2";
+
+    }else {
+        testform.action = "${ctx}/consumables/amTransfer/save";
+    }
+}
+
+/** 页面加载后执行的方法 */
+$(function() {
+    /** 把表单的这些字段设为只读*/
+    var flag = $("#isNewRecord").val();
+    var documentStatus = $("#documentStatus").val();
+    // alert(flag)
+    // console.log(documentStatus)
+    if (flag === 'true') {
+        // alert('true')
+        document.getElementById("examine").disabled=true;
+        document.getElementById("unexamine").disabled=true;
+
+    } else {
+        // alert('false')
+        if (documentStatus==='1') { //当订单状态为审核状态
+            // alert('false')
+            document.getElementById('documentType').disabled=true;
+            document.getElementById('outWarehouseCode').disabled=true;
+            document.getElementById('inWarehouseCode').disabled=true;
+            document.getElementById('documentStatusName').disabled=true;
+            document.getElementById('remarks').readOnly=true;
+            // document.getElementById('amStaff').readOnly=true;
+            // document.getElementById('amStaff').click = null;
+
+            $('#transferDate').removeAttr('onclick');
+            document.getElementById('transferDate').readOnly=true;
+            document.getElementById('examine').disabled=true;
+            document.getElementById('btnSubmit').disabled=true;
+            document.getElementById('amTransferDetailsDataGridAddRowBtn').style.display="none";
+            // $('#amInstorageDetailsDataGrid_actions').remove()
+            // $('td[aria-describedby="amInstorageDetailsDataGrid_actions"]').remove()
+            // // $('.jqgfirstrow td:last-child').remove()
+            // $('.jqgfirstrow td:eq(1)').remove()
+			// 移除操作行
+			$('#amTransferDetailsDataGrid_actions').remove();
+			$('#amTransferDetailsDataGrid .jqgfirstrow>td:eq(1)').remove();
+			$('td[aria-describedby=amTransferDetailsDataGrid_actions]').remove();
+
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=outLocationCode]'));
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=outLocationName]'));
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=inLocationName]'));
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=inLocationCode]'));
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=consumablesCode]'));
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=transferCount]'));
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=transferPrice]'));
+            sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=transferAmount]'));
+
+            sq.setInputReadonly($('#amTransferDetailsDataGrid textarea[name=remarks]'));
+
+        }else {
+            document.getElementById("unexamine").disabled=true;
+        }
+
+    }
+    sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=outLocationCode]'));
+    sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=consumablesName]'));//当页面加载时改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+    sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=specifications]'));
+    sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=categoryCode]'));
+    sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=categoryName]'));
+    sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=measureUnit]'));
+    sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=measureValue]'));
+    // sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=locationName]'));
+    // sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=instorageAmount]'));
+    /** 锁定把表单的这些字段设为只读*/
+    // $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+    // 	sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=instorageAmount]'));
+    // });
+
+    $('#amTransferDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=consumablesName]'));
+    });
+    $('#amTransferDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=specifications]'));
+    });
+    $('#amTransferDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=categoryCode]'));
+    });
+    $('#amTransferDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=categoryName]'));
+    });
+    $('#amTransferDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=measureUnit]'));
+    });
+    $('#amTransferDetailsDataGrid').on('DOMNodeInserted', function() {
+        sq.setInputReadonly($('#amTransferDetailsDataGrid input[name=measureValue]'));
+    });
+    // $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+    //     sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=locationName]'));
+    // });
+
+
+    /** 底部统计位置 2018年5月16日14:35:00 */
+    var transferCount_node  = $('#amTransferDetailsDataGrid_transferCount'), // 表格标题的节点
+        transferAmount_node = $('#amTransferDetailsDataGrid_transferAmount'),
+        bottomCount_node     = $('#bottom_amTransferCount'), // 底部统计的节点
+        bottomAmount_node     = $('#bottom_amTransferAmount');
+    var amTransferCount_offset  = transferCount_node.offset(), // 保存偏移量
+        amTransferAmount_offset = transferAmount_node.offset();
+
+    // console.log(amt)
+
+    bottomCount_node.css({left: amTransferCount_offset.left + 25}); // 距离左边多少px再加原来表格的padding
+    bottomAmount_node.css({left: amTransferAmount_offset.left + 25});
+
+    sq.countAll(); // 统计
+    sq.countAllCount();
+});
+
+
+/** 定义一个命名空间，里面放了一些浮点类型的处理方法 */
+var sq = {};
+/** 浮点处理函数 */
+//处理双精度相乘
+sq.mul = function (a, b) {
+    var c = 0,
+        d = a.toString(),
+        e = b.toString();
+    try {
+        c += d.split(".")[1].length;
+    } catch (f) {}
+    try {
+        c += e.split(".")[1].length;
+    } catch (f) {}
+    // alert(Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c));
+    var float = Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c);
+    return float.toFixed(2)
+}
+//处理双精度相除
+sq.division = function (a, b) {
+    var c = 0,
+        d = a.toString(),
+        e = b.toString();
+    try {
+        c += d.split(".")[1].length;
+    } catch (f) {}
+    try {
+        c += e.split(".")[1].length;
+    } catch (f) {}
+    // alert(Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c));
+    var float = Number(d.replace(".", "")) / Number(e.replace(".", "")) / Math.pow(10, c);
+    return float.toFixed(2)
+}
+//处理浮点类型相加
+sq.add = function(arg1,arg2){
+    var r1,r2,m;
+    try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+    try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+    m=Math.pow(10,Math.max(r1,r2))
+    return (arg1*m+arg2*m)/m
+}
+// 合计
+sq.countAll = function() {
+    // debugger
+
+    var tdNodes = $('#amTransferDetailsDataGrid input[name$=transferAmount]');
+    // var par = $('#amInstorageDetailsDataGrid input[name$=instorageAmount]').closest('tr');
+    var count = 0;
+
+    tdNodes.each(function(index, item){
+        if($(item).closest('tr').css('display') !== 'none'){
+            var itemValue = item.value; // 获得当前item的值
+            if (isNaN(itemValue) || !itemValue) { // 如果不是数字，则当前值设置为0，用来正常的相加
+                itemValue = 0;
+            }
+            count = sq.add(count, parseFloat(itemValue));
+        }
+
+    });
+    count = parseFloat(count).toFixed(2);
+    if(isNaN(count)) count = 0 . toFixed(2);
+    $('#sq_count_all').html(count); // 赋值
+}
+// 合计数量
+sq.countAllCount = function() {
+    // debugger
+
+    var tdNodes = $('#amTransferDetailsDataGrid input[name$=transferCount]');
+    // var par = $('#amInstorageDetailsDataGrid input[name$=instorageAmount]').closest('tr');
+    var count = 0;
+
+    tdNodes.each(function(index, item){
+        if($(item).closest('tr').css('display') !== 'none'){
+            var itemValue = item.value;
+            if(isNaN(itemValue)){
+                itemValue = 0;
+            }
+            count = sq.add(count, itemValue);
+        }
+
+    });
+    if(isNaN(count)) count = 0 ;
+    $('#sq_count_allcount').html(count); // 赋值
+}
+
+sq.setInputReadonly = function(node) {       //改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+    $(node).each(function(index, item){
+        $(item).attr('readonly', 'true');
+    });
+}
+
+
+// 事件代理 输出框的一个值的变更
+$('#amTransferDetailsDataGrid').on('input propertychange', function(e) { // e是事件event 监听某个值，当有变化就做操作
+    var targetName = $(e.target).attr('name'); // 当前输入框的name
+    var targetId   = $(e.target).attr('id');
+    if(targetId.indexOf('_') > -1) {
+        var targetArr  = targetId.split('_');
+        targetId       = targetArr[0];
+    }
+
+    if (targetName.indexOf('transferPrice') > -1) { // 入库单价
+        var transferCount = $('#' + targetId).find('input[name$=transferCount]').val();
+        /** 下面是可编辑的状态可以监听值变化并赋值 */
+        var transferAmountNode = $('#' + targetId).find('input[name$=transferAmount]');
+        // var instorageAmountNode = $('#' + targetId).find('td:nth-child(13)'); // 不可编辑状态
+        var targetVal  = $(e.target).val();
+        targetVal      = !isNaN(targetVal) ? targetVal : 0;  // 判断是否数字
+        transferCount = !isNaN(transferCount) ? transferCount : 0;
+        /** 下面是不可编辑的状态可以监听值变化并赋值 */
+        transferAmountNode.val(sq.mul(transferCount, targetVal));
+        // instorageAmountNode.html(sq.mul(instorageCount, targetVal));
+
+        sq.countAll();
+    }
+    if (targetName.indexOf('transferCount') > -1) { // 点击入库数量
+        var transferPrice = $('#' + targetId).find('input[name$=transferPrice]').val();  //获取入库单价
+        /** 下面是可编辑的状态可以监听值变化并赋值 */
+        var transferAmountNode = $('#' + targetId).find('input[name$=transferAmount]');   //获取入库金额
+        var targetVal  = $(e.target).val();//变化的值
+        targetVal = !isNaN(targetVal) ? targetVal : 0; // 判断是否数字
+        transferPrice = !isNaN(transferPrice) ? transferPrice : 0;
+        /** 下面是不可编辑的状态可以监听值变化并赋值 */
+        transferAmountNode.val(sq.mul(transferPrice, targetVal));  //赋值
+        sq.countAllCount();
+        sq.countAll();
+    }
+
+    if (targetName.indexOf('transferAmount') > -1) { // 点击金额
+        var transferCount = $('#' + targetId).find('input[name$=transferCount]').val();  //获取入数量
+        // alert(typeof (instorageCount))
+        // if (instorageCount.length>0){
+        //     alert('aaa');
+        // }
+        /** 下面是可编辑的状态可以监听值变化并赋值 */
+        var transferAmount = $('#' + targetId).find('input[name$=transferAmount]');   //获取入库金额
+
+        var transferPriceNode = $('#' + targetId).find('input[name$=transferPrice]');  //获取入库单价
+        console.log(instoragePriceNode)
+        var targetVal = $(e.target).val();//变化的值
+        /** 下面是不可编辑的状态可以监听值变化并赋值 */
+        if (sq.division(targetVal, transferCount)==="Infinity") {
+            transferPriceNode.val(0.00);
+        }
+        else if (sq.division(targetVal, transferCount)==="NaN"){
+            transferPriceNode.val(0.00);
+        }
+        else {
+            transferPriceNode.val(sq.division(targetVal, transferCount));  //赋值
+        }
+        sq.countAll();
+    }
+
+});
+</script>

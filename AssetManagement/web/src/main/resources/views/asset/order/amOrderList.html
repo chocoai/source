@@ -1,0 +1,205 @@
+<% layout('/layouts/default.html', {title: '订单管理管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('订单管理管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('order:amOrder:edit')){ %>
+					<a href="${ctx}/order/amOrder/form" class="btn btn-default btnTool" title="${text('新增订单管理')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+				<!--<% if(hasPermi('order:amOrder:delete')){ %>-->
+				<!--<a href="javascript:void(0)" class="btn btn-primary btnList" id="delBtn" title="${text('删除订单变更申请表')}" > ${text('删除')}</a>-->
+				<!--<% } %>-->
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amOrder}" action="${ctx}/order/amOrder/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">订单编号：</label>
+					<div class="control-inline">
+						<#form:input path="documentCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">订单类型：</label>-->
+					<!--<div class="control-inline width-120">-->
+						<!--<#form:select path="documentType" dictType="am_order_type" blankOption="true" class="form-control"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="form-group">
+					<label class="control-label">订单状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="documentStatus" dictType="am_order_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">客户姓名：</label>
+					<div class="control-inline">
+						<#form:input path="customerName" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">客户ID：</label>
+					<div class="control-inline">
+						<#form:input path="customerNick" maxlength="20" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">移动电话：</label>
+					<div class="control-inline">
+						<#form:input path="mobilePhone" maxlength="20" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+				<div class="form-group">
+					<label class="control-label"></label>
+					<div class="control-inline">
+						<#form:input path="nameOrId" placeholder="客户呢称/淘宝单号" maxlength="64" id="nameOrId" class="form-control width-150"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm" id ="uploadFile">${text('下载')}</button>
+				</div>
+			</#form:form>
+
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'订单编号', name:'documentCode', index:'a.document_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/order/amOrder/form?documentCode='+row.documentCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑订单管理')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+			// return '<a href="${ctx}/order/amOrder/form?documentCode='+row.documentCode+'" class="btnList" data-title="${text('编辑订单管理')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'订单类型', name:'documentType', index:'a.document_type', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('am_order_type')}, val, '${text('')}', true);
+		}},
+		{header:'订单状态', name:'documentStatus', index:'a.document_status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('am_order_status')}, val, '${text('')}', true);
+		}},
+		{header:'客户姓名', name:'customerName', index:'a.customer_name', width:150, align:"left"},
+		{header:'客户昵称', name:'customerNick', index:'a.customer_nick', width:150, align:"left"},
+		{header:'移动电话', name:'mobilePhone', index:'a.mobile_phone', width:150, align:"left"},
+        {header:'订单来源', name:'orderSource', index:'a.order_source', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_order_source')}, val, '${text('')}', true);
+            }},
+		{header:'省', name:'province', index:'a.province', width:150, align:"left"},
+		{header:'市', name:'city', index:'a.city', width:150, align:"left"},
+		{header:'区', name:'region', index:'a.region', width:150, align:"left"},
+        {header:'创建人', name:'createBy', index:'a.create_by', width:150, align:"left"},
+        {header:'创建时间', name:'createTime', index:'a.create_time', sortable:false, width:150, align:"left"},
+        {header:'合计应收', name:'totalFee', index:'a.total_fee', width:150, align:"left"},
+    	<% if(hasPermi('order:amOrder:delete')){ %>
+        {header:'${text('操作')}', name:'actions', width:60, sortable:false,align:"center", title:false, formatter: function(val, obj, row, act){
+                var actions = [];
+				actions.push('<a href="${ctx}/order/amOrder/delete?documentCode='+row.documentCode+'" class="btnList" title="${text('删除订单')}" data-confirm="${text('确认要删除该订单吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                return actions.join('');
+            }}
+		<% } %>
+	],
+
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        Concurrency();
+	}
+});
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_documentCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/order/amOrder',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+$('#uploadFile').click(function () {
+    var uploadId = $('#nameOrId').val();
+    $.ajax({
+		url:'${ctx}/order/amOrder/uploadFile?uploadId='+uploadId,
+		type:'POST',
+		success:function (result) {
+		    var dataObj = JSON.parse(result);
+            if (dataObj.result == 'false') {
+                js.showMessage(dataObj.message);
+			} else {
+                js.showMessage(dataObj.message);
+                location.reload();
+			}
+        }
+    })
+})
+
+// $('#delBtn').click( function(e){
+//     // 获取所有被选中订单
+//     var orderArr = $('#dataGrid :checkbox:checked'),
+//         temp = []   // 当前被选中的订单
+//     if(orderArr.length>0){
+//         for(var i = 0; i<orderArr.length; i++){
+//             var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+//             temp.push(a)
+//         }
+//
+//         var str = temp.join(',')
+//         $.ajax({
+//             url: '${ctx}/order/amOrder',
+//             data: {
+//                 'code': str.toString(),
+//                 'isDel': 'true'
+//             },
+//             type: 'GET',
+//             contentType: 'application/json',
+//             dataType: 'json',
+//             success:function(res){
+//                 if(res.flag === 'true'){
+//                     if(confirm('确认删除吗?')){
+//                         $.ajax({
+//                             async:false,
+//                             url:'${ctx}/order/amOrder/delete?documentCode='+str,
+//                             success:function (result) {
+//                                 var dataObj = JSON.parse(result);
+//                                 if (dataObj.result =='true'){
+//                                     js.showMessage(dataObj.message)
+//                                     window.location.reload()
+//                                 }else {
+//                                     js.showMessage("删除失败")
+//                                 }
+//                             }
+//                         })
+//                     }
+//                 }else{
+//                     layer.msg(res.msg)
+//                 }
+//             }
+//         })
+//     }else{
+//         layer.msg('请至少选择一张订单进行删除')
+//     }
+// });
+</script>

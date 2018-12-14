@@ -1,0 +1,224 @@
+<% layout('/layouts/default.html', {title: '批量打印商品价签', libs: ['validate','dataGrid']}){ %>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Title</title>
+        <!-- <link rel="stylesheet" href="${ctxStatic}/print/print.css?id=" media="all"> -->
+        <script>
+            document.write('<link rel="stylesheet" href="${ctxStatic}/print/print.css?time='+new Date().getTime()+'">');
+        </script>
+        <style>
+            @media print and (color) {
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            }
+            @media print {
+                *{
+                   font-family:Microsoft YaHei !important;
+                }
+                @font-face{
+                    font-family: 'PingFang Heavy';
+                    src : url('${ctxStatic}/print/PingFang Heavy.ttf');
+                }
+            }
+            *{
+                font-family: 'PingFang Heavy'
+            }
+            @font-face{
+                font-family: 'PingFang Heavy';
+                src : url('${ctxStatic}/print/PingFang Heavy.ttf');
+            }
+        </style>
+    </head>
+    <body>
+    <div class="center" style="text-align: center;margin: 25px 0">
+    <%if(priceTag.skuList != null){%>
+    <div style="margin:  20px auto;font-size: 20px;">以下sku不存在：${priceTag.skuList}</div>
+    <%}%>
+    <input type="button" class="btn btn-default" onclick="aa()" value="${text('打 印')}"/>
+    <button type="button" class="btn btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()">${text('关 闭')}</button>
+    </div>
+    <%
+        if(priceTag.type != "-1"){
+    %>
+    <span id="type" hidden>${priceTag.type}</span>
+    <div id="printBody">
+        <%
+        var i =0;
+        for(item in priceTag.goodsTagList){
+        i++;
+        if(priceTag.type == "0"){
+        %>
+        <div class="card1" style="background: #ebebea !important;">
+            <div class="content" style="background: #ebebea !important;">
+                <div class="cnName" style="font-family:Microsoft YaHei !important;">${item.materielName}</div>
+                <div class="enName" style="font-family:Microsoft YaHei !important;">${item.empName}</div>
+                <div class="line" style="height: 1px;width: 100%;background: #ccc !important" ></div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.specName}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">宽${item.materielWidth}×高${item.materielHeight}×长${item.materielLength}m</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.texture}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.color}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">产地/${item.productOrigin}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.materielCode}</div>
+                <div class="img">
+                    <div class="price" style="background: #000 !important;">
+                        <div style="color: #fff !important;font-family:Microsoft YaHei !important;" >
+                                <span style="color: #fff !important;font-family:Microsoft YaHei !important;" >¥</span>
+                                ${item.money}
+                        </div>
+                    </div>
+                    <div>
+                        <div id = "qrcodeid${i}" class="qrcode" style="background:#fff !important">
+                            <img src="${item.linkAddress}${priceTag.token}" alt="" srcset="">
+                        </div>
+                        <div class="taobao" style="font-family:Microsoft YaHei !important;">手机淘宝扫码</div>
+                    </div>
+                </div>
+                <img class="angle-top-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-top-right" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-bottom-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-bottom-right" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+            </div>
+            <!-- <div class="addre">https://uvanart.tmall.com</div> -->
+        </div>
+        <%}else if(priceTag.type == "2"){%>
+        <div class="card3">
+            <div class="content" style="background: #ebebea !important;">
+                <div class="cnName" style="font-family:Microsoft YaHei !important;">${item.materielName}</div>
+                <div class="enName" style="font-family:Microsoft YaHei !important;">${item.empName}</div>
+                <div class="line" style="height: 1px;width: 100%;background: #ccc !important" ></div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.specName}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">宽${item.materielWidth}×高${item.materielHeight}×长${item.materielLength}m</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.texture}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.color}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">产地/${item.productOrigin}</div>
+                <div class="text" style="font-family:Microsoft YaHei !important;">${item.materielCode}</div>
+                <div class="img">
+                    <div class="price" style="background: #000 !important;">
+                        <div style="color: #fff !important;font-family:Microsoft YaHei !important;" >
+                                <span style="color: #fff !important;font-family:Microsoft YaHei !important;" >¥</span>
+                                ${item.money}
+                        </div>
+                    </div>
+                    <div>
+                        <div id = "qrcodeid${i}" class="qrcode" style="background:#fff !important">
+                            <img src="${item.linkAddress}${priceTag.token}" alt="" srcset="">
+                        </div>
+                        <div class="taobao" style="font-family:Microsoft YaHei !important;">手机淘宝扫码</div>
+                    </div>
+                </div>
+                <img class="angle-top-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-top-right" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-bottom-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-bottom-right" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+            </div>
+            <div class="addre">https://uvanart.tmall.com</div>
+        </div>
+        <%}else if(priceTag.type == "1"){%>
+        <div class="card2">
+            <div class="bg" style="background: #000 !important;">
+                <div class="bottom" style="background: #000 !important;">
+                    <div class="content1">
+                        <div class="cnName"  style="color: #fff !important;font-family:Microsoft YaHei !important;">${item.materielName}</div>
+                        <div class="enName"  style="color: #fff !important;font-family:Microsoft YaHei !important;">${item.empName}</div>
+                        <div class="No"  style="color: #fff !important;font-family:Microsoft YaHei !important;">No:${item.materielCode}</div>
+                    </div>
+                    <div class="price">
+                        <div style="color: #fff !important;font-family:Microsoft YaHei !important;" >
+                                <span style="color: #fff !important;font-family:Microsoft YaHei !important;" >¥</span>
+                                ${item.money}
+                        </div>
+                    </div>
+                    <img class="angle-top-left" src="${ctxStatic}/print/rLine02.png" alt="" srcset="">
+                    <img class="angle-top-right" src="${ctxStatic}/print/rLine02.png" alt="" srcset="">
+                    <img class="angle-bottom-left" src="${ctxStatic}/print/rLine02.png" alt="" srcset="">
+                    <img class="angle-bottom-right" src="${ctxStatic}/print/rLine02.png" alt="" srcset="">
+                </div>
+            </div>
+            
+            <div class="img">
+                <div id = "qrcodeid${i}" class="imgshow" style="background:#fff !important">
+                    <img src="${item.linkAddress}${priceTag.token}" alt="" srcset="">
+                </div>
+                <div class="text" style="font-family:Microsoft YaHei !important;background: #fff !important">手淘扫码</div>
+                <img class="angle-top-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-top-right" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-bottom-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+                <img class="angle-bottom-right" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
+            </div>
+        </div>
+        <%}%>
+        <div style="page-break-after:always;"></div>
+        <span class="qrurl" hidden>${item.linkAddress}${priceTag.token}</span>
+        <%}}%>
+    </div>
+    <% } %>
+    <script language="javascript" src="${ctxStatic}/print/jquery-1.4.4.min.js"></script>
+    <script language="javascript" src="${ctxStatic}/print/jqprint-0.3.js"></script>
+    <script language="javascript" src="${ctxStatic}/print/jquery.qrcode.min.js"></script>
+   
+    
+
+    <script>
+        var qrcodeUrl = []; //二维码数组
+        function aa(){
+            $("#printBody").jqprint({
+                debug: false,
+                importCSS: true , //将此属性改为false；直接在style中写入样式即可
+                printContainer: true,
+                operaSupport: true
+            });
+        }
+        $(function(){
+            // var qrUrl = $(".qrurl"),
+            //     id = $("#type").val() == "0"?'#qr1':"#qr2",
+            //     imgSize =50;
+            // if($(".card1").length) imgSize = 48
+            // for(var i =0 ;i< qrUrl.length ;i++){
+            //     //此处生成名片二维码
+            //     var the_text = utf16to8($(".qrurl")[i].innerHTML);
+            //     console.log(the_text)
+            //     $("#qrcodeid"+(i+1)).qrcode({
+            //         width:imgSize,
+            //         height:imgSize,
+            //         render:"canvas", //设置渲染方式 table canvas
+            //         typeNumber : -1,  //计算模式 
+            //         correctLevel  : 0,//纠错等级 
+            //         background   : "#ffffff",//背景颜色 
+            //         foreground   : "#000000",//前景颜色 
+            //         text:the_text
+            //     }); 
+            //     var image = new Image(),
+            //         canvas = $("#qrcodeid"+(i+1)).find("canvas")[0]
+            //         console.log(canvas)
+            //     image.src = canvas.toDataURL("image/png");
+            //     image.width=imgSize;
+            //     $("#qrcodeid"+(i+1)).append(image);
+            //     $("#qrcodeid"+(i+1)).find("canvas").remove()
+            // }
+        }) 
+        function utf16to8(str) { //解决中文乱码
+            var out, i, len, c; 
+            out = ""; 
+            len = str.length; 
+            for(i = 0; i < len; i++) { 
+                c = str.charCodeAt(i); 
+                if ((c >= 0x0001) && (c <= 0x007F)) { 
+                    out += str.charAt(i); 
+                } else if (c > 0x07FF) { 
+                    out += String.fromCharCode(0xE0 | ((c >> 12) & 0x0F)); 
+                    out += String.fromCharCode(0x80 | ((c >> 6) & 0x3F)); 
+                    out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F)); 
+                } else { 
+                    out += String.fromCharCode(0xC0 | ((c >> 6) & 0x1F)); 
+                    out += String.fromCharCode(0x80 | ((c >> 0) & 0x3F)); 
+                } 
+            } 
+            return out; 
+        } 
+    </script>
+    </body>
+    </html>
+    

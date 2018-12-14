@@ -1,0 +1,109 @@
+<% layout('/layouts/default.html', {title: '角色数据权限管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('角色数据权限管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('basicroleinfoconfig:roleDataPermission:edit')){ %>
+					<a href="${ctx}/basicroleinfoconfig/roleDataPermission/form" class="btn btn-default btnTool" title="${text('新增角色数据权限')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${roleDataPermission}" action="${ctx}/basicroleinfoconfig/roleDataPermission/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">角色id：</label>
+					<div class="control-inline">
+						<#form:input path="roleCode" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">接口id：</label>
+					<div class="control-inline">
+						<#form:input path="interfaceCode" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">sql：</label>
+					<div class="control-inline">
+						<#form:input path="interfaceSql" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">创建人id：</label>
+					<div class="control-inline">
+						<#form:input path="createById" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">修改人ID：</label>
+					<div class="control-inline">
+						<#form:input path="updateById" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">remarks：</label>
+					<div class="control-inline">
+						<#form:input path="remarks" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">公式：</label>
+					<div class="control-inline">
+						<#form:input path="stitching" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'角色id', name:'roleCode', index:'a.role_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/basicroleinfoconfig/roleDataPermission/form?permissionCode='+row.permissionCode+'" class="btnList" data-title="${text('编辑角色数据权限')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'接口id', name:'interfaceCode', index:'a.interface_code', width:150, align:"left"},
+		{header:'sql', name:'interfaceSql', index:'a.interface_sql', width:150, align:"left"},
+		{header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'创建人id', name:'createById', index:'a.create_by_id', width:150, align:"left"},
+		{header:'修改人ID', name:'updateById', index:'a.update_by_id', width:150, align:"left"},
+		{header:'remarks', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'公式', name:'stitching', index:'a.stitching', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('basicroleinfoconfig:roleDataPermission:edit')){ %>
+				actions.push('<a href="${ctx}/basicroleinfoconfig/roleDataPermission/form?permissionCode='+row.permissionCode+'" class="btnList" title="${text('编辑角色数据权限')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/basicroleinfoconfig/roleDataPermission/delete?permissionCode='+row.permissionCode+'" class="btnList" title="${text('删除角色数据权限')}" data-confirm="${text('确认要删除该角色数据权限吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

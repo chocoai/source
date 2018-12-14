@@ -1,0 +1,174 @@
+<% layout('/layouts/default.html', {title: '菜鸟对接记录管理', libs: ['validate','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amRookie.isNewRecord ? '新增菜鸟对接记录' : '菜鸟对接记录')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amRookie}" action="${ctx}/rookie/amRookie/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="documentCode"/>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 单据编号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="documentCode" maxlength="12" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 单据名称：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="documentName" maxlength="50" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 操作类型：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="operationType" maxlength="20" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 源单编号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="orderCode" maxlength="50" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 响应编号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="respCode" maxlength="50" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 响应信息：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="respInfo" maxlength="1000" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 是否成功：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="success" maxlength="10" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> WMS单据编号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="wmsCode" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 业务时间：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="busineDate" class="form-control" readonly="true" dataFormat="datetime"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<h4 class="form-unit">明细信息</h4>
+				<div class="ml10 mr10">
+					<table id="amRookieDetailDataGrid"></table>
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-9 col-sm-10">
+						<!--<% if (hasPermi('rookie:amRookie:edit')){ %>-->
+							<!--<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;-->
+						<!--<% } %>-->
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+//初始化菜鸟对接记录明细表DataGrid对象
+$("#amRookieDetailDataGrid").dataGrid({
+
+	data: ${toJson(amRookie.amRookieDetailList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'单据编号', name:'documentCode.documentCode', editable:true, hidden:true},
+		{header:'商品编码', name:'itemCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'50', 'class':'form-control'}},
+		{header:'商品名称', name:'itemName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'计划数量', name:'planqty', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'11', 'class':'form-control digits'}},
+		{header:'实际数量', name:'actualqty', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'11', 'class':'form-control digits'}},
+		{header:'批次号', name:'batchCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'50', 'class':'form-control'}},
+		{header:'单据行号', name:'orderlineCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'50', 'class':'form-control'}},
+		{header:'Bom版本', name:'bomVer', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'50', 'class':'form-control'}},
+		{header:'仓库', name:'warehouseCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'50', 'class':'form-control'}}
+	],
+	
+	// 编辑表格参数
+	editGrid: false,				// 是否是编辑表格
+	editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amRookieDetailDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amRookieDetailList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,documentCode.documentCode,itemCode,itemName,planqty,actualqty,batchCode,orderlineCode,bomVer,warehouseCode,detailCode,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+</script>

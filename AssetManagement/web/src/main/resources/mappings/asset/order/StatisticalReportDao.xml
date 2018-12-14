@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.order.dao.StatisticalReportDao">
+	
+	<!-- 查询数据-->
+	<select id="findList" resultType="StatisticalReport">
+	SELECT
+		str_to_date(a.create_time, '%Y-%m-%d') orderDate,
+		COUNT(1) dealOrderNum,
+		SUM(a.total_price) paymentAmount,
+		COUNT(a.mobile_phone) dealCustomerNum,
+		SUM(a.total_price)/COUNT(a.mobile_phone) customerPrice
+	FROM
+		js_am_order a
+	WHERE
+		a.submit_by IN (
+		SELECT
+			emp_name
+		FROM
+			js_sys_employee
+		WHERE
+			office_code IN (
+				SELECT
+					office_code
+				FROM
+					js_sys_office
+				WHERE
+					office_code = #{officeCode}
+				OR parent_codes LIKE concat('%,', #{officeCode}, ',%')
+			)
+	)
+		<if test="dimensionality==0" >
+			AND str_to_date(a.create_time, '%Y-%m-%d') IN
+			<foreach collection="dateList" item="date" index="index" open="(" separator="," close=")">
+				&apos;${date}&apos;
+			</foreach>
+			GROUP BY
+			str_to_date(a.create_time, '%Y-%m-%d')
+		</if>
+		<if test="dimensionality==1">
+			AND str_to_date(a.create_time, '%Y-%m') IN
+			<foreach collection="dateList" item="date" index="index" open="(" separator="," close=")">
+				&apos;${date}-00&apos;
+			</foreach>
+			GROUP BY
+			str_to_date(a.create_time, '%Y-%m')
+		</if>
+	ORDER BY
+		str_to_date(a.create_time, '%Y-%m-%d')
+	</select>
+	
+</mapper>

@@ -1,0 +1,455 @@
+<% layout('/layouts/default.html', {title: '同步淘宝商品列表管理', libs: ['validate','dataGrid']}){ %>
+<style xmlns:c="http://www.w3.org/1999/html">
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+</style>
+
+<style>
+    #jace_table thead td{
+        height: 25px;
+        width: 130px;
+        text-align: center;
+    }
+    #jace_table tbody td{
+        width: 130px;
+        height: 28px;
+        text-align: center;
+    }
+    #jace_table{
+        border: solid 1px #d2d6de;
+    }
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i>
+				${text(tbProduct.isNewRecord ? '新增同步淘宝商品列表' : '编辑同步淘宝商品列表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${tbProduct}" action="${ctx}/tianmao/tbProduct/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-1 col-sm-10">
+					<% if (hasPermi('tianmao:tbProduct:edit')){ %>
+					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+			<div class="box-body">
+				<div class="form-unit form-unitHd" id="div1">
+					<span class="on">${text('SKU管理')}</span>
+					<span>${text('参数管理')}</span>
+					<span>${text('图片管理')}</span>
+				</div>
+				<div class="form-unitTab">
+				<#form:hidden path="numIid"/>
+					<div class="item">
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 商品标题：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="title" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 商品状态：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="approveStatus" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 商品url：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="detailUrl"  class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 天猫ID：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="numIid"  class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 卖家昵称：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="nick"  class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 商家外部编码：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="outerCode"  class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										商品分类:<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:treeselect id="productCategory" title="${text('商品分类')}"
+										path="procategoryCode" labelPath="productCategory.categoryName"
+										url="${ctx}/product/productCategory/treeData1"
+										allowClear="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										商品系列:<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:treeselect id="productSeries" title="${text('商品系列')}"
+										path="proseriesCode" labelPath="productSeries.seriesName"
+										url="${ctx}/product/productSeries/treeData1"
+										allowClear="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 商品图片：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8" id="jace">
+									</div>
+								</div>
+							</div>
+						</div>
+						<h4 class="form-unit">物品信息</h4>
+						<div class="ml10 mr10">
+							<table id="tbSkuDataGrid"></table>
+						</div>
+						<!--<div class="row">-->
+							<!--<div class="col-xs-10">-->
+								<!--<div class="form-group">-->
+									<!--<label class="control-label col-sm-4" title="">-->
+										<!--<span class="required hide">*</span> SKU管理：<i class="fa icon-question hide"></i></label>-->
+									<!--<div class="col-sm-8">-->
+                                        <!--<table id="jace_table" border="1">-->
+                                            <!--<thead>-->
+                                                <!--<tr>-->
+                                                    <!--<td>序号</td>-->
+                                                    <!--<td>商品规格</td>-->
+                                                    <!--<td>sku</td>-->
+                                                    <!--<td>库存</td>-->
+                                                    <!--<td>价格</td>-->
+                                                <!--</tr>-->
+                                            <!--</thead>-->
+                                            <!--<tbody>-->
+
+                                            <!--</tbody>-->
+                                        <!--</table>-->
+									<!--</div>-->
+								<!--</div>-->
+							<!--</div>-->
+						<!--</div>-->
+					</div>
+					<div class="item" style="display: none">
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 品牌：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input  value="${item.inputStr}" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 产地：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input value="${item.location.city}" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 物流体积：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input value="${item.itemSize}" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 城市：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input value="${item.location.state}${item.location.city}" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 物流重量：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input value="${item.itemWeight}" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 区县：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input value="" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 平邮费用：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input value="${item.postFee}" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 快递费用：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input value="${item.expressFee}" maxlength="128" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+                        <div class="row">
+                            <div class="col-xs-6">
+                                <div class="form-group">
+                                    <label class="control-label col-sm-4" title="">
+                                        <span class="required hide">*</span> EMS费用：<i class="fa icon-question hide"></i></label>
+                                    <div class="col-sm-8">
+                                        <#form:input value="${item.emsFee}" maxlength="128" class="form-control" readonly="true"/>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 参数：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<!--<#form:input path="title" maxlength="128" class="form-control"/>-->
+										<textarea style="width:521px;height: 180px;background: #eee;resize:none;" disabled>${item.propsName}</textarea>
+									</div>
+								</div>
+							</div>
+                            <div class="col-xs-6">
+                                <div class="form-group">
+                                    <label class="control-label col-sm-4" title="">
+                                        <span class="required hide">*</span> 属性别名：<i class="fa icon-question hide"></i></label>
+                                    <div class="col-sm-8">
+                                        <textarea style="width:521px;height: 180px;background: #eee;resize:none;" disabled>${item.propertyAlias}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+						</div>
+
+					</div>
+					<div class="item" style="display: none">
+						<div class="row">
+							<div class="col-xs-10">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 商品详情图：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8" id="jace_img">
+										<!--<#form:input path="title" maxlength="128" class="form-control"/>-->
+										<!--<img src="${tbProduct.picUrl}" style="height: 240px;width: 240px;margin-right: 10px;float: left">-->
+									</div>
+								</div>
+								<!--<div class="form-group">-->
+									<!--<label class="control-label col-sm-4" title=""></label>-->
+									<!--<div class="col-sm-8">-->
+										<!--&lt;!&ndash;<#form:input path="title" maxlength="128" class="form-control"/>&ndash;&gt;-->
+										<!--<img src="${tbProduct.picUrl}" style="height: 240px;width: 240px;margin-right: 10px;float: left">-->
+									<!--</div>-->
+								<!--</div>-->
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+
+			</div>
+			<div class="box-footer">
+				<!--<div class="row">-->
+					<!--<div class="col-sm-offset-2 col-sm-10">-->
+						<!--&lt;!&ndash;<% if (hasPermi('tianmao:tbProduct:edit')){ %>&ndash;&gt;-->
+							<!--&lt;!&ndash;<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;&ndash;&gt;-->
+						<!--&lt;!&ndash;<% } %>&ndash;&gt;-->
+						<!--<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>-->
+					<!--</div>-->
+				<!--</div>-->
+			</div>
+
+		</#form:form>
+	</div>
+</div>
+</div><div id="mask"><span style="text-align: center"></span></div>
+
+<% } %>
+<script>
+
+    $("#tbSkuDataGrid").dataGrid({
+        data: ${toJson(tbProduct.tbSkuList)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'状态', name:'status', editable:true, hidden:true},
+            {header:'主键', name:'skuId', editable:true, hidden:true},
+            {header:'商品规格', name:'properties', width:150, sortable:false, editable:false,edittype:'text',editoptions:{'maxlength':'128', 'class':'form-control'}},
+            {header:'sku', name:'outerId', width:150, editable:false,edittype:'text',sortable:false,editoptions:{'maxlength':'255', 'class':'form-control'}},
+            {header:'库存', name:'quantity', width:150, editable:false,edittype:'text',sortable:false,editoptions:{'maxlength':'32', 'class':'form-control'}},
+            {header:'标准售价', name:'price', width:150, editable:false, edittype:'text',sortable:false,editoptions:{'maxlength':'32', 'class':'form-control'}},
+            {header:'真实售价', name:'realPrice', width:150, editable:false, edittype:'text',sortable:false,editoptions:{'maxlength':'32', 'class':'form-control'}},
+            {header:'K3物料名称', name:'skuName', width:150, editable:false, edittype:'text',sortable:false,editoptions:{'maxlength':'32', 'class':'form-control'}},
+            {header:'发货时间', name:'preSale', width:150, editable:false, edittype:'text',sortable:false,editoptions:{'maxlength':'32', 'class':'form-control'}}
+        ],
+
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+       // editGridAddRowBtn: $('#amOrderDiscountDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {sku_id: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'tbSkuList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,sku_id,numIid.numIid,properties,price,quantity,', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+$(function() {
+    $("#productSeriesName").attr('aria-invalid','false');
+    slidtab();
+    slidtable();
+    //遍历图片
+    let data = ${toJson(item.itemImgs)};
+    for(let i=0;i<data.length;i++){
+        $("#jace").append("<img src="+data[i].url+" style=\"height: 90px;width: 90px;margin-right: 10px\">");
+    }
+    // //遍历SKU
+    // let suks = ${toJson(item.skus)};
+    // for(let i=0;i<suks.length;i++){
+    //     let m = getCaption(suks[i].propertiesName);
+    //     console.log(m);
+    //     let num = i+1;
+    //     let suk = "<tr>\n" +
+    //         "<td>"+num+"</td>\n" +
+    //         "<td style='width: 260px;white-space: nowrap;'>"+m+"</td>\n" +
+    //         "<td>"+suks[i].outerId+"</td>\n" +
+    //         "<td>"+suks[i].quantity+"</td>\n" +
+    //         "<td>"+suks[i].price+"</td>\n" +
+    //         "</tr>";
+    //     $("#jace_table tbody").append(suk);
+    // }
+    //商品详情图
+    console.log(${toJson(item.descModules)});
+	let flag = ${toJson(item)}.hasOwnProperty("descModules");
+	//此表达式可用
+    // let images = ${toJson(item)}.descModules;
+    console.log(flag);
+    if(flag){
+        $("#jace_img").append(${toJson(item.descModules)});
+	}
+});
+// tab切换
+var slidtab = function(){
+    $('.form-unitHd span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTab .item').hide()
+        $('.form-unitTab .item').eq(_t.index()).fadeIn()
+    });
+};
+
+var slidtable = function(){
+    $('.form-unitD span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTable .item').hide()
+        $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+    });
+};
+
+	
+function getCaption(obj) {
+    var index=obj.lastIndexOf("颜色分类");
+    obj=obj.substring(index,obj.length);
+    console.log(obj);
+    return obj;
+}
+
+</script>

@@ -1,0 +1,62 @@
+<% layout('/layouts/default.html', {title: '部门管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('部门管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<a href="#" class="btn btn-default" id="btnRefreshTree" title="${text('刷新')}"><i class="fa fa-refresh"></i> ${text('刷新')}</a>
+				<a href="#" class="btn btn-default" id="btnExpandTreeNode" title="${text('展开一级')}"><i class="fa fa-angle-double-down"></i> ${text('展开')}</a>
+				<a href="#" class="btn btn-default" id="btnCollapseTreeNode" title="${text('折叠全部')}"><i class="fa fa-angle-double-up"></i> ${text('折叠')}</a>
+				<!--<% if(hasPermi('ding:dingDepartment:edit')){ %>
+					<a href="${ctx}/ding/dingDepartment/form" class="btn btn-default btnTool" title="${text('新增js_ding_department')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>-->
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${dingDepartment}" action="${ctx}/fz/ding/dingDepartment/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">${text('部门名称')}：</label>
+				<div class="control-inline">
+					<#form:input path="name" maxlength="50" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('部门代码')}：</label>
+				<div class="control-inline">
+					<#form:input path="departmentId" maxlength="100" class="form-control width-120"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'部门名称', name:'name', index:'a.name', width:150, align:"center", frozen:true},
+        {header:'部门代码', name:'departmentId', index:'a.department_id', width:150, align:"center"},
+        {header:'上级部门', name:'priDeptName', width:80, align:"center"},
+        {header:'部门主管', name:'managerName', width:100, align:"center"},
+        {header:'限制本部门成员查看通讯录', name:'outerDept', index:'a.outer_dept', width:100, align:"center",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('written')}, val, '${text('未知')}', true);}}
+	],
+	treeGrid: true,			// 启用树结构表格
+	defaultExpandLevel: 0,	// 默认展开的层次
+	expandNodeClearPostData: 'name,parentid,order,createDeptGroup,autoAddUser,deptHiding,deptPermits,userPermits,outerDept,outerPermitPepts,outerPermitUsers,orgDeptOwner,deptManagerUseridList,sourceIdentifier,groupContainSubdept,', // 展开节点清理请求参数数据（一般设置查询条件的字段属性，否则在查询后，不能展开子节点数据）	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

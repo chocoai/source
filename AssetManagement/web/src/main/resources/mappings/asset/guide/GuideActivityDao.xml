@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.guideApp.dao.GuideActivityDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="GuideActivity">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+
+	<select id="selectList" resultType="GuideActivity">
+		SELECT
+			a.*, COUNT(b.activity_code) commentNum,c.banner_url as bannerImage
+		FROM
+			js_guide_activity a
+		LEFT JOIN js_guide_comment b ON a.activity_code = b.activity_code
+		LEFT JOIN js_guide_img c ON a.activity_code = c.activity_code
+		WHERE
+			a.activity_status = '0'
+		GROUP BY
+			a.activity_code
+		ORDER BY
+		  	a.create_time DESC
+	</select>
+</mapper>

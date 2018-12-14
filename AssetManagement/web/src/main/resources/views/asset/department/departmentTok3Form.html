@@ -1,0 +1,127 @@
+<% layout('/layouts/default.html', {title: '部门关联K3关系表管理', libs: ['validate']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(departmentTok3.isNewRecord ? '新增部门关联K3关系表' : '编辑部门关联K3关系表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${departmentTok3}" action="${ctx}/department/departmentTok3/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="departmentCode"/>
+				<#form:hidden path="isNewRecord"/>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								所属部门<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:treeselect id="office" title="部门"
+								path="department" labelPath="office.officeName" canSelectRoot="true" canSelectParent="true"
+								url="${ctx}/sys/office/treeData" allowClear="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								对应部门的K3平台ID<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="k3Accountid" maxlength="64" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								 K3帐号<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="k3Account" maxlength="64" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								K3密码<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="k3Password" maxlength="64" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				<#form:hidden path="remarks"/>
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('department:departmentTok3:edit')){ %>
+							<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().departmentCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+    $(function(){
+        //并发
+        checkConcurrency();
+	})
+</script>

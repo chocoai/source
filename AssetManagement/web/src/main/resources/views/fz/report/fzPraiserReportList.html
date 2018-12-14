@@ -1,0 +1,100 @@
+<% layout('/layouts/default.html', {title: '获赞者获赞数统计表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('获赞者获赞数统计表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('report:fzPraiserReport:edit')){ %>
+					<a href="${ctx}/report/fzPraiserReport/form" class="btn btn-default btnTool" title="${text('新增获赞者获赞数统计表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzPraiserReport}" action="${ctx}/report/fzPraiserReport/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="name" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('部门')}：</label>
+					<div class="control-inline width-120" >
+						<#form:treeselect id="dept" title="${text('部门选择')}"
+						path="departmentId" labelPath="deptname" checkbox="false"
+						url="${ctx}/fz/ding/dingDepartment/treeData" class="required " allowClear="true"
+						canSelectRoot="true" canSelectParent="true"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('职位')}：</label>
+					<div class="control-inline">
+						<#form:input path="position" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">日期时间：</label>
+					<div class="control-inline">
+						<#form:input path="date_gte" readonly="true" maxlength="20" class="form-control Wdate-date"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false,onpicked:function(){date_lte.click()}});"/>
+						&nbsp;--&nbsp;
+						<#form:input path="date_lte" readonly="true" maxlength="20" class="form-control Wdate-date"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'${text('名称')}', name:'name', index:'b.name', width:150, align:"center"},
+		// {header:'${text('名称')}', name:'name', index:'a.name', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+		// 	return '<a href="${ctx}/report/fzPraiserReport/form?userId='+row.userId+'" class="btnList" data-title="${text('编辑获赞者获赞数统计表')}">'+(val||row.id)+'</a>';
+		// }},
+        {header:'${text('部门')}', name:'department', index:'b.position',sortable:false, width:150, align:"center"},
+		{header:'${text('职位')}', name:'position', index:'b.position', width:150, align:"center"},
+		{header:'${text('可兑换梵钻')}', name:'convertibleGold', index:'b.convertible_gold', width:150, align:"center"},
+		{header:'${text('获赞总数')}', name:'praiseTotal', index:'praiseTotal', width:150, align:"center"},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('report:fzPraiserReport:edit')){ %>
+		// 		actions.push('<a href="${ctx}/report/fzPraiserReport/form?userId='+row.userId+'" class="btnList" title="${text('编辑获赞者获赞数统计表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#searchForm'), {
+        url:'${ctx}/report/fzPraiserReport/exportData',
+        downloadFile:true
+    });
+});
+</script>

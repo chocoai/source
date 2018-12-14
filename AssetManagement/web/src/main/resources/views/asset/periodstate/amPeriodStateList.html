@@ -1,0 +1,82 @@
+<% layout('/layouts/default.html', {title: '数据期间管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('数据期间管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('periodstate:amPeriodState:edit')){ %>
+					<a href="${ctx}/periodstate/amPeriodState/form" class="btn btn-default btnTool" title="${text('新增数据期间表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amPeriodState}" action="${ctx}/periodstate/amPeriodState/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">数据期间：</label>
+					<div class="control-inline">
+						<#form:input path="dataPeriod" maxlength="1000" dataFormat="date"  class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">开始日期：</label>
+					<div class="control-inline">
+						<#form:input path="beginData"  readonly="false" maxlength="20" class="form-control Wdate required"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">结束日期：</label>
+					<div class="control-inline">
+						<#form:input path="endData"  readonly="false" maxlength="20" class="form-control Wdate required"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">期间状态：</label>
+					<div class="control-inline">
+						<#form:input path="periodStutrs" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'数据期间', name:'dataPeriod', index:'a.data_period', width:150, align:"center", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/periodstate/amPeriodState/form?periodStateCode='+row.periodStateCode+'" class="btnList" data-title="${text('编辑数据期间表')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'开始日期', name:'beginData', dataFormat:"yyyy-MM-dd",index:'a.begin_data', width:150, align:"center"},
+		{header:'结束日期', name:'endData',dataFormat:"yyyy-MM-dd", index:'a.end_data', width:150, align:"center"},
+		{header:'期间状态', name:'periodStutrs', index:'a.period_stutrs', width:150, align:"center",formatter: function(val, obj, row, act) {
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_period_state')}, val, '未知', true);
+            }},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('periodstate:amPeriodState:edit')){ %>
+				actions.push('<a href="${ctx}/periodstate/amPeriodState/form?periodStateCode='+row.periodStateCode+'" class="btnList" title="${text('编辑数据期间表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/periodstate/amPeriodState/delete?periodStateCode='+row.periodStateCode+'" class="btnList" title="${text('删除数据期间表')}" data-confirm="${text('确认要删除该数据期间表吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

@@ -1,0 +1,505 @@
+*{
+	font-family: 'PingFang Heavy' !important;
+}
+@font-face{
+	font-family: 'PingFang Heavy' !important;
+	src : url('${ctxStatic}/print/PingFang Heavy.ttf') !important;
+}
+body{
+	width: 100%;
+	height: 100%;
+	margin:0;
+	padding:0;
+}
+.btn-print{
+	display: block;
+	width: 80px;
+	margin: 10px auto;
+}
+#printBody{
+	margin:0 auto;
+    background: #fff;
+    padding: 5px;
+}
+.logo{
+	width:184px;
+	height:83px;
+	margin-bottom:5px;
+}
+.btn-print{
+	background-color: #367fa9;
+	border-radius: 3px;
+	box-shadow: none;
+	border: 0px;
+	color: white;
+	padding: 10px 20px;
+	font-size: 20px;
+}
+.btn-print:hover {
+	color: white;
+	background-color: #00a0e9;
+	border-color: #204d74;
+}
+.btn-print:focus,.btn-print:hover {
+	color: white;
+	text-decoration: none;
+}
+body{
+	background: #f0f0f0;
+}
+*{
+	box-sizing: border-box;
+}
+/* 家具大价签 */
+.card1{
+	background: #fff;
+	height: 390px;
+    width: 280px;
+	margin:30px auto;
+	display: block;
+    padding: 10px;
+    box-sizing: content-box;
+    background: #ebebea;
+}
+.card1 .content{
+	background: #ebebea;
+	height: 390px;
+    width: 280px;
+	padding: 19.66px 19.11px;
+	/* height: 412px;
+    width: 300px;
+    padding: 33.39px 30.17px; */
+    position: relative;
+}
+.card1 .content .angle-top-left{
+	position: absolute;
+	top: -22px;
+    left: -22px;
+    width: 23px;
+}
+.card1 .content .angle-top-right{
+	position: absolute;
+	top: -22px;
+    left: 279px;
+    width: 23px;
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    transform: scaleX(-1);
+}
+.card1 .content .angle-bottom-left{
+	position: absolute;
+	top: 389px;
+    left: -22px;
+    width: 23px;
+    -moz-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    transform: scaleY(-1);
+}
+.card1 .content .angle-bottom-right{
+	position: absolute;
+	top: 389px;
+    left: 279px;
+    width: 23px;
+    -moz-transform: scale(-1);
+    -webkit-transform: scale(-1);
+    -o-transform: scale(-1);
+    transform: scale(-1);
+}
+.card1 .content .cnName{
+	font-size: 24.2px;
+	margin-bottom: 1.3px;
+	font-weight: 600;
+}
+.card1 .content .enName{
+	font-size: 24.2px;
+	height: 34.39px;
+}
+.card1 .content .line{
+	width: 100%;
+	height: 1px;
+	background: #ccc;
+	margin: 19.02px 0 22.3px;
+}
+.card1 .content .text{
+	line-height: 1;
+	font-size: 12px;
+	margin-bottom: 15.29px;
+	height: 7.64px;
+	transform: scale(0.7);
+    position: relative;
+    left: -35px;
+    font-weight: 300;
+}
+.card1 .content .img{
+    display: flex;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 27.2px;
+    width: 240.76px;
+}
+.card1 .content .img .price{
+	height:68.5px;
+	width: 143.31px;
+	background: #000;
+	color: #fff !important;
+	display: flex;
+	text-align: center;
+	line-height: 68.5px;
+	position: relative;
+	justify-content: center;
+}
+.card1 .content .img .price div span{
+	font-size: 16.56px;
+	position: relative;
+    top: -13px;
+}
+.card1 .content .img .price div:last-child{
+	font-size: 33.12px;
+	font-weight: 700;
+	position: relative;
+}
+.card1 .content .img .qrcode{
+	width: 58px;
+    height: 58px;
+    /* padding: 5px; */
+    background: #fff;
+    position: relative;
+    right: -18px;
+}
+.card1 .content .img .qrcode img{
+	width: 58px;
+    padding: 4px;
+}
+.card1 .content .img .taobao{
+	font-size: 12px;
+    margin-top: 2px;
+    line-height: 1;
+    transform: scale(0.7);
+    position: relative;
+	left: 8px;
+    letter-spacing: 1.5px;
+}
+.card1 .content .img .taobao:after {
+    content: " ";
+    display: inline-block;
+    width: 100%;
+}
+.card1 .addre{
+	text-align: center;
+	 font-size: 12px;
+}
+/* 家具小价签 */
+.card3{
+	background: #fff;
+    width: 196.8px;
+	margin:50px auto;
+	display: block;
+    box-sizing: content-box;
+}
+.card3 .content{
+	background: #ebebea;
+	height: 294px;
+    width: 196.8px;
+	padding: 23px 13.38px;
+    position: relative;
+}
+.card3 .content .angle-top-left{
+	position: absolute;
+	top: -38px;
+    left: -38px;
+    width: 23px;
+}
+.card3 .content .angle-top-right{
+	position: absolute;
+	top: -38px;
+    left: 212px;
+    width: 23px;
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    transform: scaleX(-1);
+}
+.card3 .content .angle-bottom-left{
+	position: absolute;
+	top: 328px;
+    left: -38px;
+    width: 23px;
+    -moz-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    transform: scaleY(-1);
+}
+.card3 .content .angle-bottom-right{
+	position: absolute;
+	top: 328px;
+    left: 211px;
+    width: 23px;
+    -moz-transform: scale(-1);
+    -webkit-transform: scale(-1);
+    -o-transform: scale(-1);
+    transform: scale(-1);
+}
+.card3 .content .cnName{
+	font-size:17.5px;
+	font-weight: 600;
+}
+.card3 .content .enName{
+	font-size:17.5px;
+	/* height: 34.39px; */
+    line-height: 1.2;
+}
+.card3 .content .line{
+	width: 100%;
+	height: 1px;
+	background: #ccc;
+    margin: 15px 0 18px;
+}
+.card3 .content .text{
+	line-height: 1;
+	font-size: 12px;
+	margin-bottom: 11.47px;
+	height: 7.64px;
+	transform: scale(0.7);
+    position: relative;
+    left: -25px;
+    font-weight: 300;
+}
+.card3 .content .img{
+    display: flex;
+    justify-content: space-between;
+	width: 183.8px;
+    margin-top: 16px;
+}
+.card3 .content .img .price{
+	height:54px;
+	width: 105.6px;
+	background: #000;
+	color: #fff !important;
+	display: flex;
+	text-align: center;
+	line-height: 54px;
+	position: relative;
+	justify-content: center;
+}
+.card3 .content .img .price div span{
+	font-size: 12px;
+	position: relative;
+    top: -11px;
+}
+.card3 .content .img .price div:last-child{
+	font-size: 24.5px;
+	font-weight: 700;
+	position: relative;
+}
+.card3 .content .img .qrcode{
+	width: 54px;
+    height: 54px;
+    /* padding: 5px; */
+    background: #fff;
+    position: relative;
+	right: -11px;
+}
+.card3 .content .img .qrcode img{
+	width: 54px;
+    padding: 4px;
+}
+.card3 .content .img .taobao{
+	font-size: 12px;
+    line-height: 1;
+	transform: scale(0.5);
+    letter-spacing: 6px;
+    width: 77px;
+    white-space: nowrap;
+    position: relative;
+    left: -6.5px;
+}
+.card3 .content .img .taobao:after {
+    content: " ";
+    display: inline-block;
+    width: 100%;
+}
+.card3 .addre{
+	text-align: center;
+	font-size: 12px;
+	margin: 7.5px 0 11.5px;
+    transform: scale(0.6);
+}
+/* 饰品价签 */
+.card2{
+	margin:50px auto;
+	position: relative;
+	width: 500px;
+}
+.card2 .bg{
+	display: inline-block;
+	padding: 10px 9px 9px 10px;
+    margin-right: 40px;
+}
+.card2 .bottom{
+	width: 303.17px;
+    height: 91.1px;
+    background: #000;
+    color: #fff;
+	position: relative;
+	display: inline-block;
+}
+
+.card2 .bottom .angle-top-left{
+	position: absolute;
+	top: -22px;
+    left: -22px;
+    width: 23px;
+}
+.card2 .bottom .angle-top-right{
+	position: absolute;
+	top: -22px;
+    left: 301px;
+    width: 23px;
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    transform: scaleX(-1);
+}
+.card2 .bottom .angle-bottom-left{
+	position: absolute;
+	top: 90px;
+    left: -22px;
+    width: 23px;
+    -moz-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    transform: scaleY(-1);
+}
+.card2 .bottom .angle-bottom-right{
+	position: absolute;
+	top: 90px;
+    left: 301px;
+    width: 23px;
+    -moz-transform: scale(-1);
+    -webkit-transform: scale(-1);
+    -o-transform: scale(-1);
+    transform: scale(-1);
+}
+.card2 .img{
+	/* background: #f0f0f0; */
+    display: inline-block;
+    height: 91.1px;
+	width: 104.06px;
+	position: relative;
+}
+.card2 .img .angle-top-left{
+	position: absolute;
+    top: -12px;
+    left: 5px;
+    width: 23px;
+}
+.card2 .img .angle-top-right{
+	position: absolute;
+	top: -12px;
+    left: 76px;
+    width: 23px;
+    -moz-transform: scaleX(-1);
+    -webkit-transform: scaleX(-1);
+    -o-transform: scaleX(-1);
+    transform: scaleX(-1);
+}
+.card2 .img .angle-bottom-left{
+	position: absolute;
+	top: 74px;
+    left: 5px;
+    width: 23px;
+    -moz-transform: scaleY(-1);
+    -webkit-transform: scaleY(-1);
+    -o-transform: scaleY(-1);
+    transform: scaleY(-1);
+}
+.card2 .img .angle-bottom-right{
+	position: absolute;
+	top: 74px;
+    left: 76px;
+    width: 23px;
+    -moz-transform: scale(-1);
+    -webkit-transform: scale(-1);
+    -o-transform: scale(-1);
+    transform: scale(-1);
+}
+.card2 .img .imgshow{
+	height:50px;
+    width: 50px;
+    background: #fff;
+    margin: 10px auto 0;
+}
+.card2 .img .imgshow img{
+	width: 50px;
+    padding: 4px;
+}
+.card2 .img .text{
+	font-size: 12px;
+    text-align: justify;
+    width: 58px;
+    background: #fff;
+    margin: 0 auto;
+    height: 20px;
+    padding: 0 2px;
+    transform: scale(0.86); 
+    position: relative;
+    top: -3px;
+    border: 1px solid #fff;
+}
+.card2 .img .text:after{
+    content: " ";
+    display: inline-block;
+    width: 100%;
+}
+.card2 .bottom .content1{
+    position: absolute;
+    left: 18.72px;
+	top: 16.88px;
+}
+.card2 .bottom .content1 .cnName{
+	font-size:14.95px;
+	height: 14.95px;
+	line-height: 1;
+    font-weight: 600;
+}
+.card2 .bottom .content1 .enName{
+	font-size:14.25px;
+	height:  14.25px;
+	line-height: 1;
+	margin: 8.4px 0 10.4px;
+}
+.card2 .bottom .content1 .No{
+    font-size: 14px;
+    transform: scale(0.58);
+    height: 14px;
+    line-height: 1;
+	position: absolute;
+	left: -15px;
+	bottom: -15px;
+}
+.card2 .bottom .price{
+	position: absolute;
+    right: 19.4px;
+    bottom: 6.7px;
+    display: flex;
+    justify-items: center;
+}
+.card2 .bottom .price div{
+	font-size: 28.47px;
+	font-weight: 700;
+	position: relative;
+}
+.card2 .bottom .price div span{
+	font-size: 14.95px;
+	position: relative;
+    bottom: 11px;
+}
+.card2 .bottom .danwei span{
+	font-size: 14.95px;
+	margin-right: 7.12px;
+}
+.card2 .bottom .price span{
+	font-size: 28.47px;
+}

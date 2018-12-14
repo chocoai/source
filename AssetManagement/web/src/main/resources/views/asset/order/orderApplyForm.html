@@ -1,0 +1,225 @@
+<% layout('/layouts/default.html', {title: '订单变更申请表管理', libs: ['validate']}){ %>
+<style>
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(orderApply.isNewRecord ? '新增订单变更申请表' : '编辑订单变更申请表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${orderApply}" action="${ctx}/order/orderApply/save" method="post" class="form-horizontal">
+		<div class="box-footer">
+			<div class="row">
+				<div class="col-sm-offset-2 col-sm-10">
+					<% if (hasPermi('order:orderApply:edit')){ %>
+					<% if (orderApply.documentStatus != '确认'){ %>
+					<a href="#" onclick="save(0)"  data-title="${text('保 存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check">
+					</i> ${text('保 存')}</button></a>&nbsp;
+					<% } %>
+					<% if (!orderApply.isNewRecord && orderApply.documentStatus == '创建'){ %>
+					<a href="#" onclick="save(1)"  data-title="${text('确 认')}"><button type="submit" class="btn btn-sm btn-primary" id="btnConfirm"><i class="fa fa-check">
+					</i> ${text('确 认')}</button></a>&nbsp;
+					<% } %>
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<div class="form-unit form-unitHd" id="div1">
+				<span class="on">${text('基本信息')}</span>
+				<span>${text('其他信息')}</span>
+			</div>
+			<div class="form-unitTab">
+				<div class="item">
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 销售订单：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="salesOrder" maxlength="64" class="form-control required" readonly="${orderApply.isConfirm}"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-2" title="">
+									<span class="required ">*</span> 状态：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="documentStatus" readonly="true"
+									class="form-control required" />
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-2" title="">
+									<span class="required ">*</span> 取消产品：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-9">
+									<#form:textarea path="cancelProduct" rows="4" placeholder="请输入取消产品，示例：物料编码10100数量1" readonly="${orderApply.isConfirm}"
+									maxlength="500" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-2" title="">
+									<span class="required hide">*</span> 新增产品：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-9">
+									<#form:textarea path="addProduct" rows="4" placeholder="请输入新增产品，示例：物料编码10100数量1" readonly="${orderApply.isConfirm}"
+									maxlength="500" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-2" title="">
+									<span class="required ">*</span> 变更原因：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-9">
+									<#form:textarea path="modifyCause" rows="4" placeholder="请输入变更原因" maxlength="1000" readonly="${orderApply.isConfirm}"
+									class="form-control required"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 单据编号：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+
+									<#form:hidden path="isNewRecord" id="isNewRecord"/>
+									<#form:input path="documentCode" maxlength="64"
+									readonly="${!orderApply.isNewRecord}" class="form-control required abc" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 申请人：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="applicant" maxlength="100" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 申请时间：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="applyDate" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 确认人：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="confirmBy" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> 确认时间：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="confirmDate" maxlength="64" class="form-control" readonly="true"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+			<div class="box-footer">
+				<!--<div class="row">-->
+					<!--<div class="col-sm-offset-2 col-sm-10">-->
+						<!--<% if (hasPermi('order:orderApply:edit')){ %>-->
+							<!--<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;-->
+						<!--<% } %>-->
+						<!--<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>-->
+					<!--</div>-->
+				<!--</div>-->
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+            var flag = $('#isNewRecord').val();
+            if(data.result == Global.TRUE){
+                if (flag == 'true') {
+                    js.closeCurrentTabPage(function(contentWindow){
+                        contentWindow.page();
+                    });
+                } else {
+                    location.reload();
+                }
+            }
+		}, "json");
+    }
+});
+$(function () {
+    slidtab();
+})
+// tab切换
+var slidtab = function(){
+    $('.form-unitHd span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTab .item').hide()
+        $('.form-unitTab .item').eq(_t.index()).fadeIn()
+    });
+};
+function save(flag) {
+    var inputForm = document.getElementById("inputForm");
+    if (flag == '0') {
+        inputForm.action = '${ctx}/order/orderApply/save';
+    } else if (flag == '1') {
+        inputForm.action = '${ctx}/order/orderApply/save?flag=1';
+	}
+}
+</script>

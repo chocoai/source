@@ -1,0 +1,425 @@
+<% layout('/layouts/default.html', {title: '质检单管理', libs: ['validate','fileupload','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(fgcQualityCheck.isNewRecord ? '新增质检单' : '编辑质检单')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${fgcQualityCheck}" action="${ctx}/qualitycheck/fgcQualityCheck/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="id"/>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 质检单号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="billno" maxlength="255" class="form-control required" readonly="true" />
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 供应商：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="supplierName" maxlength="255" class="form-control required" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 采购组：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="purchasingGroupName" maxlength="255" class="form-control" readonly = "true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 采购员：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="purchaserName" maxlength="255" class="form-control required" readonly = "true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 质检组：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="qcGroupName" maxlength="255" class="form-control" readonly = "true" />
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 质检员：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="qualityInspectorName" maxlength="255" class="form-control required" readonly = "true" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 预约时间：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="reservationTime" readonly="true" maxlength="20" class="form-control Wdate"
+								dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false}); "
+								disabled="disabled"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 预约时间类型：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="reservationTimeType" dictType="fgc_reservation_time_type" class="form-control required" readonly="true" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="documentStatus" maxlength="10" class="form-control required" readonly="true" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> 备注：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="remarks" rows="4" maxlength="2000" class="form-control" readonly="true" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<!--<div class="row">-->
+					<!--<div class="col-xs-6">-->
+						<!--<div class="form-group">-->
+							<!--<label class="control-label col-sm-4" title="">-->
+								<!--<span class="required hide">*</span> 审批状态：<i class="fa icon-question hide"></i></label>-->
+							<!--<div class="col-sm-8">-->
+								<!--<#form:input path="approvalSatatus" maxlength="255" class="form-control"/>-->
+							<!--</div>-->
+						<!--</div>-->
+					<!--</div>-->
+					<!--<div class="col-xs-6">-->
+						<!--<div class="form-group">-->
+							<!--<label class="control-label col-sm-4" title="">-->
+								<!--<span class="required hide">*</span> 当前审批者：<i class="fa icon-question hide"></i></label>-->
+							<!--<div class="col-sm-8">-->
+								<!--<#form:input path="nowApprover" maxlength="255" class="form-control"/>-->
+							<!--</div>-->
+						<!--</div>-->
+					<!--</div>-->
+				<!--</div>-->
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 创建时间：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="createTime" readonly="true" maxlength="20" class="form-control Wdate"
+									dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 创建用户：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="creatorName" maxlength="255" class="form-control required" readonly="true" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 修改时间：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="modifyTime" readonly="true" maxlength="20" class="form-control Wdate"
+									dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});" readonly="true"  />
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 修改用户：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="modifierName" maxlength="255" class="form-control required" readonly="true" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<label class="control-label col-sm-2">图片上传：</label>
+							<div class="col-sm-10">
+								<#form:fileupload id="uploadImage" bizKey="${fgcQualityCheck.id}" bizType="fgcQualityCheck_image"
+									uploadType="image" class="" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<h4 class="form-unit">质检单明细</h4>
+				<div class="ml10 mr10">
+					<table id="fgcQualityCheckDetailsDataGrid"></table>
+					<% if (hasPermi('qualitycheck:fgcQualityCheck:edit')){ %>
+						<a href="#" id="fgcQualityCheckDetailsDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+					<% } %>
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('qualitycheck:fgcQualityCheck:edit')){ %>
+							<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+//初始化质检单明细DataGrid对象
+$("#fgcQualityCheckDetailsDataGrid").dataGrid({
+
+	data: ${toJson(fgcQualityCheck.fgcQualityCheckDetailsList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:true, hidden:true},
+		// {header:'主键', name:'id', editable:true, hidden:true},
+		{header:'单据编号', name:'billno.billno', editable:true, hidden:true},
+		{header:'物料编码', name:'materialCode', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'80', 'class':'form-control required'}},
+		{header:'物料名称', name:'materialName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'255', 'class':'form-control required'}},
+		{header:'采购单号', name:'sourceBillno', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+		{header:'待检数量', name:'qcQty', width:150, editable:false, edittype:'text', editoptions:{'class':'form-control required number'}},
+		{header:'合格数', name:'qcQualifiedQty', width:150, editable:false, edittype:'text', editoptions:{'class':'form-control required number'}},
+		{header:'不合格数', name:'qcDisqualifiedQty', width:150, editable:false, edittype:'text', editoptions:{'class':'form-control required number'}},
+		{header:'结构检验', name:'structuralTest', width:100, 
+			editable:false,
+			// edittype:'select', editoptions:{'class':'form-control required',
+			// 	items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('fgc_test_qualified')}),
+			// 	itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+			// 		$(element).select2().on("change",function(){$(this).valid()});
+			// 	}
+			// }
+            formatter: function(val, obj, row, act){
+                var value = "不合格";
+                if (row.structuralTest == "A"){
+                    value =  "合格";
+                }
+                return value;
+            }
+		},
+		{header:'外观检验', name:'appearanceTest', width:100, 
+			editable:false,
+			// edittype:'select', editoptions:{'class':'form-control required',
+			// 	items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('fgc_test_qualified')}),
+			// 	itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+			// 		$(element).select2().on("change",function(){$(this).valid()});
+			// 	}
+			// }
+            formatter: function(val, obj, row, act){
+                var value = "不合格";
+                if (row.appearanceTest == "A"){
+                    value =  "合格";
+                }
+                return value;
+            }
+		},
+		{header:'包装检验', name:'packTest', width:100, 
+			editable:false,
+			// edittype:'select', editoptions:{'class':'form-control required',
+			// 	items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('fgc_test_qualified')}),
+			// 	itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+			// 		$(element).select2().on("change",function(){$(this).valid()});
+			// 	}
+			// }
+            formatter: function(val, obj, row, act){
+                var value = "不合格";
+                if (row.packTest == "A"){
+                    value =  "合格";
+                }
+                return value;
+            }
+		},
+		{header:'抽检数量', name:'sampleQty', width:150, editable:false, edittype:'text', editoptions:{'class':'form-control required digits'}},
+		{header:'抽检不合格数', name:'sampleDisqualifiedQty', width:150, editable:false, edittype:'text', editoptions:{'class':'form-control required digits'}},
+		{header:'抽检合格数', name:'sampleQualifiedQty', width:150, editable:false, edittype:'text', editoptions:{'class':'form-control required digits'}},
+		{header:'不良比率', name:'badRatio', width:150, editable:false, edittype:'text', editoptions:{'class':'form-control required number'}},
+		{header:'抽检不合格整批打回', name:'disqualifiedReturn', width:150,
+			editable:false,
+			// edittype:'select', editoptions:{'class':'form-control required',
+			// 	items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('sys_yes_no')}),
+			// 	itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+			// 		$(element).select2().on("change",function(){$(this).valid()});
+			// 	}
+			// }
+            formatter: function(val, obj, row, act){
+                var flag = "否";
+                if (row.disqualifiedReturn == 1){
+                    flag =  "是";
+                }
+                return flag;
+            }
+		},
+		{header:'合格类型', name:'qualifiedType', width:100, 
+			editable:false,
+			// edittype:'select', editoptions:{'class':'form-control required',
+			// 	items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('fgc_qualified_type')}),
+			// 	itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+			// 		$(element).select2().on("change",function(){$(this).valid()});
+			// 	}
+			// }
+            formatter: function(val, obj, row, act){
+                var value = "";
+                var qualifiedType = row.qualifiedType;
+                if (qualifiedType == "A"){
+                    value =  "合格";
+                }else if (qualifiedType == "B") {
+                    value = "让步接收";
+				}else if (qualifiedType == "C"){
+                    value = "不合格";
+				}
+                return value;
+            }
+		},
+		{header:'整改类型', name:'rectifyType', width:100, 
+			editable:false,
+			// edittype:'select', editoptions:{'class':'form-control required',
+			// 	items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('fgc_rectify_type')}),
+			// 	itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+			// 		$(element).select2().on("change",function(){$(this).valid()});
+			// 	}
+			// }
+            formatter: function(val, obj, row, act){
+                var value = "";
+                var rectifyType = row.rectifyType;
+                if (rectifyType == "A"){
+                    value =  "8D整改报告";
+                }else if (rectifyType == "B") {
+                    value = "工艺整改报告";
+                }else if (rectifyType == "C"){
+                    value = "异常整改报告";
+                }else if (rectifyType == "D"){
+                    value = "常规异常";
+                }else if (rectifyType == "E"){
+                    value = "不需要";
+                }
+                return value;
+            }
+
+		},
+		{header:'整改状态', name:'rectifyStatus', width:100, 
+			editable:false,
+			// edittype:'select', editoptions:{'class':'form-control required',
+			// 	items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('fgc_rectify_status')}),
+			// 	itemLabel: 'dictLabel', itemValue: 'dictValue', dataInit: function(element){
+			// 		$(element).select2().on("change",function(){$(this).valid()});
+			// 	}
+			// }
+            formatter: function(val, obj, row, act){
+                var value = "";
+                var rectifyStatus = row.rectifyStatus;
+                if (rectifyStatus == "A"){
+                    value =  "未完成";
+                }else if (rectifyStatus == "B") {
+                    value = "部分完成";
+                }else if (rectifyStatus == "C"){
+                    value = "已完成";
+                }
+                return value;
+            }
+		},
+		{header:'异常问题描述', name:'abnormalProblemsDesc', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'850', 'class':'form-control'}},
+		{header:'备注', name:'remarks', width:150, editable:false, edittype:'textarea', editoptions:{'maxlength':'2000', 'class':'form-control', 'rows':'1'}},
+        {header:'已检查', name:'isCheck', width:100,
+            editable:false,formatter: function(val, obj, row, act){
+            	var isCheck = "否";
+                if (row.isCheck == 1){
+                    isCheck =  "是";
+                }
+                return isCheck;
+            }
+        },
+
+		// {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	if (val == 'new'){
+		// 		actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#fgcQualityCheckDetailsDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	}else{
+		// 		actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#fgcQualityCheckDetailsDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	}
+		// 	return actions.join('');
+		// }, editoptions: {defaultValue: 'new'}}
+	],
+    shrinkToFit: false,
+    autoScroll: true,
+    autowidth: true,
+
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#fgcQualityCheckDetailsDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {id: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'fgcQualityCheckDetailsList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,id,billno.billno,materialCode,materialName,sourceBillno,qcQty,qcQualifiedQty,qcDisqualifiedQty,structuralTest,appearanceTest,packTest,sampleQty,sampleDisqualifiedQty,sampleQualifiedQty,badRatio,disqualifiedReturn,qualifiedType,rectifyType,rectifyStatus,abnormalProblemsDesc,remarks,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+</script>

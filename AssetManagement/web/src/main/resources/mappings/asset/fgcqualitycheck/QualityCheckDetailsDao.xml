@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.fgcqualitycheck.dao.QualityCheckDetailsDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="QualityCheckDetails">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="selectByEntityId" resultType="QualityCheckDetails">
+		SELECT *
+		FROM js_fgc_quality_check_details
+		where fentityId= #{entityId}
+	</select>
+</mapper>

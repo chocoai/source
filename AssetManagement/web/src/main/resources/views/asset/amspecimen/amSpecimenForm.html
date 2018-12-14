@@ -1,0 +1,1284 @@
+<% layout('/layouts/default.html', {title: '构建样品进度管理', libs: ['validate','dataGrid']}){ %>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+
+	.photoShow{position: absolute;top: 0;left: 0;right: 0;bottom: 0;width: 100%;height: 100%;background-color: rgba(000, 000, 000, 0.7);z-index: 100;overflow: hidden;overflow-y: auto;}
+	.photoShow .close{position: absolute;right: 3%;top: 1%;display: block;width: 60px;height: 60px;opacity: 0.5;filter:Alpha(opacity=50);z-index: 50;}
+	.photoShow .close img{width: 100%;height: 100%;}
+	.photoShow .close:hover{opacity: 1;filter:Alpha(opacity=100);}
+	.photoShow .cont{position: absolute;display: table-cell;vertical-align: middle;width: 100%;text-align: center;color: #edeaea;top: 200px;}
+	.photoShow .cont img{max-width: 1024px;margin-bottom: 200px}
+
+	#amSpecimenProductDataGrid td{position: relative;}
+	.addImgSet{position: relative;}
+	.progress{position: absolute;display: block;left: -1px;right: -1px;height: 30px;top: -1px;bottom: 0;border: 0;background-color: transparent}
+	.progress span{width: 0;display: block}
+
+	#bgLoading{position: absolute;top: 0;left: 0;bottom: 0;right: 0;min-width: 100%;max-height: 100%;display: none;z-index: 9999;}
+	.w1{width: 100%;}
+</style>
+<div class="main-content documentStatus1">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amSpecimen.isNewRecord ? '新增构建样品进度' : '编辑构建样品进度')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amSpecimen}" action="${ctx}/amspecimen/amSpecimen/save" method="post" class="form-horizontal">
+		<div class="box-body">
+			<div class="form-unit">${text('基本信息')}</div>
+			<#form:hidden path="isNewRecord"/>
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required hide">*</span> 单据编号：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8" style="width: 250px;">
+							<#form:input path="specimenCode" readonly="true" class="form-control"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 单据日期：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8" style="width: 250px;">
+							<#form:input path="date"  id="date" maxlength="20" class="form-control Wdate required"
+							dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8" style="width: 250px;">
+							<#form:hidden path="billsStatus" id="billsStatus" />
+							<#form:input path="documentStatusName" class="form-control required" readonly="true"/>
+						</div>
+					</div>
+				</div>
+
+
+			</div>
+			<div class="row">
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 制造工厂：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8" style="width: 250px;">
+							<#form:select path="offerCode"  id='factory' items="${offercList}"
+							itemLabel="officeName" itemValue="officeCode"  multiple="false" blankOption="true" class="form-control required"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 创建人：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8" style="width: 250px;">
+							<#form:input path="createBy"  maxlength="32" readonly="true" class="form-control required abc"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 创建时间：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8" style="width: 250px;">
+							<#form:input path="createDate" dataFormat="datetime" readonly="true"  maxlength="20" class="form-control required"/>
+						</div>
+					</div>
+				</div>
+				<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required ">*</span> 单据类型：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8" style="width: 250px;">
+							<#form:select path="dataStatus"  id="dataStatus" dictType="specimen_schedule" maxlength="32" class="form-control required 123"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-xs-12">
+					<div class="form-group">
+						<label class="control-label col-sm-1" title="">
+							<span class="required hide">*</span> 备注：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-10">
+							<#form:textarea path="remarks" id="remarks" rows="4" maxlength="128" class="form-control"/>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-unit form-unitD">
+				<span class="on" data-index="0">${text('明细信息')}</span>
+				<span data-index="1">${text('处理进度')}</span>
+				<span data-index="2">${text('操作记录')}</span>
+			</div>
+			<div class="form-unitTable">
+				<div class="item" >
+					<% if (hasPermi('amspecimen:amSpecimen:edit')){ %>
+					<a href="#" id="amSpecimenProductDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> 增行</a>
+					<% } %>
+					<table id="amSpecimenProductDataGrid"></table>
+				</div>
+				<div class="item" style="display: none">
+					<% if (hasPermi('amspecimen:amSpecimen:edit')){ %>
+					<a href="#" id="amSpecimenScheduleDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> 增行</a>
+					<% } %>
+					<table id="amSpecimenScheduleDataGrid"></table>
+				</div>
+				<div class="item" style="display: none">
+					<!--<% if (hasPermi('amspecimen:amSpecimen:edit')){ %>-->
+					<!--<a href="#" id="amSpecimenRecordDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>-->
+					<!--<% } %>-->
+					<table id="amSpecimenRecordDataGrid"></table>
+				</div>
+			</div>
+		</div>
+		<div class="box-footer">
+
+			<div class="row">
+				<div class="col-sm-offset-8 col-sm-4">
+					<% if (hasPermi('amspecimen:amSpecimen:edit')){ %>
+					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit" style="display: none"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+					<a href="javascript:void(0)" class="btn btn-sm btn-primary" id="sub-simulation"><i class="fa fa-check"></i> ${text('保 存')}</a>
+					<% } %>
+					<% if (hasPermi('amspecimen:amSpecimen:examine')){ %>
+					<button  type="button" id="examine2" class="btn btn-sm btn-primary btnList" onclick="uploadFile.subFrom('shenhe')" data-title="${text('审 核')}">审 核</button>
+					<button  type="submit" style="display: none" class="btn btn-sm btn-primary btnList" id="examine">${text('审 核')}</button>
+					<% } %>
+					<% if (hasPermi('amspecimen:amSpecimen:unexamine')){ %>
+					<a href="#" onclick="save('2')"  data-title="${text('反 审 核')}">	<button type="submit" class="btn btn-sm btn-primary btnList " id="unexamine" onclick="">${text('反 审 核')}</button></a>
+					<% } %>
+
+					<% if (hasPermi('amspecimen:amSpecimen:examineplan')){ %>
+					<button  type="button" class="btn btn-sm btn-primary btnList" id="examine_plan2" onclick="save('3')">${text('审 核 计 划')}</button>
+					<button  type="submit" style="display: none" class="btn btn-sm btn-primary btnList" id="examine_plan" onclick="">${text('审 核 计 划')}</button>
+					<% } %>
+					<% if (hasPermi('amspecimen:amSpecimen:unexamineplan')){ %>
+					<a href="#" onclick="save('4')"  data-title="${text('反 审 核 计 划')}">	<button type="submit" class="btn btn-sm btn-primary btnList " id="unexamine_plan" onclick="">${text('反 审 核 计 划')}</button></a>
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+	</#form:form>
+
+
+
+	<!-- 图片查看背景 -->
+	<div class="photoShow" style="display: none">
+		<a href="javascript:void(0)" class="close"><img src="/static/easyUpload/images/del.png"/></a>
+		<div class="cont">
+			<img src="" class="img">
+		</div>
+		<!-- <div class="cz">
+            <a href="javascript:void(0)" class="prev" title=""></a>
+            <a href="javascript:void(0)" class="next"></a>
+        </div> -->
+	</div>
+
+	<div id="bgLoading"></div>  <!-- 遮罩 -->
+</div>
+</div>
+<% } %>
+<script>
+    /** 定义一个命名空间，里面放了一些浮点类型的处理方法 */
+    var sq = {};
+    sq.setInputReadonly = function(node) {       //改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+        $(node).each(function(index, item){
+            $(item).attr('readonly', 'true');
+        });
+    }
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().specimenCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+
+    // var json = '${speciQualificationsList}'
+    var productCode;
+    //初始化构建样品进度_处理进度DataGrid对象
+    $("#amSpecimenScheduleDataGrid").dataGrid({
+
+        data: ${toJson(amSpecimen.amSpecimenScheduleList)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'${text('操作')}', name:'actions', width:50, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                    var actions = [];
+                    if (val == 'new'){
+                        actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amSpecimenScheduleDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                    }else{
+                        actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amSpecimenScheduleDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                    }
+                    return actions.join('');
+                }, editoptions: {defaultValue: 'new'}},
+            {header:'状态', name:'status', editable:true, hidden:true},
+            {header:'主键', name:'code', editable:true, hidden:true,},
+
+            {header:'处理节点', name:'node', width:100,
+                editable:true, edittype:'select', editoptions:{'class':'form-control',
+                    items: $.merge([{dictLabel:'&nbsp;',dictValue:''}], ${@DictUtils.getDictListJson('processing_node')}),
+                    itemLabel: 'dictLabel', itemValue: 'dictValue',
+                    dataInit: function(element){
+                        $(element).select2().on("change",function(){$(this).valid()});
+                    }
+                }
+            },
+
+            {header:'预计天数', name:'estimatedDays', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+
+            /*{header:'处理时间', name:'date', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control'}},*/
+            // {header:'开始时间', name:'startDate', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'128', 'class':'form-control', 'rows':'1'}},
+
+            {header:'开始时间', name:'startDate', width:150,
+                formatter:'date', formatoptions:{srcformat:'Y-m-d H:i:s',newformat:'Y-m-d H:i:s'},
+                editable:true, edittype:'text', editoptions:{'class':'form-control', 'readonly':'true',
+                    dataInit: function(element){ $(element).on('click', function(){
+                        WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:true});
+                    });
+                    }}
+            },
+            // {header:'完成时间', name:'date', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'128', 'class':'form-control', 'rows':'1'}},
+            {header:'完成时间', name:'date', width:150,
+                formatter:'date', formatoptions:{srcformat:'Y-m-d H:i:s',newformat:'Y-m-d H:i:s'},
+                editable:true, edittype:'text', editoptions:{'class':'form-control', 'readonly':'true',
+                    dataInit: function(element){ $(element).on('click', function(){
+                        WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:true});
+                    });
+                    }}
+            },
+            /*{header:'产品编号', name:'', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'32', 'class':'form-control required'}},*/
+            {header:'备注', name:'remarks', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'128', 'class':'form-control', 'rows':'1'}},
+            {header:'处理人', name:'dispose', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'32', 'class':'form-control'}},
+            {header:'样品进度code', name:'specimenCode.code', editable:true, hidden:true},
+            {header:'产品明细code', name:'productCode', editable:true, hidden:true},
+        ],
+
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#amSpecimenScheduleDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {code: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+        'afterInsertRow':function(id){
+            if("jqg1"!=id){
+                if( $("#amSpecimenScheduleDataGrid").is(":hidden")){
+                    $("#amSpecimenScheduleDataGrid").show();
+                    $("#amSpecimenScheduleDataGrid").dataGrid('delRowData','jqg1');
+                }
+            }
+            $("#amSpecimenScheduleDataGrid").find('tr#'+id).find('td[aria-describedby="amSpecimenScheduleDataGrid_productCode"]').html(productCode)
+        },
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amSpecimenScheduleList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,code,dispose,date,node,createBy,createDate,updateBy,updateDate,remarks,specimenCode.code,productCode,startDate,estimatedDays', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            // 针对构件样品进度单 - 处理进度新增行 键值索引排序
+            $('#amSpecimenScheduleDataGridAddRowBtn').on('click',function(){
+                var a = $('#amSpecimenScheduleDataGrid tr.ui-widget-content:visible')
+                a.each(function(index,item){
+                    $(item).find('td[aria-describedby="amSpecimenScheduleDataGrid_rn"]').html(index+1)
+                    $(item).find('input[name="date"]').off('click')   // 处理进度 - [完成时间] 设置为只读
+                    $(item).find('input[name="startDate"]').off('click') // 处理进度 - [开始时间] 设置为只读
+                })
+            })
+        }
+    });
+
+
+    //初始化构建样品进度_明细信息DataGrid对象
+    var data = ${toJson(amSpecimen.amSpecimenProductList)}
+        $("#amSpecimenProductDataGrid").dataGrid({
+            data: ${toJson(amSpecimen.amSpecimenProductList)},
+            datatype: "local", // 设置本地数据
+            autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+            // 设置数据表格列
+            columnModel: [
+                {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                        var actions = [];
+                        if (val == 'new'){
+                            actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amSpecimenProductDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                        }else{
+                            actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amSpecimenProductDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                        }
+                        return actions.join('');
+                    }, editoptions: {defaultValue: 'new'}},
+                {header:'状态', name:'status', editable:true, hidden:true},
+                {header:'主键', name:'code', editable:true,hidden:true},
+                {header:'产品编号', name:'productCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'32', 'class':'form-control required'}},
+                {header:'产品名称', name:'productName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'32', 'class':'form-control required'}},
+                {header:'数量', name:'count', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'32', 'class':'form-control required digits'}},
+                {header:'材质', name:'material', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'128', 'class':'form-control'}},
+                {header:'色板/皮/布', name:'es', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'128', 'class':'form-control'}},
+                /*{header:'备注', name:'remarks', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},*/
+                {header:'样品进度code', name:'specimenCode.code', editable:true, hidden:true},
+                // {header:'图片', name:'photo', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+                // {header:'图片路径', name:'imgUrl', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+                {header:'上传图片', sortable:false, fixed:true,  editoptions:{'maxlength':'100', 'class':'form-control'},formatter: function(val, obj, row, act){
+                        var actions = [], btn = ''
+                        if(!row.imgUrl || row.actions === 'new'){
+                            btn +='<input data-type="img" class="hideInput" rowid="'+obj.rowId+'" type="file" style="position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;opacity:0" onchange="uploadFile.upload(this)" id="upLoadImg_'+obj.rowId+'"/>'
+                            btn +='<a for="upLoadImg_'+obj.rowId+'" href="javascript:void(0)" title="上传图片"  class="addImgSet btn btn-primary btn-sm"><span class="progress"><span class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0"></span></span><i class="fa fa-plus" style="position:relative;z-index:2"></i><span class="font-msg" style="position:relative;z-index:2">上传图片</span></a>&nbsp;'
+                            btn +='<a href="javascript:void(0)" title="查看图片" style="display:none" rowid="'+obj.rowId+'" class="hasImgSet btn btn-primary btn-sm"  onclick="uploadFile.show(this);return false;">查看</a>&nbsp;'
+                            btn +='<a href="javascript:void(0)" title="删除图片" data-d="del" style="display:none" data-type="img" rowid="'+obj.rowId+'" class="hasImgSet btn btn-danger btn-sm"  onclick="uploadFile.del(this);return false;">删除</a>&nbsp;'
+                        }
+
+                        else{
+                            btn +='<input type="file" class="hideInput" style="display:none;position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;opacity:0" onchange="uploadFile.upload(this)" srcbase="'+row.imgUrl+'" id="upLoadImg_'+obj.rowId+'"  data-type="img" rowid="'+obj.rowId+'"/>'
+                            btn +='<a for="upLoadImg_'+obj.rowId+'" href="javascript:void(0)" title="上传图片" style="display:none"  class="addImgSet btn btn-primary btn-sm"><span class="progress"><span class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0"></span></span><i class="fa fa-plus" style="position:relative;z-index:2"></i><span class="font-msg" style="position:relative;z-index:2">上传图片</span></a>&nbsp;'
+                            btn +='<a href="javascript:void(0)" title="查看图片" style="display:inline" rowid="'+obj.rowId+'" class="hasImgSet btn btn-primary btn-sm" onclick="uploadFile.show(this);return false;">查看</a>&nbsp;'
+                            btn +='<a href="javascript:void(0)" title="删除图片" filepath="'+row.imgPath+'" data-d="del" hasBase="true" style="display:inline" data-type="img" rowid="'+obj.rowId+'" class="hasImgSet btn btn-danger btn-sm" onclick="uploadFile.del(this);return false;">删除</a>&nbsp;'
+                        }
+
+
+                        actions.push(btn)
+                        return actions.join('');
+                    }},
+                {header:'上传附件',   sortable:false, fixed:true,  editoptions:{'maxlength':'100', 'class':'form-control'},formatter: function(val, obj, row, act){
+                        var actions = [], btn = ''
+                        if(!row.fileUrl || row.actions === 'new'){
+                            btn +='<input type="file" class="hideInput" style="position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;opacity:0" onchange="uploadFile.upload(this)" data-type="file" rowid="'+obj.rowId+'" id="upLoadFile_'+obj.rowId+'"/>'
+                            btn +='<a href="javascript:void(0)" title="上传附件"  class="addImgSet btn btn-primary btn-sm"><span class="progress"><span class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0"></span></span><i class="fa fa-plus" style="position:relative;z-index:2"></i><span class="font-msg" style="position:relative;z-index:2">上传附件</span>&nbsp;'
+                            // btn +='<a href="javascript:void(0)" title="下载附件" rowid="'+obj.rowId+'" class="hasImgSet btn btn-primary btn-sm" style="display:none" onclick="uploadFile.down(this);return false;">下载</a>&nbsp;'
+                            btn +='<a href="javascript:void(0)" title="删除图片" data-d="del" data-type="file" rowid="'+obj.rowId+'" class="hasImgSet btn btn-danger btn-sm" style="display:none" onclick="uploadFile.del(this);return false;">删除</a>&nbsp;'
+                        }
+
+                        else{
+                            btn +='<input type="file" class="hideInput" data-type="file" rowid="'+obj.rowId+'" style="display:none;position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;opacity:0" onchange="uploadFile.upload(this)" id="upLoadFile_'+obj.rowId+'" srcbase="'+row.fileUrl+'"/>'
+                            btn +='<a href="javascript:void(0)" title="上传附件" style="display:none"  class="addImgSet btn btn-primary btn-sm"><span class="progress"><span class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0"></span></span><i class="fa fa-plus" style="position:relative;z-index:2"></i><span class="font-msg" style="position:relative;z-index:2">上传附件</span>&nbsp;'
+                            btn +='<a href="javascript:void(0)" title="下载附件" rowid="'+obj.rowId+'" class="downloadFile hasImgSet btn btn-primary btn-sm" style="display:inline" onclick="uploadFile.down(this);return false;">下载</a>&nbsp;'
+                            btn +='<a href="javascript:void(0)" title="删除附件" data-d="del" filepath="'+row.filePath+'" hasBase="true" data-type="file" rowid="'+obj.rowId+'" class="hasImgSet btn btn-danger btn-sm" style="display:inline" onclick="uploadFile.del(this);return false;">删除</a>&nbsp;'
+                        }
+
+                        actions.push(btn)
+                        return actions.join('');
+                    }},
+
+            ],
+
+            // 编辑表格参数
+            editGrid: true,				// 是否是编辑表格
+            editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+            editGridAddRowBtn: $('#amSpecimenProductDataGridAddRowBtn'),	// 子表增行按钮
+            editGridAddRowInitData: {code: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+            // 编辑表格的提交数据参数
+            editGridInputFormListName: 'amSpecimenProductList', // 提交的数据列表名
+            editGridInputFormListAttrs: 'status,code,productCode,productName,count,material,es,createBy,createDate,updateBy,updateDate,remarks,specimenCode.code', // 提交数据列表的属性字段
+            onSelectRow: function(id){
+                for (var i =0;i<data.length;i++){
+                    if(id==data[i].id){
+                        var table = $("#amSpecimenScheduleDataGrid tr.ui-widget-content");
+                        for (var a =0;a<table.length;a++){
+                            var ids = $(table[a]).find("td[aria-describedby='amSpecimenScheduleDataGrid_productCode'] ").attr('title')
+                            if(id === ids){
+                                $(table[a]).show()
+                            }else {
+                                $(table[a]).hide()
+                            }
+                        }
+                    }
+                }
+                productCode=id;
+            },
+            afterInsertRow:function(rowid, aData){
+                if(aData.actions && aData.actions === 'new'){
+                    var d = new Date(),
+                        code = d.getFullYear().toString() + d.getMonth().toString() + d.getDate().toString() + d.getHours().toString() + d.getMinutes().toString() + d.getSeconds().toString() + d.getMilliseconds().toString() + parseInt(Math.random()*9999).toString();
+
+                    $(this).dataGrid('setCell',rowid,'code',code,'',{
+                        'title': code
+                    })
+
+                    $('#'+rowid).attr('rowid',code)
+                }
+            },
+            // 加载成功后执行事件
+            ajaxSuccess: function(data){
+                if(data.rows.length==0){
+                    $("#amSpecimenScheduleDataGrid").hide();
+                }
+                if(data.rows.length>0){
+                    var id = data.rows[0].id
+                    productCode=id;
+                    var table = $("#amSpecimenScheduleDataGrid tr.ui-widget-content");
+
+                    for (var a =0;a<table.length;a++){
+                        var ids = $(table[a]).find("td[aria-describedby='amSpecimenScheduleDataGrid_productCode'] ").attr('title')
+                        if(id === ids){
+                            $(table[a]).show()
+                        }else {
+                            $(table[a]).hide()
+                        }
+                    }
+                }
+            }
+
+        });
+
+    $("#amSpecimenRecordDataGrid").dataGrid({
+        data: ${toJson(amSpecimen.amSpecimenRecordList)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            // {header:'${text('操作')}', name:'actions', width:50, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+            //         var actions = [];
+            //         if (val == 'new'){
+            //             actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amSpecimenScheduleDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+            //         }else{
+            //             actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amSpecimenScheduleDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+            //         }
+            //         return actions.join('');
+            //     }, editoptions: {defaultValue: 'new'}},
+            {header:'主键', name:'recordCode', editable:true, hidden:true,},
+            {header:'操作人', name:'operator', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+            {header:'操作时间', name:'operatorTime', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+            {header:'操作说明', name:'remark', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+        ],
+
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#amSpecimenRecordDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {code: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+        // 'afterInsertRow':function(id){
+        //     if("jqg1"!=id){
+        //         if( $("#amSpecimenScheduleDataGrid").is(":hidden")){
+        //             $("#amSpecimenScheduleDataGrid").show();
+        //             $("#amSpecimenScheduleDataGrid").dataGrid('delRowData','jqg1');
+        //         }
+        //     }
+        //     $("#amSpecimenScheduleDataGrid").find('tr#'+id).find('td[aria-describedby="amSpecimenScheduleDataGrid_productCode"]').html(productCode)
+        // },
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amSpecimenRecordList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,recordCode,operator,operatorTime,remark', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            checkConcurrency();
+            // 针对构件样品进度单 - 处理进度新增行 键值索引排序
+            $('#amSpecimenScheduleDataGridAddRowBtn').on('click',function(){
+                var a = $('#amSpecimenScheduleDataGrid tr.ui-widget-content:visible')
+                a.each(function(index,item){
+                    $(item).find('td[aria-describedby="amSpecimenScheduleDataGrid_rn"]').html(index+1)
+                })
+            })
+        }
+    });
+
+
+
+
+    $(function(){
+        $('#amSpecimenProductDataGrid td[aria-describedby="amSpecimenProductDataGrid_undefined"]').css('position','relative')
+
+        // gview_amSpecimenScheduleDataGrid
+        // gbox_amSpecimenProductDataGrid
+        $('.form-unitD span').click(function(e){
+            var _t = $(e.target),
+                flag = true  // 判断是否能调转tab
+
+
+            // 针对构建样品进度单 - 跳转tab前保存操作 (处理进度tab索引默认1)
+            if(e.target.getAttribute('data-index') === "1"){
+                if(documentStatus==='2'||documentStatus==='0'){  // 当单据状态为创建或者重新审核时，处理进度页签不能点击（锁定）
+                    layer.msg('订单当前状态不允许访问此操作')
+                    flag = false
+                    return
+                }
+
+
+                // 必须先保存明细信息
+                var l = $('#amSpecimenProductDataGrid tr.ui-widget-content')
+                for(var i=0; i<l.length; i++){
+                    if(/^jqg[0-9]/gi.test(l[i].getAttribute('id'))){
+                        layer.msg('请先保存当前明细信息列表')
+                        flag = false
+                        return
+                    }
+                }
+
+                _t.addClass('on').siblings('span').removeClass('on')
+                $('.form-unitTable .item').hide()
+                $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+                // 处理进度表格进行排序
+                var a = $('#amSpecimenScheduleDataGrid tr.ui-widget-content:visible')
+                a.each(function(index,item){
+                    $(item).find('td[aria-describedby="amSpecimenScheduleDataGrid_rn"]').html(index+1)
+                })
+
+            }
+
+            // 已审核时,不能为空
+            if(e.target.getAttribute('data-index') === "0"){
+                if (documentStatus==='1'){
+                    if(checkRequire() === 'false'){
+                        layer.msg('处理节点或预计天数不能为空, 请完善信息')
+                        flag = false
+                        return false
+                    }
+                }
+            }
+
+            if(!flag) return
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTable .item').hide()
+            $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+            // 表格宽度100%
+            $('.ui-jqgrid.ui-widget.ui-widget-content.ui-corner-all, .ui-jqgrid-view, .ui-state-default.ui-jqgrid-hdiv.ui-corner-top, .ui-jqgrid-htable, .ui-jqgrid-bdiv, .ui-jqgrid-btable').width($('.box-body').width())
+        });
+
+
+        sq.setInputReadonly($('#amSpecimenRecordDataGrid input[name=operator]'));
+        sq.setInputReadonly($('#amSpecimenRecordDataGrid input[name=operatorTime]'));
+        sq.setInputReadonly($('#amSpecimenRecordDataGrid input[name=remark]'));
+
+
+        var flag = $("#isNewRecord").val();
+        var documentStatus = $("#billsStatus").val();
+        // alert(flag)
+        // console.log(documentStatus)
+        if (flag === 'true') {  //新增加订单
+            // alert('true')
+            if($('#examine2').length) document.getElementById("examine2").disabled=true;
+            if($('#unexamine').length) document.getElementById("unexamine").disabled=true;
+            if($('#examine_plan2').length) document.getElementById("examine_plan2").disabled=true;
+            if($('#unexamine_plan').length) document.getElementById("unexamine_plan").disabled=true;
+        } else {
+            if (documentStatus==='2'||documentStatus==='0') {                    //创建或重新审核
+                if($('#unexamine').length) document.getElementById("unexamine").disabled=true;
+                if($('#examine_plan2').length) document.getElementById("examine_plan2").disabled=true;
+                if($('#unexamine_plan').length) document.getElementById("unexamine_plan").disabled=true;
+                //进度页签不能打开
+
+            }
+            if (documentStatus==='1') {                 //已审核
+
+                if($('#examine2').length) document.getElementById("examine2").disabled=true;
+                if($('#unexamine_plan').length) document.getElementById("unexamine_plan").disabled=true;
+
+
+                $('#amSpecimenScheduleDataGrid input[name="date"]').off('click')   // 处理进度 - [完成时间] 设置为只读
+                $('#amSpecimenScheduleDataGrid input[name="startDate"]').off('click') // 处理进度 - [开始时间] 设置为只读
+                $('.hideInput').hide()  // 上传附件&上传图片 不允许修改
+                $('.hasImgSet[data-d="del"]').remove()
+
+                //锁定基本信息
+                $('#date').removeAttr('onclick');
+                document.getElementById('date').readOnly=true;
+                document.getElementById('factory').disabled=true;
+                document.getElementById('factory').readOnly=true;
+                document.getElementById('dataStatus').disabled=true;
+                document.getElementById('remarks').readOnly=true;
+                document.getElementById('amSpecimenProductDataGridAddRowBtn').style.display="none";
+                $('#amSpecimenProductDataGrid_actions').remove()
+                $('td[aria-describedby="amSpecimenProductDataGrid_actions"]').remove()
+                // $('.jqgfirstrow td:last-child').remove()
+                $('.jqgfirstrow td:eq(1)').remove()
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=productCode]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=productName]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=count]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=material]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=es]'));
+                //锁定处理进度
+                // document.getElementById('amSpecimenScheduleDataGridAddRowBtn').style.display="none";
+                // $('#amSpecimenScheduleDataGrid_actions').remove()
+                // $('td[aria-describedby="amSpecimenScheduleDataGrid_actions"]').remove()
+                // // $('.jqgfirstrow td:last-child').remove()
+                // $('.jqgfirstrow td:eq(1)').remove()
+                // sq.setInputReadonly($('#amSpecimenScheduleDataGrid input[name=node]'));
+                // sq.setInputReadonly($('#amSpecimenScheduleDataGrid input[name=estimatedDays]'));
+                // sq.setInputReadonly($('#amSpecimenScheduleDataGrid input[name=date]'));
+                // sq.setInputReadonly($('#amSpecimenScheduleDataGrid input[name=remarks]'));
+                // sq.setInputReadonly($('#amSpecimenScheduleDataGrid input[name=dispose]'));
+            }
+            if (documentStatus==='4') {                       //已安排
+
+                if($('#examine2').length) document.getElementById("examine2").disabled=true;
+                if($('#unexamine').length) document.getElementById("unexamine").disabled=true;
+                if($('#examine_plan2').length) document.getElementById("examine_plan2").disabled=true;
+
+                // 锁定处理进度
+                $('#amSpecimenScheduleDataGrid select[name=node]').attr('disabled','true') // 处理节点
+                sq.setInputReadonly($('#amSpecimenScheduleDataGrid input[name=estimatedDays]')); // 预计天数
+                $('#amSpecimenScheduleDataGridAddRowBtn').hide()  // 隐藏增行按钮
+                $('#amSpecimenScheduleDataGrid td[aria-describedby="amSpecimenScheduleDataGrid_actions"] a').removeAttr('onClick').off('click').on('click',function(){  // 禁止行操作
+                    layer.msg('已安排状态禁止删除')
+                    return false
+                })
+                $('.hideInput').hide()  // 上传附件&上传图片 不允许修改
+                $('.hasImgSet[data-d="del"]').remove()
+
+                //锁定基本信息
+                $('#date').removeAttr('onclick');
+                document.getElementById('factory').disabled=true;
+                document.getElementById('date').readOnly=true;
+                document.getElementById('factory').readOnly=true;
+                document.getElementById('dataStatus').disabled=true;
+                document.getElementById('remarks').readOnly=true;
+                document.getElementById('amSpecimenProductDataGridAddRowBtn').style.display="none";
+                $('#amSpecimenProductDataGrid_actions').remove()
+                $('td[aria-describedby="amSpecimenProductDataGrid_actions"]').remove()
+                // $('.jqgfirstrow td:last-child').remove()
+                $('.jqgfirstrow td:eq(1)').remove()
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=productCode]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=productName]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=count]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=material]'));
+                sq.setInputReadonly($('#amSpecimenProductDataGrid input[name=es]'));
+            }
+        }
+
+    });
+</script>
+
+
+
+<script>
+    $("#inputForm").validate({
+        submitHandler: function(form){
+            js.ajaxSubmitForm($(form), function(data){
+                js.showMessage(data.message);
+                var flag = $("#isNewRecord").val();
+                if(data.result == Global.TRUE){
+                    if(flag==="true"){
+                        js.closeCurrentTabPage(function(contentWindow){
+                            contentWindow.page();
+                        });
+                    }
+                    else{location.reload();}
+
+                }else {
+                    location.reload();
+                }
+            }, "json");
+        }
+    });
+
+    // 预览图片关闭
+    $('.photoShow .close').click(function(){
+        $('.photoShow').fadeOut()
+    })
+
+
+    // 已审核 - 处理节点&预计天数是否为空
+    function checkRequire(){
+        var flag = 'true'
+        $('#amSpecimenScheduleDataGrid tr.ui-widget-content:visible').each(function(){
+            var sel = $(this).find('td[aria-describedby="amSpecimenScheduleDataGrid_node"] span.select2-selection__rendered').html().replace('&nbsp;',''),
+                inp = $(this).find('td[aria-describedby="amSpecimenScheduleDataGrid_estimatedDays"] input').val()
+
+            if($.trim(sel) === '' || inp === ''){
+                flag = 'false'
+                return false
+            }
+        })
+
+        return flag
+    }
+
+
+
+    // 图片上传/附件
+    var uploadFile = {
+        addLoadFiles: [],  // 已经上传阿里云
+        need_addAliFile : [],  // 需提交阿里云文件
+        delloadFile : [],  // 需要删除的文件
+        uploadCode : [],   // 提交成功返回
+        down : function(t){ // 下载附件
+            var id = $(t).attr('rowid');
+            var imgSrc = $('#upLoadFile_'+id).attr('srcbase');
+            var id2 = $(t).closest('tr').attr('rowid');
+            var downName = ''
+            var arr = this.addloadFile
+
+            if(id.indexOf('jqg')>=0){
+                for(var j in arr){
+                    if(id2 === arr[j].detailCode && arr[j].delType === 'file'){
+
+                        downName = arr[j].name
+
+                        var $a = document.createElement('a');
+                        $a.setAttribute("href", imgSrc);
+                        $a.setAttribute("download",downName);
+                        var evObj = document.createEvent('MouseEvents');
+                        evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+                        $a.dispatchEvent(evObj);
+                        return false
+                    }
+                }
+
+                return false
+            }
+
+
+            var name2 = ''
+            for(var i in arr){
+                if(id === arr[i].detailCode && arr[i].delType === 'file'){
+                    name2 = arr[i].name
+                }
+            }
+
+
+            var imgSrc = $('#upLoadFile_'+id).attr('srcbase')
+            var $a = document.createElement('a');
+            $a.setAttribute("href", imgSrc);
+            $a.setAttribute("download",name2);
+            var evObj = document.createEvent('MouseEvents');
+            evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+            $a.dispatchEvent(evObj);
+        },
+        del : function(t){  // 删除图片
+            var _t = $(t)
+            id = _t.attr('rowid'),
+                delType = _t.attr('data-type'),   // 删除类型
+                filepath = _t.attr('filepath'),   // 阿里云删除地址
+                hasBase = _t.attr('hasBase'),   // 是否存在数据库
+
+                arr = this.addloadFile,
+                delArr = this.delloadFile
+
+
+            js.confirm("你确认要删除", function(){
+                _t.parent().find('.progress span').width('0px') // 进度条重置
+                _t.parent().find('.hideInput').attr('disabled',false)  // 上传图片按钮允许点击
+
+                if(hasBase){
+                    _t.attr('hasBase','')
+                    _t.parent().find('.hasImgSet').hide()
+                    _t.parent().find('.addImgSet').show()
+                    _t.closest('td').find('input').show()
+                    layer.msg('删除成功')
+
+                    delArr.push({"detailCode" : id, "typeName": delType, "filePath" : filepath})
+                }else{
+                    var id2 = id.indexOf('jqg') < 0 ? $(t).attr('rowid') : $(t).closest('tr').attr('rowid')
+                    for(var j in arr){
+                        if((id2 === arr[j].detailCode) && (delType === arr[j].delType)){
+                            arr.splice(j,1)
+                            _t.parent().find('.hasImgSet').hide()
+                            _t.parent().find('.addImgSet').show()
+                            if(delType === 'img'){
+                                $('#upLoadImg_'+id).attr('srcbase','')
+                                $('#upLoadImg_'+id).val('')
+                                $('#upLoadImg_'+id).show()
+                            }else{
+                                $('#upLoadFile_'+id).attr('srcbase','')
+                                $('#upLoadFile_'+id).val('')
+                                $('#upLoadFile_'+id).show()
+                            }
+
+                            return false
+                        }
+                    }
+
+
+                }
+            })
+        },
+        show : function(t){  // 查看图片
+            var id = $(t).attr('rowid');
+            src = $('#upLoadImg_'+id).attr('srcbase')
+            $('.photoShow .img').attr('src',src)
+            $('.photoShow').fadeIn()
+        },
+        upaliyun: function(callback){  // 上传阿里云
+            if(this.need_addAliFile.length === 0){
+                callback(200)
+                return false
+            }
+            var _this = this
+
+            // 阿里云上传地址
+            var alyData = {
+                policy: '',
+                OSSAccessKeyId: '',  // 密钥
+                success_action_status: "200",  // 状态
+                signature: '',  // 签名
+                key: '',
+                callback: ''  // 回调
+            }
+
+            var getData = {
+                url: '' // 阿里云地址
+            }
+
+
+            // 获取签名
+            $.ajax({
+                // url: '${ctx}/a/aliyunimage/amAliyunImage/getPolicy',
+                url: 'https://am.uvanart.com/a/aliyunimage/amAliyunImage/getPolicy',
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json',
+                success: function (res) {
+                    getData.url = res.data.host;
+                    alyData.policy = res.data.policy;
+                    alyData.OSSAccessKeyId = res.data.accessId;
+                    alyData.signature = res.data.signature;
+                    alyData.key = res.data.dir;
+                    alyData.callback = res.data.callBack;
+                    subAliAjax()
+                }
+            })
+
+
+
+
+            function subAliAjax(){
+                if(_this.need_addAliFile.length === 0){
+                    callback(200);
+                    return false
+                }
+
+                var arr = _this.need_addAliFile
+                var dataDay = new Date(),
+                    dnum = dataDay.getFullYear().toString() + dataDay.getMonth().toString() + dataDay.getDate().toString() + dataDay.getMinutes().toString() + dataDay.getMilliseconds().toString() + dataDay.getSeconds().toString();
+
+                // 提交到阿里云的图片
+                var formData = new FormData;
+                formData.append('OSSAccessKeyId', alyData.OSSAccessKeyId)
+                formData.append('policy', alyData.policy)
+                formData.append('Signature', alyData.signature)
+                formData.append('key', alyData.key + dnum + arr[0].qualificationName)
+                formData.append('success_action_status', alyData.success_action_status)
+                formData.append('callback', alyData.callback)
+                formData.append('file', arr[0].file)
+                $.ajax({
+                    type: "POST",
+                    url: getData.url,   // 阿里云上传地址
+                    data: formData,
+                    processData: false,
+                    cache: false,
+                    async: true,
+                    contentType: false,
+                    dataType: "json",
+                    header: {
+                        'content-type': "multipart/form-data"
+                    },
+                    success: function (res) {
+                        if (res.code === 200) {
+                            arr[0].file = getData.url+res.data
+                            arr[0].filePath = res.data
+                            _this.addLoadFiles.push(arr[0])
+                            _this.need_addAliFile.splice(0,1)
+                            subAliAjax()
+                        }else{
+                            layer.msg('提交失败,请重新尝试')
+                            callback(400)
+                            return false
+                        }
+                    },
+                    error: function(res){
+                        layer.msg('提交失败,请重新尝试')
+                        callback(400)
+                        return false
+                    }
+                });
+
+
+            }
+
+        },
+        upload : function(t){  // 上传
+            // if($("#isNewRecord").val() === 'true'){
+            // 	layer.msg('请先保存再进行图片/附件上传')
+            // 	return false
+            // }
+
+
+
+            $(t).attr('disabled',true)  // 禁止点击
+            var	id = $(t).attr('rowid'),
+                dataType = $(t).attr('data-type'),   // 类型
+                _this = this;
+
+            var f = t.files[0],
+                type = f.type.split('/')
+
+
+
+
+            // 限制当前上传类型
+            if(dataType === 'img'){
+                if(type[0] === 'image' && type[1] !== 'jpeg' && type[1] !== 'jpg' && type[1] !== 'png'){
+                    layer.msg('只允许上传.image / .jpeg / .jpg 图片')
+                    $(t).attr('disabled',false)  // 允许点击
+                    return false
+                }
+
+                else if(type[0] !== 'image'){
+                    layer.msg('只允许上传.image / .jpeg / .jpg 图片')
+                    $(t).attr('disabled',false)  // 允许点击
+                    return false
+                }
+            }else{
+                if(type[0] === 'image'){
+                    layer.msg('只允许上传非图片格式的文件')
+                    $(t).attr('disabled',false)  // 允许点击
+                    return false
+                }
+            }
+
+            // 限制当前上传大小
+            if (f.size >= 52428800) {
+                layer.msg('您这个"' + f.name + '"文件大小过大,请重新上传,最大50M');
+                $(t).attr('disabled',false)  // 允许点击
+                return false
+            }
+
+
+            // 转二进制
+            function dataURLtoBlob(dataurl) {
+                var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while(n--){
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], {type:mime});
+            }
+
+            // 图片压缩
+            function canvasDataURL(path,imgType,_t,callback){
+                var img = new Image();
+                img.src = path
+
+                img.onload = function(){
+                    var that = this;
+                    // 默认按比例压缩
+                    var w = that.width,   // 当前图片宽度
+                        h = that.height,  // 当前图片高度
+                        scale = w / h;  // 比例
+
+
+                    w = (that.width > 1024 ? 1024 : that.width)
+                    h = w / scale;
+
+                    var quality = 0.7;  // 默认图片质量为0.7
+                    //生成canvas
+                    var canvas = document.createElement('canvas');
+                    var ctx = canvas.getContext('2d');
+                    // 创建属性节点
+                    var anw = document.createAttribute("width");
+                    anw.nodeValue = w;
+                    var anh = document.createAttribute("height");
+                    anh.nodeValue = h;
+                    canvas.setAttributeNode(anw);
+                    canvas.setAttributeNode(anh);
+                    ctx.drawImage(that, 0, 0, w, h);
+
+
+                    // quality值越小，所绘制出的图像越模糊
+                    var base64 = canvas.toDataURL(imgType, quality);
+                    // 回调函数返回base64的值
+                    callback(base64);
+                }
+            }
+
+            // 手动添加数据
+            var subObj = {
+                detailCode : id.indexOf('jqg') < 0 ? $(t).attr('rowid') : $(t).closest('tr').attr('rowid'),
+                qualificationName: f.name,
+                file : '',
+                filePath : '',
+                typeName:'',
+                profileSurfix : f.name.slice(f.name.lastIndexOf('.'))
+            }
+
+
+            $('#bgLoading').show()  // 开启遮罩
+
+            var fileReader = new FileReader()
+            fileReader.readAsDataURL(f);
+            var parTd = $(t).parent()  // 父级td
+
+
+            parTd.find('.font-msg').html('上传中')
+            parTd.find('.addImgSet').addClass('w1')
+
+            // 读取前开启滚动条
+            fileReader.onloadstart = function(){
+                parTd.find('.progress span').width('0px')
+            };
+
+
+            // 读取过程
+            fileReader.onprogress = function (e) {
+                parTd.find('.progress span').width(e.loaded/e.total*100+"%")
+            }
+
+            fileReader.onload = function(e) {
+                if(!e.target.result){
+                    layer.msg('上传失败请重新上传')
+                    return
+                }
+
+                parTd.find('.progress span').width(e.loaded/e.total*100+"%")
+                if(type[0] === 'image'){
+                    canvasDataURL(e.target.result,f.type,$(t),function(base_64){
+                        $(t).attr('srcbase',base_64)
+                        subObj.typeName = 'img'
+                        subObj.file = dataURLtoBlob(base_64)
+                        if(base_64 && $(t).attr('srcbase')){
+                            setTimeout(function(){
+                                $(t).hide()
+                                $(t).closest('td').find('.addImgSet').hide()
+                                $(t).closest('td').find('.hasImgSet').show()
+                                $(t).closest('td').find('.downloadFile').hide()
+                                parTd.find('.font-msg').html('上传图片')
+                                parTd.find('.addImgSet').removeClass('w1')
+                                $('#bgLoading').hide()  // 关闭遮罩
+                            },2000)
+                        }
+                    })
+                }else{
+                    subObj.typeName = 'file'
+                    var base_64 = e.target.result
+
+                    $(t).attr('srcbase',base_64)
+                    if($(t).attr('srcbase')){
+                        setTimeout(function(){
+                            $(t).hide()
+                            $(t).closest('td').find('.addImgSet').hide()
+                            $(t).closest('td').find('.hasImgSet').show()
+                            $(t).closest('td').find('.downloadFile').hide()
+                            parTd.find('.font-msg').html('上传附件')
+                            parTd.find('.addImgSet').removeClass('w1')
+                            $('#bgLoading').hide()  // 关闭遮罩
+                        },2000)
+                    }
+
+                    subObj.file = f
+                }
+            }
+
+
+            _this.addFile(subObj)
+
+        },
+        addFile : function(files){  // 判断数组中是否已存在文并添加
+            var hasF = true,
+                arr = this.need_addAliFile
+
+            for(var j in arr){
+                if((files.detailCode === arr[j].detailCode) && (files.profileSurfix === arr[j].profileSurfix)){
+                    arr[j] = files
+                    hasF = false
+                    return false
+                }
+            }
+
+            if(hasF) arr.push(files)
+            console.log('需要提交的文件',this.need_addAliFile)
+        },
+        subFrom : function(subType){ // 上传图片/文件
+            var fail = this.failoadFile,
+                delArr = this.delloadFile,
+                _this = this,
+                uploadFileCount = 0, // 当前已经上传文件的总数
+                arrLen = this.need_addAliFile.length // 当前一共需要上传多少文件
+
+
+            var str = (arrLen > 0? '已经上传  '+parseInt(uploadFileCount/arrLen * 100) + '%' : '')
+            // 加载
+            layer.load(1, {
+                content: '<div id="ReciprocalNum" style="min-width: 100px;position: relative;left: -25px;top: 44px;text-align:center">'+str+'</span>',
+                shade: [0.1,'#000'] //0.1透明度的白色背景
+            });
+
+
+
+            if(delArr.length === 0){
+                _this.upaliyun(function(code){
+                    if(code === 200)
+                        subAjax()
+                    else
+                        layer.closeAll();
+                })
+            }
+            else{
+                subDelAjax()
+                function subDelAjax(){
+                    if(delArr.length === 0){
+                        _this.upaliyun(function(code){
+                            if(code === 200)
+                                subAjax()
+                            else
+                                layer.closeAll();
+                        })
+                    }
+
+
+                    $.ajax({
+                        url: '${ctx}/amspecimen/amSpecimen/deletFile',
+                        type: "POST",
+                        data: JSON.stringify({
+                            "detailCode": delArr[0].detailCode,
+                            "typeName" : delArr[0].typeName,
+                            "filePath": delArr[0].filePath
+                        }),
+                        cache: false,//上传文件无需缓存
+                        processData: false,//用于对data参数进行序列化处理 这里必须false
+                        contentType: false, //必须
+                        success: function (res) {
+                            delArr.splice(0,1)
+                            subDelAjax()
+                        },
+                        error:function(err){}
+                    });
+                }
+            }
+
+
+
+            function subAjax(){
+                var arr = _this.addLoadFiles
+                if(arr.length === 0){
+                    if ($("#billsStatus").val() ==='1'){
+                        if(checkRequire() === 'false'){
+                            layer.closeAll();
+                            layer.msg('处理节点或预计天数不能为空, 请完善信息')
+                            return false
+                        }
+                    }
+
+                    if(subType === 'save') $('#btnSubmit').trigger("click");    // 点击保存
+                    if(subType === 'shenhe') save('1')   // 点击审核
+
+                    layer.closeAll();
+                    return false
+                }
+
+                $.ajax({
+                    url: '${ctx}/amspecimen/amSpecimen/saveFile',
+                    // url: 'http://192.168.1.209:8080/a/amspecimen/amSpecimen/saveFile',
+                    type: "POST",
+                    data: JSON.stringify({
+                        "detailCode" : arr[0].detailCode,
+                        "qualificationName": arr[0].qualificationName,
+                        "profileSurfix" : arr[0].profileSurfix,
+                        "file" : arr[0].file,
+                        "typeName" : arr[0].typeName,
+                        "filePath" : arr[0].filePath
+                    }),
+                    dataType:'json',
+                    contentType:"application/json;charsetset=UTF-8",
+                    success: function (res) {
+                        arr.splice(0,1)
+                        uploadFileCount +=1
+                        $('#ReciprocalNum').html('已经上传  '+parseInt(uploadFileCount/arrLen * 100) + '%')
+                        subAjax()
+                    },
+                    error:function(err){
+                        for(var name in arr){
+                            fail += arr[name].name + ','
+                        }
+                        layer.alert(fail + '文件提交失败,请重新提交',function() {
+                            layer.closeAll();
+                        })
+                    }
+                });
+            }
+        }
+    }
+
+    // 表格动态改变宽度
+    $('.box-main').height($(document).height())
+    $(window).resize(function(){
+        $('.box-main').height($(document).height())
+    })
+
+    // 模拟提交
+    $('#sub-simulation').off().click(function(){
+        uploadFile.subFrom('save')  // 保存
+    })
+
+
+
+
+
+
+
+    //审核操作
+    function save(isSH){
+        var inputForm = document.getElementById("inputForm");
+
+        if(isSH==='1') {               //审核
+            inputForm.action = "${ctx}/amspecimen/amSpecimen/save?documentStatusSH=1";
+            $('#examine').trigger('click')
+        }else if (isSH=='2') {                    //反审核
+            var isNewRecord=document.getElementById("isNewRecord").value;
+            inputForm.action = "${ctx}/amspecimen/amSpecimen/save?documentStatusSH=2";
+        }else if (isSH=='3') {
+            if(checkRequire() === 'false'){
+                layer.msg('处理节点或预计天数不能为空, 请完善信息')
+                return false
+            }
+            inputForm.action = "${ctx}/amspecimen/amSpecimen/save?documentStatusSH=3";
+            $('#examine_plan').trigger('click')
+
+        }else if (isSH=='4') {
+
+            inputForm.action = "${ctx}/amspecimen/amSpecimen/save?documentStatusSH=4";
+
+        }else {
+            inputForm.action = "${ctx}/amspecimen/amSpecimen/save?asdasd=1212";
+        }
+    }
+</script>

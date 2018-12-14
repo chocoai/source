@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.staff.dao.AmStaffDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="AmStaff">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<!-- 查询数据  选择岗位查询时-->
+	<select id="findList" resultType="AmStaff">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<if test="postCode != null and postCode != ''">
+			LEFT JOIN ${_prefix}am_staff_post c ON a.staff_code = c.staff_code
+		</if>
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="postCode != null and postCode != ''">
+				AND c.post_code = #{postCode}
+			</if>
+			AND b.status = '0'
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+
+	<!-- 删除数据-->
+	<delete id="deleteDb">
+		DELETE FROM js_am_staff
+		WHERE staff_code=#{staffCode}
+	</delete>
+</mapper>

@@ -1,0 +1,770 @@
+
+<% layout('/layouts/default.html', {title: '图片审核单管理', libs: ['validate','fileupload']}){ %>
+    <style>
+        .imgUploadOther i{z-index: 100;;padding: 15px;cursor: pointer;font-size: 40px;font-weight: bold;position: absolute;top: 50%;transform: translate3d(0,-50%,0);opacity: 0.6;color:#fff;transition: all .3s}
+        .imgUploadOther i.prev{left:5%;}
+        .imgUploadOther i.next{right:5%;}
+        .imgUploadOther i:hover{opacity: 1;transition: all .3s}
+    
+        .showImg{position: absolute;top: 50%;transform: translate3d(-50%,-50%,0);left: 50%;display: none;text-align: center;}
+        .showImg img{transform: scale(1);display: block;margin: 0 auto;max-width: 1024px;cursor: move}
+        .scaleImg{width: 1024px;height:568px;display: table-cell;vertical-align: middle;overflow: auto;outline: 5px solid #000;max-width: 1027px;min-width: 1024px}
+        .showImg.edit .scaleImg{position: relative;display: block;}
+        .showImg.edit img{position: absolute;max-width:initial;width: 1024px;}
+    
+        .showImg .btnType{margin-top: 15px;}
+        .showImg .btnType i{font-size: 50px;font-weight: bold;text-align: center;margin: 0 10px;cursor: pointer;color: rgba(255, 255, 255, 0.377)}
+        .btnType i.icon-check.on{color:#5af05d}
+        .btnType i.icon-close.on{color:rgb(255, 68, 68)}
+        .wup_container .wup_img .filelist li{overflow: visible;margin-bottom: 29px}
+        #uploadImagefileLists .btnType i{margin: 0 5px;font-size: 20px;display: none}
+        #uploadImagefileLists .btnType i.on{display: block}
+        .wup_container .wup_img .queueList{padding-bottom: 34px;position: relative;z-index: 1;}
+        #outerdiv{overflow: auto;overflow-x:hidden }
+        .editesBox{border-radius: 50px;position: absolute;top: 20px;left: 15px;padding: 15px 28px;background:rgba(47, 63, 77, 0.78);color: #949ca3;}
+        .editesBox .item{moz-user-select: -moz-none; -moz-user-select: none; -o-user-select:none; -khtml-user-select:none; -webkit-user-select:none; -ms-user-select:none; user-select:none;display: inline-block;*display: inline;*zoom:1;margin-right: 17px;font-size: 14px;text-align: center;cursor: pointer;}
+        .editesBox .item i{display: block;font-size: 24px;font-weight: bold;margin-bottom: 4px}
+        .editesBox .item:last-child{margin-right: 0}
+        textarea{outline: none;}
+        .layui-layer-btn .layui-layer-btn0{background: #2a579a!important;border: 0}
+        .remarksBox{position: absolute;width: 172px;max-height: 200px;box-shadow: 3px 3px 5px #00000038;padding: 10px;top: 120px;left: 25px;background: #f1b651;overflow: auto;color: #fff;border-radius: 6px}
+        .wup_container .wup_img .filelist li{width: 106px;height: 106px;}
+        .wup_container .wup_img .filelist li p.imgWrap{width: 106px;height: 106px;}
+    
+    
+    </style>
+    <div class="main-content">
+        <div class="box box-main">
+            <div class="box-header with-border">
+                <div class="box-title">
+                    <i class="fa fa-list-alt"></i> ${text(picReview.isNewRecord ? '新增图片审核单' : '编辑图片审核单')}
+                </div>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                </div>
+            </div>
+            <#form:form id="inputForm" model="${picReview}" action="${ctx}/picture/picReview/save" method="post" class="form-horizontal">
+            <div class="box-body">
+                <div class="form-unit">${text('基本信息')}</div>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 单据编号：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+    
+                                <#form:hidden path="isNewRecord" id="isNewRecord"/>
+                                <#form:input path="reviewCode" id="reviewCode" readonly="true" maxlength="64"  class="form-control required abc"/>
+    
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 单据日期：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="reviewDate" readonly="true" maxlength="20" class="form-control Wdate required" id="reviewDate"
+                                dataFormat="date"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 方案类型：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="reviewType" maxlength="100" class="form-control required" id="reviewType"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-6">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:hidden path="reviewStatus"  id="reviewStatus"/>
+                                <#form:input path="reviewStatusName" class="form-control" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" title="">
+                                <span class="required hide"></span> 方案说明：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-10">
+                                <#form:textarea path="remarks" rows="4" maxlength="1000" class="form-control" id="remarks"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">图片上传：</label>
+                            <div class="col-sm-10">
+                                <#form:fileupload id="uploadImage" bizKey="${picReview.id}" bizType="picReview_image"
+                                uploadType="image" class="required" readonly="false"  imageMaxWidth="-1" imageMaxHeight="-1"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="box-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <% if (hasPermi('picture:picReview:edit')){ %>
+                        <button type="button" class="btn btn-sm btn-primary btnSubmit" onclick="save('0',this)"><i class="fa fa-check"></i> ${text('保 存')}</button>
+                        <button type="submit" class="btn btn-sm btn-primary" id="btnSubmit" style="display: none"><i class="fa fa-check"></i> ${text('保 存')}</button>
+                        <input  type="hidden" id="editPerm" value="true">
+                        <% } %>
+                        <% if (hasPermi('picture:picReview:check')){ %>
+                        <button type="button" class="btn btn-sm btn-primary examine" onclick="save('1',this)"><i class="fa fa-check"></i> ${text('审 核')}</button>
+                        <button type="submit" class="btn btn-sm btn-primary btnList" id="examine" style="display: none">${text('审 核')}</button>
+                        <input  type="hidden" id="checkPerm" value="true">
+                        <% } %>
+                        <% if (hasPermi('picture:picReview:review')){ %>
+                        <a href="#" onclick="save('2')"  data-title="${text('重 新 审 核')}">	<button type="submit" class="btn btn-sm btn-primary btnList " id="reexamine" onclick=""> ${text('重 新 审 核')}</button></a>
+                        <input  type="hidden" id="reviewPerm" value="true">
+                        <% } %>
+                        <% if (hasPermi('picture:picReview:download')){ %>
+                        <input  type="hidden" id="downloadPerm" value="true">
+                        <% } %>
+                        <button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+                    </div>
+                </div>
+            </div>
+    
+        </#form:form>
+    
+        <!-- 图片相册 -->
+        <div class="imgUploadOther" style="display: none">
+            <i class="icon-arrow-left prev" onClick="nextPage(event)"></i>
+            <i class=" icon-arrow-right next" onClick="prevPage(event)"></i>
+        </div>
+    </div>
+    </div>
+    <% } %>
+    <script>
+        // 检查订单是否已结束操作
+        function checkConcurrency(){
+            clearInterval(this.times)
+            this.times = setInterval(function(){
+                $.ajax({
+                    url: '${ctx}/redisUnits/updataTime',
+                    data: {
+                        'code': GetRequest().reviewCode
+                    },
+                    type: 'GET',
+                    contentType: 'text/plain;charset=UTF-8',
+                    dataType: 'json'
+                })
+            },1000)
+    
+            // 截取url
+            function GetRequest() {
+                var url = location.search; //获取url中"?"符后的字串
+    
+                var theRequest = new Object();
+                if (url.indexOf("?") != -1) {
+                    var str = url.substr(1);
+                    strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                    for (var i = 0; i < strs.length; i++) {
+                        if (strs[i].split("=")[0] === 'beginTime') {
+                            theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                        } else {
+                            theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                        }
+    
+                    }
+                }
+                return theRequest;
+            }
+        }
+        var a = $('#uploadImagefileLists'),
+            openImgIndex = 0,  // 当前打开索引
+            imgCountLength = 0,  // 图片总数
+            imgdata = {}  // 当前图片数据
+    
+    
+        $(function(){
+            showState()  // 判断审核状态按钮显示
+            var flag = $("#isNewRecord").val();
+            if(flag === "true") return
+            var code=document.getElementById('reviewCode').value;
+
+            $.ajax({
+				url: '${ctx}/file/query?bizKey=${picReview.id}&bizType=picReview_image',
+				type: 'get',
+				contentType: 'text/plain;charset=UTF-8',
+				dataType: "json",
+				success: function (result) {
+                    console.log('拿数据', result)
+                    imgUploadFun(result)
+                    Jurisdiction() // 用户权限控制
+                    checkConcurrency()
+				}
+			})
+        })
+    
+    
+        $("#inputForm").validate({
+            submitHandler: function(form){
+                js.ajaxSubmitForm($(form), function(data){
+                    js.showMessage(data.message);
+                    var flag = $("#isNewRecord").val();
+    
+                    if (flag === "true") {
+                        if($('#examine').length) $('#examine').attr("disabled", true);
+                        if($('.examine').length) $('.examine').attr("disabled", true);
+                        if($('#reexamine').length)$('#reexamine').attr("disabled", true);
+                    } else if (flag === "false"){
+                        var reviewStatus = $("#reviewStatus").val();
+                        if (reviewStatus!=='1') {
+                            if($('#reexamine').length)document.getElementById('reexamine').disabled=true;
+                        }else {   
+                            if($('#examine').length) $('#examine').attr("disabled", true);
+                            if($('.examine').length) $('.examine').attr("disabled", true);
+                            if($('#btnSubmit').length)$('#btnSubmit').attr("disabled", true);
+                            if($('.btnSubmit').length)$('.btnSubmit').attr("disabled", true);
+                        }
+                    }
+                    if(data.result == Global.TRUE){
+                        if (flag === "true") {
+                            js.closeCurrentTabPage(function(contentWindow){
+                                contentWindow.page();
+                            });
+                        } else {
+                            location.reload();
+                        }}
+                }, "json");
+            }
+        });
+    
+    
+    
+    
+    
+        function imgUploadFun (result){
+            $('.wup_container .wup_img .filelist li p.title a').click(function(){return false})
+            imgdata = result
+            imgCountLength = a.find('li').length
+    
+            // 初始化
+            for(var item in result){
+                var str = ''
+                switch(result[item].picStatus){
+                    case 's':
+                        // 已审核
+                        str = '<div class="btnType"><i class="icon-check on"></i><i class="icon-close"></i></div>'
+                        break;
+                    case 'f':
+                        // 未审核
+                        str = '<div class="btnType"><i class="icon-check"></i><i class="icon-close on"></i></div>'
+                        break;
+                    case 'o': // 默认
+                        str = '<div class="btnType"><i class="icon-check"></i><i class="icon-close"></i></div>'
+                        break;
+                    default:
+                        break;
+                }
+    
+                $(a).find('li#'+result[item].id).append(str)
+            }
+    
+    
+    
+    
+            // 点击图片
+            $("#uploadImagefileLists").delegate(".imgWrap img","click",function(){
+                imgCountLength = a.find('li').length
+                openImgIndex = $(this).closest('li').index()
+                var imgs = ''
+    
+    
+                // 添加图片
+                for(var i=0; i< imgCountLength; i++){
+                    var src = $(a[0].children[i]).find('img').attr('src')
+                    id = $(a[0].children[i]).attr('id')
+    
+                    var imgID;
+                    for(var item in imgdata){
+                        if(imgdata[item].id === id){
+                            imgID = imgdata[item]
+                            break;
+                        }
+                    }
+    
+                    var reg = /uploadImageWU/ig.test(id)  // 判断是否新上传
+    
+                    if((imgID.id || imgID.id === '' ) && ($("#reviewStatus").val()!= '1') && (!reg)){  // 后台有数据 / 当前是非审核状态
+                        var btn = ''
+                        // 判断审核状态
+                        switch(imgID.picStatus){
+                            case 's':
+                                // 已审核
+                                btn = '<i class="icon-check on" onClick="examineOK(this,event)"></i><i class="icon-close" onClick="examineFail(this,event)"></i>'
+                                break;
+                            case 'f':
+                                // 未审核
+                                btn = '<i class="icon-check" onClick="examineOK(this,event)"></i><i class="icon-close on" onClick="examineFail(this,event)"></i>'
+                                break;
+                            case 'o': // 默认
+                                btn = '<i class="icon-check" onClick="examineOK(this,event)"></i><i class="icon-close" onClick="examineFail(this,event)"></i>'
+                                break;
+                            default:
+                                break;
+                        }
+                        imgs += '<div class="showImg" id="'+id+'"><div class="scaleImg"><img src="'+src+'"/></div><div class="btnType">'+btn+'</div></div>';
+                    }else{
+                        imgs += '<div class="showImg" id="'+id+'"><img src="'+src+'"/></div>';
+                    }
+                }
+    
+                // 新上传手动添加弹窗
+                if($('#outerdiv').length === 0){
+                    var bgDiv = '<div id="outerdiv" onclick="hideBg(this)" style="position: fixed; top: 0px; left: 0px; background: rgba(0, 0, 0, 0.7); z-index: 99999; width: 100%; height: 100%;"></div>'
+                    $('body').append(bgDiv)
+                }
+    
+    
+                $('#outerdiv').html(imgs).show()
+                $('#outerdiv').append($('.imgUploadOther').clone(true).show())
+                if($("#reviewStatus").val()!= '1') $('#outerdiv').append('<div class="editesBox" onClick="scaleImg(event)"><div class="item" data-id="0"><i class="icon-magnifier-add"  data-id="0"></i>放大</div><div class="item" data-id="1"><i class="icon-magnifier-remove" data-id="1"></i>缩小</div><div class="item" data-id="3"><i class="icon-reload"  data-id="3"></i>旋转</div><div class="item" data-id="2"><i class="icon-picture" data-id="2"></i>原图</div><div class="item" data-id="4"><i class="icon-note" data-id="4"></i>备注</div><div class="item" data-id="5"><i class="icon-cloud-download"  data-id="5"></i>下载</span></div>')
+                $('#outerdiv .showImg').eq(openImgIndex).show().siblings('.showImg').hide()
+                $('#outerdiv').append('<div class="remarksBox"></div>')
+    
+                // 备注获取
+                var showImgID = $('#outerdiv .showImg').eq(openImgIndex).attr('id')
+                getRemarks(showImgID,'picRemarks')
+    
+                mouseScroll() // 鼠标滚动
+                creatImgHide($(this).closest('li').attr('id'))
+                move()
+                Jurisdiction() // 权限控制
+            })
+    
+    
+            // 点击添加图片
+            $('.webuploader-pick').click(function(){
+                if(a.children().length === 0) a.closest('.queueList').css('z-index',0)
+            })
+        }
+    
+        // 新建图片隐藏操作按钮
+        function creatImgHide(id){
+            var reg = /uploadImageWU/ig.test(id)  // 判断是否新上传
+    
+            $('.editesBox').show()
+            $('.remarksBox').show()
+    
+            if(reg){
+                $('.editesBox').hide()
+                $('.remarksBox').hide()
+            }
+        }
+    
+    
+    
+        // 用户权限控制
+        function Jurisdiction(){
+            /*
+                editFlag：当值为true时，可以对图片审核单进行修改、保存操作;
+                checkFlag：当值为true时，可以对图片审核单进行审核，进行√×选择和备注;
+                reviewFlag:当值为true时，可以对图片审核单进行重新审核;
+                downloadFlag:当值为true时，可以下载图片
+            */
+            var editFlag=$("#editPerm").val();
+            var checkFlag=$("#checkPerm").val();
+            var reviewFlag=$("#reviewPerm").val();
+            var downloadFlag=$("#downloadPerm").val();
+            // 初始隐藏
+            $('.editesBox .item:nth-child(5)').hide()  // 备注
+            $('.editesBox .item:nth-child(6)').hide() // 下载
+            $('.showImg .btnType').hide()  // 审核
+            $('.webuploader-pick').hide()  // 继续添加图片
+            $('.webuploader-element-invisible').parent().hide()  // 继续添加图片-1
+            $('.file-panel').hide()  // 图片删除
+    
+            if(editFlag){
+                $('.webuploader-pick').show()  // 继续添加图片
+                $('.webuploader-element-invisible').parent().show()  // 继续添加图片-1
+                $('.file-panel').show()  // 图片删除
+            }
+            if(checkFlag){
+                $('.showImg .btnType').show()   // 审核
+                $('.editesBox .item:nth-child(5)').show()  // 备注
+            }
+            if(downloadFlag){
+                $('.editesBox .item:nth-child(6)').show() // 下载
+            }
+    
+            $('.editesBox .item:visible').last().css('margin-right','0')  // 备注
+            // 已审核
+            var reviewStatus = $("#reviewStatus").val();
+            if(reviewStatus=='1'){
+                $('.webuploader-pick').hide()
+                $('.webuploader-element-invisible').parent().hide()
+                $('.file-panel').hide()
+            }
+        }
+    
+    
+        // 下一张图片
+        function nextPage(e){
+            openImgIndex = openImgIndex-1
+            if(openImgIndex < 0){
+                openImgIndex = 0
+                layer.msg('已经是第一张图片')
+                e.stopPropagation();
+                return
+            }
+            var _t = $('#outerdiv .showImg').eq(openImgIndex), id = _t.attr('id')
+            _t.show().siblings('.showImg').hide()
+            mouseScroll()
+            move()
+            console.log(id,_t.find('img').css('left'))
+            if(_t.find('img').css('left') !== 'auto') _t.addClass('edit')
+            getRemarks(id,'picRemarks')  // 获取备注
+            creatImgHide(id) // 新建图片隐藏操作按钮
+            e.stopPropagation();
+        }
+    
+    
+        // 上一张图片
+        function prevPage(e){
+            openImgIndex = openImgIndex+1
+            if(openImgIndex >= imgCountLength){
+                openImgIndex = imgCountLength-1
+                layer.msg('已经是最后一张了')
+                e.stopPropagation();
+                return
+            }
+            var _t = $('#outerdiv .showImg').eq(openImgIndex), id = _t.attr('id')
+            _t.show().siblings('.showImg').hide()
+            mouseScroll()
+            move()
+            console.log(id,_t.find('img').css('left'))
+            if(_t.find('img').css('left') !== 'auto') _t.addClass('edit')
+            getRemarks(id,'picRemarks')  // 获取备注
+            creatImgHide(id) // 新建图片隐藏操作按钮
+            e.stopPropagation();
+        }
+    
+        // 隐藏画布
+        function hideBg(_t){
+            $(_t).fadeOut().remove()
+        }
+    
+        // 备注信息读取
+        function getRemarks(id,key){
+            if(!$('.editesBox').length) $('.remarksBox').css('top','20px')
+            if($('.remarksBox').length){
+                $('.remarksBox').html(getData(id,key) || '暂无备注')
+                $('.remarksBox').click(function(e){e.stopPropagation();})
+            }
+    
+        }
+    
+    
+    
+    
+        // 图片编辑缩放
+        function scaleImg(e){
+            var _t = $('#outerdiv .showImg:visible'),  // 当前编辑元素
+                id = $(_t).attr('id'),
+                imgW,imgH;
+    
+            // 初始值
+            if ((_t.find('img').attr('w') === undefined)){
+                _t.find('img').attr('w', _t.find('img').width())
+                _t.find('img').attr('h', _t.find('img').height())
+                _t.find('img').attr('ro', 0)
+    
+                _t.find('img').css({
+                    'width' : _t.find('img').attr('w'),
+                    'height' : _t.find('img').attr('h'),
+                })
+            }
+            _t.addClass('edit').siblings().removeClass('edit')
+    
+            var imgW = parseInt(_t.find('img').width()),
+                imgH = parseInt(_t.find('img').height()),
+                rotate = parseInt(_t.find('img').attr('ro'))
+    
+    
+            // 获取当前点击操作类型
+            var type
+            if(e.srcElement) type = e.srcElement.dataset.id
+            else if(e.target) type = e.target.dataset.id
+            else type = e
+    
+    
+            switch(type){
+                case "0" :  // 放大
+                    imgW  = imgW  * 1.1
+                    imgH  = imgH * 1.1
+                    break;
+                case "1" :  //缩小
+                    imgW  = imgW / 1.1
+                    imgH  = imgH / 1.1
+                    break;
+                case "2" :  // 原图
+                    imgW = parseInt(_t.find('img').attr('w'))
+                    imgH = parseInt(_t.find('img').attr('h'))
+                    rotate = 0
+                    _t.removeClass('edit')
+                    break;
+                case "4" :  // 编辑备注
+                    var flag = true  // 如果没有进去图片备注则清空操作
+                    layer.prompt({title: '图片备注', formType: 2, value: getData(id,'picRemarks')}, function(text, index){
+                        flag = false
+                        layer.close(index);
+                        setData(id,'picRemarks',text)
+                        getRemarks(id,'picRemarks')  // 获取备注 
+                        layer.msg('编辑成功')
+                    });
+
+                    if(flag) {
+                        setData(id,'picRemarks','')
+                        getRemarks(id,'picRemarks')  // 获取备注 
+                    }
+                    break;
+                case "3" :  // 旋转
+                    rotate >= 330 ? rotate = 0 : rotate += 30
+                    break;
+                case "5" :  // 下载
+                    download(_t.find('img').attr('src'))
+                    break;
+                default:
+                    break;
+            }
+    
+    
+            // 缩放部分
+            if(parseInt(type) <= 3) {
+                _t.find('img').css({
+                    'width' : imgW + 'px',
+                    'height' : imgH + 'px',
+                    'left': 512 - imgW/2,
+                    'top': 284 - imgH/2,
+                    '-webkit-transform':'rotate('+rotate+'deg)',
+                    '-moz-transform':'rotate('+rotate+'deg)',
+                    '-o-transform':'rotate('+rotate+'deg)',
+                    '-ms-transform':'rotate('+rotate+'deg)',
+                    'transform':'rotate('+rotate+'deg)',
+                }).attr('ro', rotate)
+            }else {
+                _t.removeClass('edit')
+            }
+            e.srcElement || e.target ? e.stopPropagation() :  false;
+        }
+    
+        // 图片下载
+        function download(src) {
+            var $a = document.createElement('a');
+            $a.setAttribute("href", src);
+            $a.setAttribute("download", "");
+            var evObj = document.createEvent('MouseEvents');
+            evObj.initMouseEvent( 'click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+            $a.dispatchEvent(evObj);
+        };
+    
+    
+        // 鼠标滚动
+        function mouseScroll(){
+            if($("#reviewStatus").val() === '1') return
+            $('#outerdiv .showImg:visible img').off().on("mousewheel DOMMouseScroll", function (e) {
+                var delta = (e.originalEvent.wheelDelta && (e.originalEvent.wheelDelta > 0 ? 1 : -1)) ||  // chrome & ie
+                    (e.originalEvent.detail && (e.originalEvent.detail > 0 ? -1 : 1));              // firefox
+    
+                var w = $(this).width(),
+                    h = $(this).height(),
+                    parW = $(this).parent().width(),
+                    parH = $(this).parent().height()
+    
+                if (delta > 0){
+                    scaleImg("0") // 上
+                }
+                else if(delta < 0){
+                    scaleImg("1")  // 下
+                }
+            })
+        }
+    
+    
+    
+    
+    
+        // 鼠标点击拖动
+        function move(){
+            // 初始
+            if($("#reviewStatus").val() === '1') $('.showImg img').css('cursor','default')
+            scaleImg(100)  // 添加图片初值
+            for(i in document.images) document.images[i].ondragstart=imgdragstart;  // 禁止图片拖动打开新页面
+            $('#outerdiv .showImg:visible').on('click',function(e){e.stopPropagation()})   // 禁止点击操作区域关闭遮罩
+    
+            $('#outerdiv .showImg:visible .scaleImg').on({
+                'mousedown' : function(e){
+                    var imgX = e.clientX - $(this).find('img').offset().left,
+                        imgY = e.clientY - $(this).find('img').offset().top;
+    
+                    $(this).on('mousemove',function(e){
+                        var parX2 = e.clientX - $(this).offset().left,   // 页面 - 当前par距离 = 所在坐标
+                            parY2 = e.clientY - $(this).offset().top;
+    
+                        $(this).find('img').css({
+                            'left' : parX2 - imgX,
+                            'top' : parY2 - imgY,
+                        })
+                        $(this).parent().addClass('edit')
+                        return false
+                    })
+                },
+                'mouseup':function(e){
+                    $(this).off('mousemove')
+                }
+            })
+    
+            // 禁止图片拖动打开新页面 -> ff兼容
+            function imgdragstart(){return false;}
+        }
+    
+    
+    
+    
+        // 设置数据
+        function setData(id, key, value){
+            for(var item in imgdata){
+                if(imgdata[item].id === id){
+                    imgdata[item][key] = value
+                    return;
+                }
+            }
+    
+    
+        }
+    
+        // 获取数据
+        function getData(id, key){
+            for(var item in imgdata){
+                if(imgdata[item].id === id){
+                    var value = imgdata[item][key]
+                    return value
+                }
+            }
+        }
+    
+        // 审核
+        function examineOK(_t,e){
+            var id = $(_t).closest('.showImg').attr('id')
+            $(_t).addClass('on').siblings('i').removeClass('on')
+            $('#uploadImagefileLists li#'+id).find('.icon-check').addClass('on').siblings('i').removeClass('on')
+    
+            setData(id,'picStatus','s')
+            e.stopPropagation();
+        }
+    
+        // 不审核
+        function examineFail(_t,e){
+            var id = $(_t).closest('.showImg').attr('id')
+            $(_t).addClass('on').siblings('i').removeClass('on')
+    
+            $('#uploadImagefileLists li#'+id).find('.icon-close').addClass('on').siblings('i').removeClass('on')
+            setData(id,'picStatus','f')
+            e.stopPropagation();
+        }
+    
+    
+        function save(isSH,t){
+            t = t || ''
+    
+            if(isSH === '0' && $('#uploadImagefileLists li').length===0){
+                layer.msg('请至少上传一张图片')
+                return;
+            }else if($('#reviewType').val() === ''){
+                layer.msg('请填写完整您的信息')
+                return;
+            }
+    
+            // if(isSH === '0') $(t).attr('disabled','disabled')
+            var testform = document.getElementById("inputForm");
+            //var code=document.getElementById('reviewCode').value;
+            var picdata=[];
+            for(var item in imgdata){
+                picdata.push({
+                    id: imgdata[item].id,
+                    status: imgdata[item].picStatus,
+                    remarks: imgdata[item].picRemarks
+                })
+            }
+            $.ajax({
+                url: "${ctx}/picture/picReview/saveImg",
+                type: "POST",
+                dataType: "json",
+                data:{"picdata":JSON.stringify(picdata)},
+                success: function(result){
+                    // imgUploadFun(result)
+                },
+                error:function(err){
+    
+                }
+            })
+    
+            if(isSH==='1') {
+                $.fn.webUpLoaderFun(function(code){
+                    if(code === 200){
+                        testform.action = "${ctx}/picture/picReview/save?reviewStatusR=1";
+                        $('#examine').trigger('click')
+                    }else{
+                        $(t).attr('disabled','')
+                    }
+                })
+                
+            }else if (isSH=='2') {
+                testform.action = "${ctx}/picture/picReview/save?reviewStatusR=2";
+    
+            }else {
+                $.fn.webUpLoaderFun(function(code){
+                    if(code === 200){
+                        testform.action ="${ctx}/picture/picReview/save";
+                        $('#btnSubmit').trigger('click')
+                    }else{
+                        $(t).attr('disabled','')
+                    }
+                })
+            }
+    
+        }
+        function showState(){
+            var flag = $("#isNewRecord").val();
+            if (flag === "true") {
+                $('.queueList').css('z-index',0); // 无法选择图片上传bug
+                if($('#examine').length)$('#examine').attr("disabled", true);
+                if($('.examine').length)$('.examine').attr("disabled", true);
+                if($('#reexamine').length)$('#reexamine').attr("disabled", true);
+            } else{
+                var reviewStatus = $("#reviewStatus").val();
+                if(reviewStatus=='1'){
+                    //审核状态 - 已审核
+                    if($('#examine').length) document.getElementById('examine').disabled=true;
+                    if($('.examine').length) $('.examine')[0].disabled=true;
+
+                    if($('#btnSubmit').length) document.getElementById('btnSubmit').disabled=true;
+                    if($('.btnSubmit').length) $('.btnSubmit')[0].disabled=true;
+                    document.getElementById('remarks').disabled=true;
+                    document.getElementById('reviewType').disabled=true;
+                    document.getElementById('reviewDate').disabled=true;
+                }else{
+                    if($('#reexamine').length) $('#reexamine').attr("disabled", true);
+                }
+            }
+        }
+    </script>
+    
+    

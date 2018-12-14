@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.ding.dao.DingUserDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="DingUser">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+    <select id="findList" resultType="DingUser">
+        SELECT ${sqlMap.column.toSql()}
+        FROM ${sqlMap.table.toSql()}
+        <if test="departmentId!= null and departmentId != ''">
+            left join js_ding_user_department b on a.userid=b.user_id
+            left join js_ding_department c on c.department_id=b.department_id
+        </if>
+        <if test="specialUser!= null and specialUser != ''">
+            INNER JOIN fz_appreciation_type t on a.mobile=t.privilege_phone
+        </if>
+        <where>
+            ${sqlMap.where.toSql()}
+            <if test="left!= null and left != ''">
+                and a.LEFT=#{left}
+            </if>
+            <if test="specialUser!= null and specialUser != ''">
+                and t.status='0'
+            </if>
+            <if test="removeId!= null and removeId != ''">
+                and a.userid!=#{removeId}
+            </if>
+            <if test="departmentId!= null and departmentId != ''">
+                and (b.department_id=#{departmentId} or c.parent_codes like CONCAT('%,',#{departmentId},',%'))
+                group by a.userid
+            </if>
+        </where>
+        ORDER BY ${sqlMap.order.toSql()}
+    </select>
+	<insert id="insertUserRole">
+		INSERT INTO `js_ding_user_role` (`user_id`,`role_id`) VALUES (#{arg0},#{arg1})
+	</insert>
+	<select id="selectUserRole">
+		select count(*) from `js_ding_user_role` where `user_id`=#{arg0} and `role_id`=#{arg1}
+	</select>
+    <delete id="deleteUserRole">
+        delete from `js_ding_user_role` where `user_id`=#{arg0}
+    </delete>
+    <delete id="deleteUserDepartment">
+        delete from `js_ding_user_department` where `user_id`=#{arg0}
+    </delete>
+    <insert id="insertUserDepartment">
+        INSERT INTO `js_ding_user_department` (`user_id`,`department_id`) VALUES (#{arg0},#{arg1})
+    </insert>
+    <update id="updateLeftStatus">
+   update js_ding_user u set u.left='1' where u.userid in
+        <foreach item="item" index="index" collection="list" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+    <select id="selectUserCountByDepartment" resultType="DingUser">
+        select count(*) from js_ding_user a left join js_ding_user_department b on a.userid=b.user_id
+             left join js_ding_department c on c.department_id=b.department_id
+             where (b.department_id=#{departmentId} or c.parent_codes like CONCAT('%,',#{departmentId},',%')) and a.left='0'
+             group by a.userid
+    </select>
+
+    <select id="getDepartName" resultType="com.jeesite.modules.asset.ding.entity.DingDepartment">
+    SELECT
+	a.name AS departmentName,
+        b.user_id AS userId
+    FROM
+	js_ding_department a
+    LEFT JOIN js_ding_user_department b ON a.department_id = b.department_id
+        <where>
+	b.user_id in
+        <foreach collection="list" item="praiser" index="index" open="(" separator="," close=")">
+            #{praiser}
+        </foreach>
+        </where>
+    </select>
+
+    <select id="getUserByIds" resultType="com.jeesite.modules.asset.ding.entity.DingUser">
+        SELECT
+        *
+        FROM
+        js_ding_user a
+        <where>
+            a.userid in
+            <foreach collection="list" item="userIdList" index="index" open="(" separator="," close=")">
+                #{userIdList}
+            </foreach>
+        </where>
+    </select>
+    <select id="getNamesByUserIds" resultType="String">
+        SELECT
+        a.name
+        FROM
+        js_ding_user a
+        <where>
+            a.userid in
+            <foreach collection="list" item="userIdList" index="index" open="(" separator="," close=")">
+                #{userIdList}
+            </foreach>
+        </where>
+    </select>
+
+
+    <!-- 批量更新数据-->
+    <update id="updateBatch" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            update js_ding_user
+            <set>
+                job_level = #{item.jobLevel}
+            </set>
+            where userid = #{item.userid}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,874 @@
+<% layout('/layouts/default.html', {title: '故障登记单管理', libs: ['validate']}){ %>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+
+	#imgUpLoadBox{margin: 10px;border: 1px solid #d2d2d2;position: relative;padding: 15px 0;background-color: #fcfcfc;box-shadow: inset 0 3px 30px rgba(0,0,0,.05);border-color: #e5e5e5 #eee #eee;border-style: solid;border-width: 1px 0;}
+	#imgUpLoadBox .itemList{overflow: hidden;;vertical-align: top;margin: 10px;width: 250px;height: 300px;background:#ececed;;border:1px solid #dfdfdf;position: relative;display: inline-block;*display: inline;*zoom: 1;}
+	#imgUpLoadBox .itemList .btn{position: absolute;top: 50%;left: 50%;margin-top: -16px;margin-left: -60px;border: 0;background: none repeat scroll 0 0 #fff;border-radius: 3px;color: #565656;cursor: pointer;font-size: 14px;padding: 0 18px;text-align: center;line-height: 32px;height: 32px;}
+	#imgUpLoadBox .itemList .imgFile{position: absolute;width: 100%;height: 100%;opacity: 0;filter:Alpha(opacity=0);z-index: 10;}
+	#imgUpLoadBox .itemList img{width: 250px;height: 300px;display: none}
+	#imgUpLoadBox .itemList .file_del{background-color: #f22d2d}
+	.photoShow{position: absolute;top: 0;left: 0;right: 0;bottom: 0;width: 100%;height: 100%;background-color: rgba(000, 000, 000, 0.7);z-index: 100;overflow: hidden;overflow-y: auto;}
+	.photoShow .close{position: absolute;right: 3%;top: 1%;display: block;width: 60px;height: 60px;opacity: 0.5;filter:Alpha(opacity=50);z-index: 50;}
+	.photoShow .close img{width: 100%;height: 100%;}
+	.photoShow .close:hover{opacity: 1;filter:Alpha(opacity=100);}
+	.photoShow .cont{position: absolute;display: table-cell;vertical-align: middle;width: 100%;text-align: center;color: #edeaea;top: 200px;}
+	.photoShow .cont .img{max-width: 1024px;margin-bottom: 200px}
+
+	.hoverBg{
+		position: absolute;
+		top: 0;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		background-color: rgba(0,0,0,.5);
+		text-align: center;
+		z-index: 10;
+		padding-top: 132px;
+		display: none;
+		padding-left: 44px;
+	}
+	.hoverBg span {
+		background: none repeat scroll 0 0 #3c8dbc;
+		border-radius: 3px;
+		color: #fff;
+		cursor: pointer;
+		display: inline-block;
+		float: left;
+		font-size: 14px;
+		margin-left: 10px;
+		padding: 0 18px;
+
+		text-align: center;
+		line-height: 34px;
+		transition: background .2s;
+		-moz-transition: background .2s;
+		-webkit-transition: background .2s;
+		-o-transition: background .2s
+	}
+
+	.hoverBg span:hover {background: none repeat scroll 0 0 #367fa9}
+
+
+	/* 表单 */
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(faultRegistration.isNewRecord ? '新增故障登记单' : '编辑故障登记单')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${faultRegistration}" action="${ctx}/fault/faultRegistration/save" method="post" class="form-horizontal">
+		<div class="box-body">
+			<div class="form-unit form-unitD">
+				<span class="on" data-index="0">${text('基本信息')}</span>
+				<span data-index="1">${text('图片信息')}</span>
+			</div>
+
+			<div class="form-unitTable">
+				<div class="item" style="display: block">
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 故障编号<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+
+									<#form:hidden path="isNewRecord"/>
+									<#form:input path="registrationCode" maxlength="64" readonly="true" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 故障日期<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="faultDate" readonly="true" maxlength="20" class="form-control Wdate required checkRequired"
+									dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 反馈人<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="feedbackPerson" maxlength="25" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 处理人<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="dealer" maxlength="25" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 责任类型<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:select path="liableType" dictType="fault_type" class="form-control required checkRequired" />
+								</div>
+							</div>
+						</div>
+
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 项目经理<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="projectManager" maxlength="50" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 故障开始时间<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="beginTime"  maxlength="20" class="form-control Wdate required checkRequired"
+									dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 故障结束时间<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="endTime"  maxlength="20" class="form-control Wdate required checkRequired"
+									dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});"/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									影响范围<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="effectedRange" maxlength="100" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									影响产品<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="effectedProduts" maxlength="100" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									故障规模<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:select path="faultDimensions" dictType="fault_dimensions" blankOption="true" class="form-control" />
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> 责任人<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="liablePerson" maxlength="15" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="row">
+						<div class="col-xs-12" style="">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									故障来源<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-11">
+									<#form:input path="faultReason" maxlength="100" class="form-control"/>
+								</div>
+							</div>
+						</div>
+
+
+					</div>
+
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									<span class="required ">*</span> 故障描述<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-11">
+									<#form:textarea path="faultDescription" rows="4" maxlength="1000" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									<span class="required ">*</span> 处理过程描述<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-11">
+									<#form:textarea path="processDescription" rows="6" maxlength="1000" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									<span class="required ">*</span> 故障原因分析<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-11">
+									<#form:textarea path="faultAnalysis" rows="6" maxlength="1000" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									<span class="required ">*</span> 改善方法<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-11">
+									<#form:textarea path="improvementWays" rows="6" maxlength="1000" class="form-control required checkRequired"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 图片信息 -->
+				<div class="item" style="display: none">
+					<!-- 图片上传 -->
+					<div id="imgUpLoadBox">
+					</div>
+				</div>
+			</div>
+
+
+		</div>
+		<div class="box-footer">
+			<div class="row">
+				<div class="col-sm-offset-10 col-sm-2">
+					<% if (hasPermi('fault:faultRegistration:edit')){ %>
+					<button type="button" class="btn btn-sm btn-primary" onclick="uploadFile.subFrom()"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit" style="display: none"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+	</#form:form>
+</div>
+
+
+
+
+</div>
+
+<!-- 图片查看背景 -->
+<div class="photoShow" style="display: none">
+	<a href="javascript:void(0)" class="close"><img src="/static/easyUpload/images/del.png"/></a>
+	<div class="cont">
+		<img src="" class="img">
+	</div>
+	<!-- <div class="cz">
+        <a href="javascript:void(0)" class="prev" title=""></a>
+        <a href="javascript:void(0)" class="next"></a>
+    </div> -->
+</div>
+
+<% } %>
+<script>
+
+
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().registrationCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+
+    $("#inputForm").validate({
+        submitHandler: function(form){
+            js.ajaxSubmitForm($(form), function(data){
+                js.showMessage(data.message);
+                var flag = $("#isNewRecord").val();
+                if(data.result == Global.TRUE){
+                    if (flag === "true") {
+                        js.closeCurrentTabPage(function (contentWindow) {
+                            contentWindow.page();
+                        });
+                    }else{
+                        location.reload();
+                    }
+                }
+            }, "json");
+        }
+    });
+
+    onloadAddHtml()
+    function onloadAddHtml(){
+        var picInfo = '${picInfo}'  // 故障登记二次返回信息
+
+        var par = $('#imgUpLoadBox'),
+            str = ''
+
+        if(picInfo){
+            var obj = JSON.parse(picInfo),
+                numAdd = [];  // 当前坑位是否存在
+            console.log(obj)
+            var hasStr = false
+            for(var i=1; i<=6; i++){
+                hasStr = false
+                var obj2 = null
+
+                for(var o in obj){
+                    if(obj[o].location === i.toString()){
+                        hasStr = true;
+                        obj2 = obj[o]
+                        break;
+                    }
+                }
+
+
+                if(hasStr){
+                    str += '<div class="itemList" data-id="'+obj2.location+'">';
+                    str += 		'<input id="imgFile_'+obj2.location+'" class="imgFile" baseurl="'+obj2.savePath+'" style="display:none" onchange="uploadFile.upload(this,'+obj2.location+')" aria-invalid="false" type="file">';
+                    str += 		'<div class="btn" style="display:none">点击图片上传</div>';
+                    str += 			'<img src="'+obj2.savePath+'" style="display:block">';
+                    str += 			'<div class="hoverBg" style="display: none;">';
+                    str += 				'<span class="file_see file_set" onclick="uploadFile.show(this)">查看</span>';
+                    str += 				'<span class="file_set file_del" hasbase="true" data-code="'+obj2.faultpicCode+'" onclick="uploadFile.del(this,'+obj2.location+')">删除</span>';
+                    str += 			'</div>';
+                    str += '</div>';
+                }else{
+                    str += '<div class="itemList" data-id="'+i+'">';
+                    str += 		'<input id="imgFile_'+i+'" class="imgFile" baseurl="" onchange="uploadFile.upload(this,'+i+')" aria-invalid="false" type="file">';
+                    str += 		'<div class="btn">点击图片上传</div>';
+                    str += 			'<img src="">';
+                    str += 			'<div class="hoverBg" style="display: none;">';
+                    str += 				'<span class="file_see file_set" onclick="uploadFile.show(this)">查看</span>';
+                    str += 				'<span class="file_set file_del" hasbase="" onclick="uploadFile.del(this,'+i+')">删除</span>';
+                    str += 			'</div>';
+                    str += '</div>';
+                }
+            }
+
+            par.html(str)
+
+        }else{
+            for(var id = 1;id <= 6; id++){
+                str += '<div class="itemList" data-id="'+id+'">';
+                str += 		'<input id="imgFile_'+id+'" class="imgFile" baseurl="" onchange="uploadFile.upload(this,'+id+')" aria-invalid="false" type="file">';
+                str += 		'<div class="btn">点击图片上传</div>';
+                str += 			'<img src="">';
+                str += 			'<div class="hoverBg" style="display: none;">';
+                str += 				'<span class="file_see file_set" onclick="uploadFile.show(this)">查看</span>';
+                str += 				'<span class="file_set file_del" hasbase="" onclick="uploadFile.del(this,'+id+')">删除</span>';
+                str += 			'</div>';
+                str += '</div>';
+            }
+            par.html(str)
+        }
+
+
+    }
+
+
+
+
+
+
+
+    // 图片上传/附件
+    var uploadFile = {
+        addLoadFiles: [],  // 已经上传阿里云
+        need_addAliFile : [],  // 需提交阿里云文件
+        delloadFile : [],  // 需要删除的文件
+        uploadCode : [],   // 提交成功返回
+        down : function(t){ // 下载附件
+            var id = $(t).attr('rowid');
+            var imgSrc = $('#upLoadFile_'+id).attr('srcbase');
+            var id2 = $(t).closest('tr').attr('rowid');
+            var downName = ''
+            var arr = this.need_addAliFile
+
+            if(id.indexOf('jqg')>=0){
+                for(var j in arr){
+                    if(id2 === arr[j].location && arr[j].delType === 'file'){
+
+                        downName = arr[j].name
+
+                        var $a = document.createElement('a');
+                        $a.setAttribute("href", imgSrc);
+                        $a.setAttribute("download",downName);
+                        var evObj = document.createEvent('MouseEvents');
+                        evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+                        $a.dispatchEvent(evObj);
+                        return false
+                    }
+                }
+
+                return false
+            }
+
+
+            var name2 = ''
+            for(var i in arr){
+                if(id === arr[i].location && arr[i].delType === 'file'){
+                    name2 = arr[i].name
+                }
+            }
+
+
+            var imgSrc = $('#upLoadFile_'+id).attr('srcbase')
+            var $a = document.createElement('a');
+            $a.setAttribute("href", imgSrc);
+            $a.setAttribute("download",name2);
+            var evObj = document.createEvent('MouseEvents');
+            evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+            $a.dispatchEvent(evObj);
+        },
+        del : function(t,dataID){  // 删除图片
+            var _t = $(t),
+                _this = this,
+                par = _t.closest('.itemList')
+            hasBase = _t.attr('hasBase'),   // 是否存在数据库
+                arr = this.need_addAliFile,
+                delArr = this.delloadFile
+
+
+            js.confirm("你确认要删除", function(){
+                if(hasBase){
+                    delArr.push(_t.attr('data-code'))
+                    layer.msg('删除成功')
+                    _t.attr('hasBase','')
+                    _t.attr('data-code','')
+                    par.find('.imgFile').val('').attr('baseurl','').show()
+                    par.find('img').attr('src','').hide()
+                    par.find('.btn').show()
+                }else{
+                    for(var j in arr){
+                        if(dataID === arr[j].location){
+
+                            arr.splice(j,1)
+                            par.find('.imgFile').val('').show()
+                            par.find('img').attr('src','').hide()
+                            par.find('.btn').show()
+                            console.log('需要删除先上数组',delArr)
+                            return false
+                        }
+                    }
+                }
+            })
+        },
+        show : function(t){  // 查看图片
+            var src = $(t).closest('.itemList').find('img').attr('src')
+            $('.photoShow .img').attr('src',src)
+            $('.photoShow').fadeIn()
+        },
+        upload : function(t,dataID){  // 上传
+            var	_this = this;
+
+            var f = t.files[0],
+                type = f.type.split('/'),
+                par = $(t).closest('.itemList')
+            // 限制当前上传类型
+            if(type[1] !== 'jpeg' && type[1] !== 'jpg' && type[1] !== 'png'){
+                layer.msg('只允许上传.image / .jpeg / .jpg 图片')
+                return false
+            }
+
+            // 限制当前上传大小
+            if (f.size >= 52428800) {
+                layer.msg('您这个"' + f.name + '"文件大小过大,请重新上传');
+                return false
+            }
+
+
+            //加载
+            layer.load(1, {
+                title: '上传中...',
+                shade: [0.1,'#000'] //0.1透明度的白色背景
+            });
+
+
+
+            // 图片压缩
+            function canvasDataURL(path,imgType,callback){
+                var img = new Image();
+                img.src = path;
+
+
+                img.onload = function(){
+                    var that = this;
+                    // 默认按比例压缩
+                    var w = that.width,   // 当前图片宽度
+                        h = that.height,  // 当前图片高度
+                        scale = w / h;  // 比例
+
+
+                    w = (that.width > 1024 ? 1024 : that.width)
+                    h = w / scale;
+
+                    var quality = 0.7;  // 默认图片质量为0.7
+                    //生成canvas
+                    var canvas = document.createElement('canvas');
+                    var ctx = canvas.getContext('2d');
+                    // 创建属性节点
+                    var anw = document.createAttribute("width");
+                    anw.nodeValue = w;
+                    var anh = document.createAttribute("height");
+                    anh.nodeValue = h;
+                    canvas.setAttributeNode(anw);
+                    canvas.setAttributeNode(anh);
+                    ctx.drawImage(that, 0, 0, w, h);
+
+
+                    // quality值越小，所绘制出的图像越模糊
+                    var base64 = canvas.toDataURL(imgType, quality);
+                    // 回调函数返回base64的值
+                    callback(base64);
+                }
+            }
+
+
+            // 手动添加数据
+            var obj = {
+                location: dataID,   // 坐标
+                name: f.name,
+                files: f // 上传文件
+            }
+
+            var fileReader = new FileReader()
+            fileReader.readAsDataURL(f);
+
+            fileReader.onloadend = function(e) {
+                canvasDataURL(e.target.result,f.type,function(base_64){
+                    $(t).attr('srcbase',base_64)
+                    par.find('img').attr('src',base_64).show();
+                })
+            }
+
+
+            _this.addFile(obj)
+            $(t).hide()
+            par.find('.btn').hide()
+            par.find('img').load(function(){
+                layer.closeAll();
+            })
+
+            console.log('需要提交的文件',_this.need_addAliFile)
+        },
+        upaliyun: function(callback){  // 上传阿里云
+            if(this.need_addAliFile.length === 0){
+                callback(200)
+                return false
+            }
+            var _this = this
+
+            // 阿里云上传地址
+            var alyData = {
+                policy: '',
+                OSSAccessKeyId: '',  // 密钥
+                success_action_status: "200",  // 状态
+                signature: '',  // 签名
+                key: '',
+                callback: ''  // 回调
+            }
+
+            var getData = {
+                url: '' // 阿里云地址
+            }
+
+
+            // 获取签名
+            $.ajax({
+                // url: '${ctx}/a/aliyunimage/amAliyunImage/getPolicy',
+                url: 'https://am.uvanart.com/a/aliyunimage/amAliyunImage/getPolicy',
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json',
+                success: function (res) {
+                    getData.url = res.data.host;
+                    alyData.policy = res.data.policy;
+                    alyData.OSSAccessKeyId = res.data.accessId;
+                    alyData.signature = res.data.signature;
+                    alyData.key = res.data.dir;
+                    alyData.callback = res.data.callBack;
+                    subAliAjax()
+                }
+            })
+
+
+
+
+            function subAliAjax(){
+                if(_this.need_addAliFile.length === 0){
+                    callback(200);
+                    return false
+                }
+
+
+
+                var arr = _this.need_addAliFile
+                var dataDay = new Date(),
+                    dnum = dataDay.getFullYear().toString() + dataDay.getMonth().toString() + dataDay.getDate().toString() + dataDay.getMinutes().toString() + dataDay.getMilliseconds().toString() + dataDay.getSeconds().toString();
+
+                // 提交到阿里云的图片
+                var formData = new FormData;
+                formData.append('OSSAccessKeyId', alyData.OSSAccessKeyId)
+                formData.append('policy', alyData.policy)
+                formData.append('Signature', alyData.signature)
+                formData.append('key', alyData.key + dnum + arr[0].name)
+                formData.append('success_action_status', alyData.success_action_status)
+                formData.append('callback', alyData.callback)
+                formData.append('file', arr[0].files)
+                $.ajax({
+                    type: "POST",
+                    url: getData.url,   // 阿里云上传地址
+                    data: formData,
+                    processData: false,
+                    cache: false,
+                    async: true,
+                    contentType: false,
+                    dataType: "json",
+                    header: {
+                        'content-type': "multipart/form-data"
+                    },
+                    success: function (res) {
+                        if (res.code === 200) {
+                            // 手动添加数据
+                            var obj = {
+                                location: arr[0].location,
+                                savePath: getData.url+res.data
+                            }
+                            _this.addLoadFiles.push(obj)
+                            _this.need_addAliFile.splice(0,1)
+                            subAliAjax()
+                        }else{
+                            layer.msg('提交失败,请重新尝试')
+                            callback(400)
+                            return false
+                        }
+                    },
+                    error: function(res){
+                        layer.msg('提交失败,请重新尝试')
+                        callback(400)
+                        return false
+                    }
+                });
+
+
+            }
+
+        },
+        addFile : function(files){  // 判断数组中是否已存在文并添加
+            var hasF = true,
+                arr = this.need_addAliFile
+
+            for(var j in arr){
+                if((files.location === arr[j].location)){
+                    arr[j] = files
+                    hasF = false
+                    return false
+                }
+            }
+
+            if(hasF) arr.push(files);
+        },
+        subFrom : function(){ // 上传图片/文件
+            var delArr = this.delloadFile,
+                _this = this,
+                uploadFileCount = 0, // 当前已经上传文件的总数
+                arrLen = this.need_addAliFile.length // 当前一共需要上传多少文件
+
+
+            // 加载
+            layer.load(1, {
+                content: '<div id="ReciprocalNum" style="min-width: 100px;position: relative;left: -25px;top: 44px;text-align:center">正在上传</span>',
+                shade: [0.1,'#000'] //0.1透明度的白色背景
+            });
+
+
+            if(delArr.length === 0){
+                _this.upaliyun(function(code){
+                    if(code === 200)
+                        subAjax()
+                    else
+                        layer.closeAll();
+                })
+            }else{
+                $.ajax({
+                    url: '${ctx}/fault/faultRegistration/deletePicture',
+                    type: "POST",
+                    data: JSON.stringify({
+                        "faultpicCode": delArr.join(','),
+                    }),
+                    cache: false,//上传文件无需缓存
+                    processData: false,//用于对data参数进行序列化处理 这里必须false
+                    contentType: false, //必须
+                    success: function (res) {
+                        _this.upaliyun(function(code){
+                            if(code === 200)
+                                subAjax()
+                            else
+                                layer.closeAll();
+                        })
+                    },
+                    error:function(err){
+                        layer.msg('删除失败,请重试')
+                    }
+                });
+            }
+
+
+            function subAjax(){
+                if(_this.addLoadFiles.length === 0){
+                    var el = document.getElementById('inputForm')
+                    var act = el.action;
+                    var codeArr = _this.uploadCode.join(',')
+                    el.action = act+'?faultpicCodes='+codeArr
+                    $('#btnSubmit').trigger("click");   // 点击保存
+                    layer.closeAll();
+                    return false
+                }
+
+                $.ajax({
+                    url: '${ctx}/fault/faultRegistration/uploadPicture',
+                    type: "POST",
+                    data: JSON.stringify(_this.addLoadFiles),
+                    dataType:'json',
+                    contentType:"text/plain;charset=UTF-8",
+                    success: function (res) {
+                        _this.uploadCode.push(res.message)
+
+                        var el = document.getElementById('inputForm')
+                        var act = el.action;
+                        var codeArr = _this.uploadCode.join(',')
+                        el.action = act+'?faultpicCodes='+codeArr
+                        $('#btnSubmit').trigger("click");   // 点击保存
+                        layer.closeAll();
+                        return false
+                    },
+                    error:function(err){
+                        for(var name in arr){
+                            fail += arr[name].name + ','
+                        }
+                        layer.alert(fail + '文件提交失败,请更换图片',function() {
+                            layer.closeAll();
+                        })
+                    }
+                });
+            }
+        }
+    }
+
+
+    $(function(){
+        $('.wrapper').height($(window).height()-20)
+        // 并发
+        checkConcurrency();
+
+        // 图片预览
+        $('#imgUpLoadBox .itemList img').click(function(){
+            var par = $(this).closest('.itemList')
+            par.find('.hoverBg').fadeIn()
+        })
+
+        $('#imgUpLoadBox .itemList').hover(function(){},function(){
+            $(this).find('.hoverBg').fadeOut()
+        })
+
+
+        // 预览图片关闭
+        $('.photoShow .close').click(function(){
+            $('.photoShow').fadeOut()
+        })
+
+        // tab 切换
+        $('.form-unitD span').click(function(e){
+            var _t = $(e.target);
+
+
+            if(_t.index() === 1){
+                var falg = true
+                $('.checkRequired').each(function(){
+                    var val = $(this).val()
+                    if(val === '') {
+                        layer.msg('请先填写完整信息')
+                        falg = false
+                        return false
+                    }
+                })
+
+                if(!falg) return false
+            }
+
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTable .item').hide()
+            $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+            // 表格宽度100%
+            $('.ui-jqgrid.ui-widget.ui-widget-content.ui-corner-all, .ui-jqgrid-view, .ui-state-default.ui-jqgrid-hdiv.ui-corner-top, .ui-jqgrid-htable, .ui-jqgrid-bdiv, .ui-jqgrid-btable').width($('.box-body').width())
+        });
+    })
+</script>

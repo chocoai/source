@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.consumables_report.dao.ConsumablesReportDao">
+        <!-- 查询数据-->
+            <select id="findList" resultType="com.jeesite.modules.asset.consumables_report.entity.ConsumablesReport">
+                SELECT g.file_path as filePath,g.file_extension as fileExtension,g.file_id as fileId,${sqlMap.column.toSql()}
+                FROM ${sqlMap.table.toSql()}
+                left join
+                (select b.file_id as file_id,b.biz_key as biz_key,c.file_path as file_path,
+                c.file_extension as file_extension
+                from js_sys_file_upload b
+                left join js_sys_file_entity c on b.file_id = c.file_id
+                where b.`status`=0) g
+                on a.consumables_code = g.biz_key
+                <where>
+
+                    ${sqlMap.where.toSql()}
+                    <if test='""!=codeORname'>
+                        and (e.consumables_name like '%${codeORname}%' or e.consumables_code like '%${codeORname}%')
+                    </if>
+                    and a.stock > 0
+                </where>
+                GROUP BY
+                a.consumables_code,
+                a.warehouse_code
+                ORDER BY ${sqlMap.order.toSql()}
+            </select>
+</mapper>

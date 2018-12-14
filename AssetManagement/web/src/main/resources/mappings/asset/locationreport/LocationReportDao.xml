@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.locationreport.dao.LocationReportDao">
+	<!-- 查询数据-->
+	<select id="findList" resultType="com.jeesite.modules.asset.locationreport.entity.LocationReport">
+
+		/*private String id;
+		private String specifications;
+		private String measureUnit;
+		private String warehouseName;
+		private String categoryName;
+		private String categoryCode;
+		private String consumablesName;
+		private String warehouseCode;		// 仓库编码
+		private String consumablesCode;		// 耗材编号
+		private String locationCode;		// 库位编码
+		private Long stock;		// 库存
+		private Double stockPrice;		// 库存单价
+		private Double stockAtm;		// 库存金额
+		private Long stockSum;          //库存合计
+		private Double stockAtmSum;     //金额合计
+		private String codeORname;
+		private String filePath;
+		private String fileId;
+		private String fileExtension;
+		private String photo;*/
+
+		SELECT
+		g.file_path AS filePath,
+		g.file_extension AS fileExtension,
+		g.file_id AS fileId,
+		a.warehouse_code AS warehouseCode,
+		a.consumables_code AS consumablesCode,
+		c.consumables_name as consumablesName,
+		a.location_code AS locationCode,
+		a.stock AS stock,
+		a.stock_price AS stockPrice,
+		a.stock_atm AS stockAtm,
+		b.warehouse_name as warehouseName,
+		d.location_name as locationName,
+		e.category_name as categoryName,
+		e.category_code as categoryCode,
+		c.measure_unit as measureUnit,
+		c.specifications as specifications
+		FROM
+	js_am_con_location_stock a
+LEFT JOIN js_am_warehouse b
+on a.warehouse_code = b.warehouse_code
+LEFT JOIN js_am_consumables c
+on a.consumables_code = c.consumables_code
+LEFT JOIN js_am_location d
+on a.location_code=d.location_code
+LEFT JOIN js_am_category e
+on c.category_code=e.category_code
+		LEFT JOIN (
+		SELECT
+		b.file_id AS file_id,
+		b.biz_key AS biz_key,
+		c.file_path AS file_path,
+		c.file_extension AS file_extension
+		FROM
+		js_sys_file_upload b
+		LEFT JOIN js_sys_file_entity c ON b.file_id = c.file_id
+		WHERE
+		b.`status` = 0
+		) g ON a.consumables_code = g.biz_key
+		WHERE 1 = 1
+		<if test='""!=codeORname'>
+			and (c.consumables_name like '%${codeORname}%' or c.consumables_code like '%${codeORname}%')
+		</if>
+		<if test='""!=warehouseCode'>
+			and a.warehouse_code = #{warehouseCode}
+		</if>
+		AND stock > 0
+		GROUP BY a.consumables_code,a.location_code,a.warehouse_code
+		ORDER BY
+		${sqlMap.order.toSql()}
+	</select>
+
+</mapper>

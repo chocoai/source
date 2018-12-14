@@ -1,0 +1,230 @@
+<% layout('/layouts/default.html', {title: '供应商', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('供应商')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('supplier:k3ReportSupplier:edit')){ %>
+					<a href="${ctx}/supplier/k3ReportSupplier/form" class="btn btn-default btnTool" title="${text('新增供应商')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${k3ReportSupplier}" action="${ctx}/supplier/k3ReportSupplier/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('供应商编码')}：</label>
+					<div class="control-inline">
+						<#form:input path="supplierCode" maxlength="80" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('供应商名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="supplierName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('简称')}：</label>
+					<div class="control-inline">
+						<#form:input path="shortName" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('省份')}：</label>
+					<div class="control-inline">
+						<#form:input path="province" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('城市')}：</label>
+					<div class="control-inline">
+						<#form:input path="city" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('区县')}：</label>
+					<div class="control-inline">
+						<#form:input path="district" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<!--<div class="form-group">
+					<label class="control-label">${text('通讯地址')}：</label>
+					<div class="control-inline">
+						<#form:input path="mailingAddress" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('电话')}：</label>
+					<div class="control-inline">
+						<#form:input path="phone" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('质检')}：</label>
+					<div class="control-inline">
+						<#form:input path="isQualityInspection" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('质检员')}：</label>
+					<div class="control-inline">
+						<#form:input path="qualityInspector" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('项目组')}：</label>
+					<div class="control-inline">
+						<#form:input path="projectTeam" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>-->
+				<div class="form-group">
+					<label class="control-label">${text('供应商分类')}：</label>
+					<div class="control-inline">
+						<#form:input path="supplierClassification" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('供应类别')}：</label>
+					<div class="control-inline  width-90">
+						<#form:select path="supplyCategory" dictType="k3_supply_category" blankOption="true" class="form-control" id="supplyCategory"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('供应商分组')}：</label>
+					<div class="control-inline">
+						<#form:input path="supplierGroup" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+			<!--<div class="form-group">
+                <label class="control-label">${text('公司类别')}：</label>
+                <div class="control-inline">
+                    <#form:input path="companyCategory" maxlength="255" class="form-control width-120"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">${text('公司性质')}：</label>
+                <div class="control-inline">
+                    <#form:input path="companyNature" maxlength="255" class="form-control width-120"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">${text('公司规模')}：</label>
+                <div class="control-inline">
+                    <#form:input path="companyScale" maxlength="255" class="form-control width-120"/>
+                </div>
+            </div>-->
+				<div class="form-group">
+					<label class="control-label">${text('供应商状态')}：</label>
+					<div class="control-inline  width-120">
+						<#form:select path="supplierStatus" dictType="k3_supplier_status" blankOption="true" class="form-control" id="supplierStatus"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('数据状态')}：</label>
+					<div class="control-inline  width-90">
+						<#form:select path="dataStatus" dictType="k3_data_status" blankOption="true" class="form-control" id="dataStatus"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('禁用状态')}：</label>
+					<div class="control-inline  width-90">
+						<#form:select path="disabledStatus" dictType="k3_disabled_status" blankOption="true" class="form-control" id="disabledStatus"/>
+					</div>
+				</div>
+				<!--<div class="form-group">
+					<label class="control-label">${text('审核人')}：</label>
+					<div class="control-inline">
+						<#form:input path="auditor" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('审核日期')}：</label>
+					<div class="control-inline">
+						<#form:input path="auditDate" class="form-control width-120"/>
+					</div>
+				</div>-->
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('供应商编码')}', name:'supplierCode', index:'a.supplier_code', width:150, align:"left", frozen:true
+			/*, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/supplier/k3ReportSupplier/form?supplierCode='+row.supplierCode+'" class="btnList" data-title="${text('编辑供应商')}">'+(val||row.id)+'</a>';
+			}*/
+		},
+		{header:'${text('供应商名称')}', name:'supplierName', index:'a.supplier_name', width:150, align:"left"},
+		{header:'${text('简称')}', name:'shortName', index:'a.short_name', width:150, align:"left"},
+		{header:'${text('省份')}', name:'province', index:'a.province', width:150, align:"left"},
+		{header:'${text('城市')}', name:'city', index:'a.city', width:150, align:"left"},
+		{header:'${text('区县')}', name:'district', index:'a.district', width:150, align:"left"},
+		{header:'${text('通讯地址')}', name:'mailingAddress', index:'a.mailing_address', width:150, align:"left"},
+		{header:'${text('电话')}', name:'phone', index:'a.phone', width:150, align:"left"},
+		{header:'${text('质检')}', name:'isQualityInspection', index:'a.is_quality_inspection', width:150, align:"left"},
+		{header:'${text('质检员')}', name:'qualityInspector', index:'a.quality_inspector', width:150, align:"left"},
+		{header:'${text('项目组')}', name:'projectTeam', index:'a.project_team', width:150, align:"left"},
+		{header:'${text('供应商分类')}', name:'supplierClassification', index:'a.supplier_classification', width:150, align:"left"},
+		{header:'${text('供应类别')}', name:'supplyCategory', index:'a.supply_category', width:150, align:"left", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('k3_supply_category')}, val, '${text('未知')}', true);
+            }},
+		{header:'${text('供应商分组')}', name:'supplierGroup', index:'a.supplier_group', width:150, align:"left"},
+		{header:'${text('公司类别')}', name:'companyCategory', index:'a.company_category', width:150, align:"left"},
+		{header:'${text('公司性质')}', name:'companyNature', index:'a.company_nature', width:150, align:"left"},
+		{header:'${text('公司规模')}', name:'companyScale', index:'a.company_scale', width:150, align:"left"},
+		{header:'${text('供应商状态')}', name:'supplierStatus', index:'a.supplier_status', width:150, align:"left", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('k3_supplier_status')}, val, '${text('未知')}', true);
+            }},
+		{header:'${text('数据状态')}', name:'dataStatus', index:'a.data_status', width:150, align:"left", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('k3_data_status')}, val, '${text('未知')}', true);
+            }},
+		{header:'${text('禁用状态')}', name:'disabledStatus', index:'a.disabled_status', width:150, align:"left", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('k3_disabled_status')}, val, '${text('未知')}', true);
+            }},
+		{header:'${text('审核人')}', name:'auditor', index:'a.auditor', width:150, align:"left"},
+		{header:'${text('审核日期')}', name:'auditDate', index:'a.audit_date', width:150, align:"center"},
+		/*{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('supplier:k3ReportSupplier:edit')){ %>
+				actions.push('<a href="${ctx}/supplier/k3ReportSupplier/form?supplierCode='+row.supplierCode+'" class="btnList" title="${text('编辑供应商')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}*/
+	],
+    shrinkToFit: false,
+    autoScroll: true,
+    autowidth: true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#searchForm'), {
+        url:'${ctx}/supplier/k3ReportSupplier/exportData',
+        downloadFile:true
+    });
+});
+</script>

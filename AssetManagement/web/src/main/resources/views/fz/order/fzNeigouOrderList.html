@@ -1,0 +1,162 @@
+<% layout('/layouts/default.html', {title: '梵赞兑换订单表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('梵赞兑换订单表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('order:fzNeigouOrder:edit')){ %>
+					<a href="${ctx}/order/fzNeigouOrder/form" class="btn btn-default btnTool" title="${text('新增梵赞兑换订单表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzNeigouOrder}" action="${ctx}/order/fzNeigouOrder/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('支付状态 1')}：</label>
+					<div class="control-inline">
+						<#form:input path="payStatus" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('订单状态 1')}：</label>
+					<div class="control-inline">
+						<#form:input path="orderStatus" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('0')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('商品sku_id')}：</label>
+					<div class="control-inline">
+						<#form:input path="bn" maxlength="30" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('兑换数量')}：</label>
+					<div class="control-inline">
+						<#form:input path="nums" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('收货人手机号码')}：</label>
+					<div class="control-inline">
+						<#form:input path="receiverMobile" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('收货详细地址')}：</label>
+					<div class="control-inline">
+						<#form:input path="detailAddress" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('收货省名')}：</label>
+					<div class="control-inline">
+						<#form:input path="province" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('收货市名')}：</label>
+					<div class="control-inline">
+						<#form:input path="city" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('收货县名')}：</label>
+					<div class="control-inline">
+						<#form:input path="county" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('收货城镇名')}：</label>
+					<div class="control-inline">
+						<#form:input path="town" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('备注信息')}：</label>
+					<div class="control-inline">
+						<#form:input path="remarks" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('兑换消耗的钱')}：</label>
+					<div class="control-inline">
+						<#form:input path="money" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('兑换消耗的梵砖')}：</label>
+					<div class="control-inline">
+						<#form:input path="fzNum" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('创建订单的用户id')}：</label>
+					<div class="control-inline">
+						<#form:input path="userid" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('支付状态 1')}', name:'payStatus', index:'a.pay_status', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/order/fzNeigouOrder/form?orderId='+row.orderId+'" class="btnList" data-title="${text('编辑梵赞兑换订单表')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'${text('订单状态 1')}', name:'orderStatus', index:'a.order_status', width:150, align:"left"},
+		{header:'${text('0')}', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'${text('商品sku_id')}', name:'bn', index:'a.bn', width:150, align:"left"},
+		{header:'${text('兑换数量')}', name:'nums', index:'a.nums', width:150, align:"center"},
+		{header:'${text('收货人手机号码')}', name:'receiverMobile', index:'a.receiver_mobile', width:150, align:"left"},
+		{header:'${text('收货详细地址')}', name:'detailAddress', index:'a.detail_address', width:150, align:"left"},
+		{header:'${text('收货省名')}', name:'province', index:'a.province', width:150, align:"left"},
+		{header:'${text('收货市名')}', name:'city', index:'a.city', width:150, align:"left"},
+		{header:'${text('收货县名')}', name:'county', index:'a.county', width:150, align:"left"},
+		{header:'${text('收货城镇名')}', name:'town', index:'a.town', width:150, align:"left"},
+		{header:'${text('备注信息')}', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'${text('兑换消耗的钱')}', name:'money', index:'a.money', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('兑换消耗的梵砖')}', name:'fzNum', index:'a.fz_num', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('创建订单的用户id')}', name:'userid', index:'a.userid', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('order:fzNeigouOrder:edit')){ %>
+				actions.push('<a href="${ctx}/order/fzNeigouOrder/form?orderId='+row.orderId+'" class="btnList" title="${text('编辑梵赞兑换订单表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/order/fzNeigouOrder/delete?orderId='+row.orderId+'" class="btnList" title="${text('删除梵赞兑换订单表')}" data-confirm="${text('确认要删除该梵赞兑换订单表吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

@@ -1,0 +1,53 @@
+<% layout('/layouts/default.html', {title: '赞赏记录表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('赞赏记录表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('appreciation:fzAppreciationRecord:edit')){ %>
+					<a href="${ctx}/fz/appreciation/fzAppreciationRecord/form" class="btn btn-default btnTool" title="${text('新增赞赏记录表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${leaderboardData}" action="${ctx}/fz/appreciation/FzLeaderboard/getZsLeaderboard/getList" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}  data-order-by="${parameter.orderBy}"" >
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'用户名', name:'name',  width:150, align:"left", frozen:true},
+		{header:'员工工号', name:'jobnumber', width:150, align:"left"},
+        // {header:'部门', name:'praiserName', width:150, align:"left"},
+		{header:'获钻总数', name:'praiserNumber', width:150, align:"left"},
+        {header:'${text('头像')}', name:'avatar', align:"center", width:70, align:"center",
+            formatter: function(val, obj, row, act){
+                if(row.avatar==null){
+                    return "";
+                }
+                else{ return  "<img src='"+val+"' class=\"thumbnail\" onclick=\"getVal('"+val+"')\" height=\"80\" width=\"80\"/>"}
+            }},
+    shrinkToFit:false,
+    autoScroll:true,
+    autowidth:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

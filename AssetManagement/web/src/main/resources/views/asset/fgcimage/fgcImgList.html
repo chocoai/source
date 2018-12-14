@@ -1,0 +1,141 @@
+<% layout('/layouts/default.html', {title: '梵工厂图片表管理', libs: ['dataGrid']}){ %>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+
+	.photoShow{position: absolute;top: 0;left: 0;right: 0;bottom: 0;width: 100%;height: 100%;background-color: rgba(000, 000, 000, 0.7);z-index: 100;overflow: hidden;overflow-y: auto;}
+	.photoShow .close{position: absolute;right: 3%;top: 1%;display: block;width: 60px;height: 60px;opacity: 0.5;filter:Alpha(opacity=50);z-index: 50;}
+	.photoShow .close img{width: 100%;height: 100%;}
+	.photoShow .close:hover{opacity: 1;filter:Alpha(opacity=100);}
+	.photoShow .cont{position: absolute;display: table-cell;vertical-align: middle;width: 100%;text-align: center;color: #edeaea;top: 200px;}
+	.photoShow .cont img{max-width: 1024px;margin-bottom: 200px}
+
+	#amSpecimenProductDataGrid td{position: relative;}
+	.addImgSet{position: relative;}
+	.progress{position: absolute;display: block;left: -1px;right: -1px;height: 30px;top: -1px;bottom: 0;border: 0;background-color: transparent}
+	.progress span{width: 0;display: block}
+
+	#bgLoading{position: absolute;top: 0;left: 0;bottom: 0;right: 0;min-width: 100%;max-height: 100%;display: none;z-index: 9999;}
+	.w1{width: 100%;}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('梵工厂图片表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('fgcimage:fgcImg:edit')){ %>
+					<a href="${ctx}/fgcimage/fgcImg/form" class="btn btn-default btnTool" title="${text('新增梵工厂图片表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fgcImg}" action="${ctx}/fgcimage/fgcImg/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">单据编号：</label>
+					<div class="control-inline">
+						<#form:input path="documentCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">物料：</label>
+					<div class="control-inline">
+						<#form:input path="materiel" placeholder="编码/名称" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">照片来源：</label>
+					<div class="control-inline">
+						<#form:input path="photoSource" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<!-- 图片查看背景 -->
+			<div class="photoShow" style="display: none">
+				<a href="javascript:void(0)" class="close"><img src="/static/easyUpload/images/del.png"/></a>
+				<div class="cont">
+					<img src="" class="img">
+				</div>
+			<!-- <div class="cz">
+				<a href="javascript:void(0)" class="prev" title=""></a>
+				<a href="javascript:void(0)" class="next"></a>
+			</div> -->
+		</div>
+
+		<div id="bgLoading"></div>  <!-- 遮罩 -->
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'单据编号', name:'documentCode', index:'a.document_code', width:150, align:"left",
+		// 	frozen:true, formatter: function(val, obj, row, act){
+		// 	return '<a href="${ctx}/fgcimage/fgcImg/form?id='+row.id+'" class="btnList" data-title="${text('编辑梵工厂图片表')}">'+(val||row.id)+'</a>';
+		// }
+		},
+		{header:'物料编码', name:'materielCode', index:'a.materiel_code', width:150, align:"center"},
+		{header:'物料名称', name:'materielName', index:'a.materiel_name', width:150, align:"center"},
+		{header:'照片来源', name:'photoSource', index:'a.photo_source', width:150, align:"center"},
+        {header:'照片查看', sortable:false, fixed:true, align:"center", editoptions:{'maxlength':'100', 'class':'form-control'},formatter: function(val, obj, row, act){
+                var actions = [], btn = ''
+                console.log(row.photoUrl)
+                if(!row.photoUrl || row.actions === 'new'){
+                    btn +='<input data-type="img" class="hideInput" rowid="'+obj.rowId+'" type="file" style="position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;opacity:0" onchange="uploadFile.upload(this)" id="upLoadImg_'+obj.rowId+'"/>'
+                    btn +='<a href="javascript:void(0)" title="查看图片" style="display:none" rowid="'+obj.rowId+'" class="hasImgSet btn btn-primary btn-sm"  onclick="uploadFile.show(this);return false;">查看</a>&nbsp;'
+                }
+                else{
+                    btn +='<input type="file" class="hideInput" style="display:none;position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;opacity:0" onchange="uploadFile.upload(this)" srcbase="'+row.photoUrl+'" id="upLoadImg_'+obj.rowId+'"  data-type="img" rowid="'+obj.rowId+'"/>'
+                    btn +='<a href="javascript:void(0)" title="查看图片" style="display:inline" rowid="'+obj.rowId+'" class="hasImgSet btn btn-primary btn-sm" onclick="uploadFile.show(this);return false;">查看</a>&nbsp;'
+                }
+                actions.push(btn)
+                return actions.join('');
+            }},
+		{header:'操作人', name:'operationBy', index:'a.operation_by', width:150, align:"center"},
+		{header:'操作时间', name:'operationDate', index:'a.operation_date', width:150, align:"center"},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('fgcimage:fgcImg:edit')){ %>
+		// 		actions.push('<a href="${ctx}/fgcimage/fgcImg/form?id='+row.id+'" class="btnList" title="${text('编辑梵工厂图片表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 		actions.push('<a href="${ctx}/fgcimage/fgcImg/delete?id='+row.id+'" class="btnList" title="${text('删除梵工厂图片表')}" data-confirm="${text('确认要删除该梵工厂图片表吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+// 预览图片关闭
+$('.photoShow .close').click(function(){
+    $('.photoShow').fadeOut()
+})
+var uploadFile = {
+    show: function (t) {  // 查看图片
+        var id = $(t).attr('rowid');
+        var src = $('#upLoadImg_' + id).attr('srcbase')
+        $('.photoShow .img').attr('src', src)
+        $('.photoShow').fadeIn()
+    },
+}
+</script>

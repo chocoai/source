@@ -1,0 +1,349 @@
+<% layout('/layouts/default.html', {title: '分配梵钻管理', libs: ['validate']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(fzGoldDistribution.isNewRecord ? '新增分配梵钻' : '编辑分配梵钻')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${fzGoldDistribution}" action="${ctx}/fz/fzgolddistribution/fzGoldDistribution/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+
+				<#form:hidden path="isNewRecord"/>
+				<div class="row">
+					<div class="col-xs-6">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required hide">*</span> ${text('编码')}：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:input path="documentCode" class="form-control"  readonly="true"/>
+						</div>
+					</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required">*</span> ${text('数量')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="number" id="number" maxlength="11"  class="form-control digits required"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required">*</span> ${text('分配类型')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="distributionType" id="distributionType" dictType="fz_gold_distribution_type" blankOption="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide"></span> ${text('梵赞类型')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="fzType" id="fzType" dictType="fz_type" class="form-control" blankOption="true"/>
+							</div>
+						</div>
+					</div>
+
+
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('用户')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="userName" id="userName"  class="form-control" readonly="true"/>
+								<#form:hidden path="userIds" id="userIds"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide"></span> ${text('部门')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="departmentName" id="departmentName"  class="form-control" readonly="true"/>
+								<#form:hidden path="departmentId" id="departmentId"/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('单据状态')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<!--<#form:input path="documentStatus" id="documentStatus"  class="form-control" readonly="true"/>-->
+								<#form:select path="documentStatus" id="documentStatus" dictType="am_document_status" blankOption="true" class="form-control "/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> ${text('备注')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="remarks" id="remarks" rows="4" maxlength="1000" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('fzgolddistribution:fzGoldDistribution:edit')){ %>
+							<button type="submit" id="save" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<a href="#" onclick="save('1')" class="" data-title="${text('审 核')}"><button  type="submit" class="btn btn-sm btn-primary btnList" id="examine" onclick="">${text('审 核')}</button></a>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<div class="hide" id="specialChoice"></div>
+<div class="hide"><#form:listselect id="userSelect" title="用户选择"
+	url="${ctx}/fz/ding/dingUser/userSelect" allowClear="false"
+	checkbox="true" itemCode="userid" itemName="name"/></div>
+<div class="hide"><#form:listselect id="depetSelect" title="部门选择"
+	url="${ctx}/fz/ding/dingDepartment/depetSelect" allowClear="false"
+	checkbox="true" itemCode="departmentId" itemName="name"/></div>
+<div class="hide"><#form:listselect id="specialSelect" title="特权用户选择"
+	url="${ctx}/fz/ding/dingUser/specialSelect" allowClear="false"
+	checkbox="true" itemCode="userid" itemName="name"/></div>
+<% } %>
+
+<script>
+    $('#distributionType').change(function(e){
+		var distributionType=$("#distributionType").val();
+        //选择员工
+        if(distributionType=='2'){
+            if( $("#specialChoice").val()!=''){
+                $("#userName").val('');
+			}
+			$('#departmentId').val("");
+
+            $("#departmentName").val("");
+            $("#departmentName").attr("disabled",true);
+            $("#userName").attr("disabled",false);
+			$('#userSelectName').click();
+			$("#distributionType").val('');
+            $("#specialChoice").val("");
+            $("#fzType").attr("disabled",true);
+			setTimeout(function(){
+				$("#select2-distributionType-container").html("员工")
+			},300) 
+        }
+        //选择部门
+        else if(distributionType=='1'){
+            $("#userName").val("");
+            $("#userName").attr("disabled",true);
+            $("#departmentName").attr("disabled",false);
+			$('#depetSelectName').click();
+			$("#distributionType").val('');
+            $("#specialChoice").val("");
+            $("#fzType").attr("disabled",true);
+			setTimeout(function(){
+				$("#select2-distributionType-container").html("部门")
+			},300) 
+        }//选择特权用户
+        else if(distributionType=='3'){
+            if( $("#specialChoice").val()==''){
+                $("#userName").val('');
+            }
+            $("#departmentName").val("");
+            $("#departmentName").attr("disabled",true);
+            $("#userName").attr("disabled",false);
+            $('#specialSelectName').click();
+            $("#distributionType").val('');
+            $("#specialChoice").val("1");
+            $('#departmentId').val("");
+            $("#fzType").attr("disabled",false);
+            setTimeout(function(){
+                $("#select2-distributionType-container").html("特权用户")
+            },300)
+        }else{
+            $("#userName").val("");
+            $("#departmentName").val("");
+            $("#userName").attr("disabled",true);
+            $("#departmentName").attr("disabled",true);
+            $("#specialChoice").val("");
+            $("#fzType").attr("disabled",true);
+		}
+    });
+
+    // window.onload=function(){
+    //     var flag = $("#isNewRecord").val();
+    //     if (flag==='true') {
+    //     }else {
+    //         document.getElementById('typeName').readOnly=true;
+    //         document.getElementById('worthConcept').readOnly=true;
+    //
+    //     }
+
+	$("#inputForm").validate({
+		submitHandler: function(form){
+			js.ajaxSubmitForm($(form), function(data){
+				js.showMessage(data.message);
+				if(data.result == Global.TRUE){
+					js.closeCurrentTabPage(function(contentWindow){
+						contentWindow.page();
+					});
+				}else{
+					if($("#select2-distributionType-container").html() == "员工" ||$("#select2-distributionType-container").html() == "部门" ||$("#select2-distributionType-container").html() == "特权用户"){
+						$("#distributionType").val('')
+					}
+				}
+			}, "json");
+		}
+	});
+    /*$('#inputForm').change(function(e){
+        var targetName = $(e.target).attr('name');//得到列的name
+        if (targetName.indexOf('distributionType') > -1 ) {
+            var distributionType = $('#distributionType').val();
+            if (distributionType == '2') {
+                $('#userSelectName').click();
+            }
+            if (distributionType == '1') {
+                $('#depetSelectName').click();
+
+            }
+
+        }
+    });*/
+
+    function listselectCallback(id, action, index, layero,selectData){
+
+        if (id == 'userSelect' && action == 'ok'){
+
+            if (selectData){
+                var userSelectCode=$('#userSelectCode').val();
+                var userSelectName=$('#userSelectName').val();
+                $("#userName").val(userSelectName);
+                $("#departmentName").val("");
+                $("#departmentName").attr("disabled",true);
+                $("#userIds").val(userSelectCode);
+                $("#specialChoice").val("");
+				$("#fzType").val();
+
+            }
+        }
+        if (id == 'depetSelect' && action == 'ok'){
+
+            if (selectData){
+                var depetSelectCode=$('#depetSelectCode').val();
+                var depetSelectName=$('#depetSelectName').val();
+                $("#departmentName").val(depetSelectName);
+                $("#userName").val("");
+                $("#userName").attr("disabled",true);
+                $("#userIds").val("");
+                $("#departmentId").val(depetSelectCode);
+                $("#specialChoice").val("");
+
+            }
+        }
+        if (id == 'specialSelect' && action == 'ok'){
+
+            if (selectData){
+                var specialSelectCode=$('#specialSelectCode').val();
+                var specialSelectName=$('#specialSelectName').val();
+                $("#userName").val(specialSelectName);
+                $("#departmentName").val("");
+                $("#departmentName").attr("disabled",true);
+                $("#userIds").val(specialSelectCode);
+                $("#specialChoice").val("1");
+
+            }
+        }
+	}
+	$("#save").click(function(){
+		if($("#select2-distributionType-container").html() == "员工"){
+			$("#distributionType").val('2')
+		}else if($("#select2-distributionType-container").html() == "部门"){
+			$("#distributionType").val('1')
+		}else if($("#select2-distributionType-container").html() == "特权用户"){
+            $("#distributionType").val('3')
+        }else{
+            $("#distributionType").val('0')
+		}
+	})
+    function save(isSH){
+		if($("#userName").val() !=''){
+		    if($("#specialChoice").val() !=''){
+                $("#distributionType").val('3')
+			}else {
+                $("#distributionType").val('2')
+			}
+		}else if($("#departmentName").val() !=''){
+			$("#distributionType").val('1')
+		}else {
+            $("#distributionType").val('0')
+		}
+        var testform = document.getElementById("inputForm");
+        if(isSH==='1') {
+            // document.getElementById("isNewRecord").value=false;
+            testform.action = "${ctx}/fz/fzgolddistribution/fzGoldDistribution/save?documentStatusSH=1";
+
+        }else if (isSH==='2') { var isNewRecord=document.getElementById("isNewRecord").value;
+            alert("isSH")
+            testform.action = "${ctx}/fz/fzgolddistribution/fzGoldDistribution/save?documentStatusSH=2";
+
+        }else {
+            testform.action = "${ctx}/fz/fzgolddistribution/fzGoldDistribution/save";
+        }
+    }
+    window.onload=function(){
+        if($("#distributionType").val() != '3'){
+        	$("#fzType").attr("disabled",true);
+		}
+        if($("#userName").val() =='' && $("#departmentName").val() ==''){
+           // alert(1);
+            $("#select2-distributionType-container").html("全员");
+		}
+
+         if($("#distributionType").val()=='3'){
+             $("#specialChoice").val("1");
+		 }
+		$("#distributionType").val('')
+        document.getElementById('documentStatus').disabled=true;
+        var flag = $("#isNewRecord").val();
+        var documentStatus = $("#documentStatus").val();
+        if (flag === 'true') {
+            document.getElementById("examine").disabled=true;
+        } else {
+            // alert('false')
+            if (documentStatus==='1') { //当订单状态为审核状态
+				document.getElementById('distributionType').disabled=true;
+                document.getElementById('documentStatus').disabled=true;
+                document.getElementById('number').readOnly=true;
+                document.getElementById('departmentName').readOnly=true;
+                document.getElementById('userName').readOnly=true;
+
+                document.getElementById('remarks').readOnly=true;
+
+                document.getElementById('examine').disabled=true;
+                document.getElementById('save').disabled=true;
+
+            }
+
+        }
+    }
+</script>

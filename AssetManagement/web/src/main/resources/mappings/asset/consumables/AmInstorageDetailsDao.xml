@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.consumables.dao.AmInstorageDetailsDao">
+
+
+	<select id="getDetailsByCategoryCode" resultType="AmInstorageDetails">
+	SELECT
+	a.instorage_code AS "instorageCode.instorageCode",
+	a.location_code AS "locationCode",
+	a.consumables_code AS "consumablesCode",
+	a.consumables_name AS "consumablesName",
+	a.specifications AS "specifications",
+	a.category_code AS "categoryCode",
+	a.measure_unit AS "measureUnit",
+	a.instorage_count AS "instorageCount",
+	a.instorage_price AS "instoragePrice",
+	a.instorage_amount AS "instorageAmount",
+	a.remarks AS "remarks",
+	a.detail_code AS "detailCode",
+	b.consumables_code AS "consumables.consumablesCode",
+	b.consumables_Name AS "consumables.consumablesName",
+	c.location_code AS "amLocation.locationCode",
+	c.location_name AS "amLocation.locationName",
+	d.category_code AS "category.categoryCode",
+	d.category_name AS "category.categoryName"
+FROM
+	js_am_instorage_details a
+LEFT JOIN js_am_consumables b ON a.consumables_code = b.consumables_code
+LEFT JOIN js_am_location c ON a.location_code = c.location_code
+LEFT JOIN js_am_category d ON d.category_code = a.category_code
+WHERE
+(
+	d.category_code = #{arg0}
+	OR d.parent_codes LIKE #{arg1}
+)
+ORDER BY
+	a.detail_code ASC
+	</select>
+
+	<delete id="deleteDb" >
+	DELETE from js_am_instorage_details
+	WHERE instorage_code=#{instorageCode}
+	</delete>
+</mapper>

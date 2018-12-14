@@ -1,0 +1,100 @@
+<% layout('/layouts/default.html', {title: '培训反馈单', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('培训反馈单')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('trainning:amTrainningFeedback:edit')){ %>
+				<a href="" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除培训反馈单')}"> ${text('删除')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amTrainningFeedback}" action="${ctx}/trainning/amTrainningFeedback/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">培训单号：</label>
+				<div class="control-inline">
+					<#form:input path="trainningCode" maxlength="25" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+					<label class="control-label">培训课程：</label>
+					<div class="control-inline">
+						<#form:input path="trainningCourse" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+			<div class="form-group">
+				<label class="control-label">填写人员：</label>
+				<div class="control-inline">
+					<#form:input path="writtenBy" class="form-control width-120"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'培训单号', name:'trainningCode', index:'a.trainning_code', width:150, align:"center", frozen:true},
+		{header:'培训课程', name:'trainningCourse', index:'a.trainning_course', width:150, align:"center"},
+		{header:'讲师', name:'lecturer', index:'a.lecturer', width:150, align:"center"},
+        {header:'填写人员', name:'writtenBy', index:'a.written_by', width:150, align:"center"},
+		{header:'开始时间', name:'beginTime', index:'a.begin_time', width:150, align:"center"},
+		{header:'填写时间', name:'editTime', index:'a.edit_time', width:150, align:"center"},
+		{header:'授课方式', name:'trainingMethod', index:'a.training_method', width:100, align:"center"},
+		{header:'培训应用', name:'trainingApplication', index:'a.training_application', width:100, align:"center"},
+		{header:'课程理解', name:'comprehension', index:'a.comprehension', width:100, align:"center"},
+		{header:'学习笔记', name:'notes', index:'a.notes',width:300, align:"center"},
+	],
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#asDelBtn').click( function(e){
+    var nodes = $('#dataGrid').find('input[type=checkbox]');
+    var temp = [];
+    $(nodes).each(function(index, item){
+        var checked = $(item).attr('checked'); // 是否被选中
+        if(checked) {
+            var id = $(item).attr('id');
+
+            if(id.indexOf('_')) { // 如果有分割符的话，先分割
+                id = id.split('_');
+                id = id[2];
+            }
+            temp.push(id);
+        }
+    });
+    temp = temp.join(',');
+    if(confirm('确认删除吗?')){
+        $.ajax({
+            async:false,
+            url:'${ctx}/trainning/amTrainningFeedback/delete?pkey='+temp,
+            success:function (result) {
+                var obj = JSON.parse(result);
+                if(obj.result=='true') {
+                    js.showMessage(obj.message)
+                    window.location.reload()
+                }else {
+                    js.showMessage(obj.message)
+                }
+            }
+        })}
+});
+</script>

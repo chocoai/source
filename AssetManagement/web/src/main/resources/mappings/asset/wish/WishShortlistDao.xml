@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.wish.dao.WishShortlistDao">
+	
+	<!-- 查询数据 -->
+	<select id="findList" resultType="WishShortlist">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="name != null and name != ''">
+				AND (a.user_name LIKE concat('%' ,#{name}, '%')
+				OR a.department LIKE concat('%' ,#{name}, '%'))
+			</if>
+			<if test="userId != null and userId != ''">
+				AND user_id != #{userId}
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+
+	<!--根据用户id获取入围信息 -->
+	<select id="selectByUserId" resultType="WishShortlist">
+		SELECT * FROM js_wish_shortlist
+		<where>
+			user_id in
+			<foreach collection="list" item="userIdList" index="index" open="(" separator="," close=")">
+				#{userIdList}
+			</foreach>
+		</where>
+	</select>
+
+
+	<!--根据用户id获取入围信息 -->
+	<update id="updateShortlist" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			update js_wish_shortlist
+			<set>
+				score = #{item.score},
+				votes_num = #{item.votesNum}
+			</set>
+			where user_id = #{item.userId}
+		</foreach>
+	</update>
+
+	<select id="getPollResults" resultType="WishShortlist">
+		SELECT
+			a.*
+		FROM
+		js_wish_shortlist a
+		LEFT JOIN js_wish_voted_detail b ON a.user_id = b.user_id
+		WHERE
+		b.voters_user_id = #{arg0}
+	</select>
+
+    <insert id="insertData" parameterType="java.util.List">
+        INSERT INTO js_wish_shortlist
+        (user_id,user_name,job_number,position,department_id,department,nominate_num,user_status,personal_profile,avatar)
+        VALUES
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.userId,jdbcType=VARCHAR},
+            #{item.userName,jdbcType=VARCHAR},
+            #{item.jobNumber,jdbcType=VARCHAR},
+            #{item.position,jdbcType=VARCHAR},
+            #{item.departmentId,jdbcType=VARCHAR},
+            #{item.department,jdbcType=VARCHAR},
+            #{item.nominateNum,jdbcType=INTEGER},
+            #{item.userStatus,jdbcType=VARCHAR},
+            #{item.personalProfile,jdbcType=VARCHAR},
+			#{item.avatar,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+</mapper>

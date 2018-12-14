@@ -1,0 +1,136 @@
+<% layout('/layouts/default.html', {title: '商品销售价目管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('商品销售价目管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('tianmao:spSalesprice:edit')){ %>
+					<a href="${ctx}/tianmao/spSalesprice/form" class="btn btn-default btnTool" title="${text('新增商品销售价目')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${spSalesprice}" action="${ctx}/tianmao/spSalesprice/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">fid_uuid：</label>
+					<div class="control-inline">
+						<#form:input path="fId" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">物料编码：</label>
+					<div class="control-inline">
+						<#form:input path="fMaterialCode" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">最后修改时间：</label>
+					<div class="control-inline">
+						<#form:input path="fLastmodifyDate" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">价格：</label>
+					<div class="control-inline">
+						<#form:input path="fPrice" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">发货周期：</label>
+					<div class="control-inline">
+						<#form:input path="fDeliveryCycle" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">是否允许同步：</label>
+					<div class="control-inline">
+						<#form:input path="fIsallowSync" maxlength="2" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">创建日期：</label>
+					<div class="control-inline">
+						<#form:input path="fCreateDate" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">创建用户主键：</label>
+					<div class="control-inline">
+						<#form:input path="fCreateUserid" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">创建用户：</label>
+					<div class="control-inline">
+						<#form:input path="fCreateUsername" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">修改日期：</label>
+					<div class="control-inline">
+						<#form:input path="fModifyDate" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">修改用户主键：</label>
+					<div class="control-inline">
+						<#form:input path="fModifyUserid" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">修改用户：</label>
+					<div class="control-inline">
+						<#form:input path="fModifyUsername" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'fid_uuid', name:'fId', index:'a.f_id', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/tianmao/spSalesprice/form?tableCode='+row.tableCode+'" class="btnList" data-title="${text('编辑商品销售价目')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'物料编码', name:'fMaterialCode', index:'a.f_material_code', width:150, align:"left"},
+		{header:'最后修改时间', name:'fLastmodifyDate', index:'a.f_lastmodify_date', width:150, align:"center"},
+		{header:'价格', name:'fPrice', index:'a.f_price', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'发货周期', name:'fDeliveryCycle', index:'a.f_delivery_cycle', width:150, align:"center"},
+		{header:'是否允许同步', name:'fIsallowSync', index:'a.f_isallow_sync', width:150, align:"left"},
+		{header:'创建日期', name:'fCreateDate', index:'a.f_create_date', width:150, align:"center"},
+		{header:'创建用户主键', name:'fCreateUserid', index:'a.f_create_userid', width:150, align:"left"},
+		{header:'创建用户', name:'fCreateUsername', index:'a.f_create_username', width:150, align:"left"},
+		{header:'修改日期', name:'fModifyDate', index:'a.f_modify_date', width:150, align:"center"},
+		{header:'修改用户主键', name:'fModifyUserid', index:'a.f_modify_userid', width:150, align:"left"},
+		{header:'修改用户', name:'fModifyUsername', index:'a.f_modify_username', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('tianmao:spSalesprice:edit')){ %>
+				actions.push('<a href="${ctx}/tianmao/spSalesprice/form?tableCode='+row.tableCode+'" class="btnList" title="${text('编辑商品销售价目')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/tianmao/spSalesprice/delete?tableCode='+row.tableCode+'" class="btnList" title="${text('删除商品销售价目')}" data-confirm="${text('确认要删除该商品销售价目吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

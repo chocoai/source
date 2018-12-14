@@ -1,0 +1,68 @@
+<% layout('/layouts/default.html', {title: '排行榜管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('排行榜管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('appreciation:fzLeaderboards:edit')){ %>
+					<a href="${ctx}/fz/appreciation/fzLeaderboards/form" class="btn btn-default btnTool" title="${text('新增fz_leaderboards')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzLeaderboards}" action="${ctx}/fz/appreciation/FzLeaderboard/getList" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('时间')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="flag" dictType="fz_leaderboard_type" blankOption="true" class="form-control width-120"/>
+
+					</div>
+				</div>
+			<div class="form-group">
+				<label class="control-label">标签：</label>
+				<div class="control-inline width-120">
+					<#form:select path="type" id='typeCode' items="${fzAppreciationTypes}"
+					itemLabel="typeName" itemValue="typeName" multiple="false" blankOption="true"
+					class="form-control required"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('用户')}', name:'userid', index:'a.userid', width:150, align:"left"},
+		{header:'${text('用户名')}', name:'name', index:'a.name', width:150, align:"left"},
+		{header:'${text('工号')}', name:'jobnumber', index:'a.jobnumber', width:150, align:"left"},
+        {header:'${text('职位')}', name:'position', index:'a.position', width:150, align:"left"},
+		{header:'${text('获赞币数量')}', name:'praiserNumber', index:'a.praisernumber', width:150, align:"center"},
+        {header:'${text('头像')}', name:'avatar', index:'a.avatar', align:"center", width:70, align:"center",
+            formatter: function(val, obj, row, act){
+                if(row.avatar==null){
+                    return "";
+                }
+                else{ return  "<img src='"+val+"' class=\"thumbnail\" onclick=\"getVal('"+val+"')\" height=\"80\" width=\"80\"/>"}
+            }},
+
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

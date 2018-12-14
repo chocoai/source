@@ -1,0 +1,1029 @@
+<% layout('/layouts/default.html', {title: '查看RDS订单', libs: ['validate','dataGrid']}){ %>
+<style xmlns:c="http://www.w3.org/1999/html">
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('查看RDS订单')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${taobaoOrderRds}" action="${ctx}/taobao/taobaoOrderRds/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-1 col-sm-10">
+					<!--<% if (hasPermi('tianmao:tbProduct:edit')){ %>
+					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;&nbsp;&nbsp;&nbsp;
+					<% } %>-->
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+			<div class="box-body">
+				<div class="form-unit form-unitHd" id="div1">
+					<span class="on">${text('基本信息')}</span>
+					<span>${text('买家信息')}</span>
+					<span>${text('卖家信息')}</span>
+					<span>${text('收货人信息')}</span>
+					<span>${text('其他信息')}</span>
+
+					<!--<span>${text('优惠详情')}</span>
+					<span>${text('服务子订单列表')}</span>
+					<span>${text('物流标签')}</span>-->
+				</div>
+				<div class="form-unitTab">
+				<#form:hidden path="pkey"/>
+					<div class="item">
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('交易编号')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="tid" readonly="true" class="form-control"/>
+						</div>
+					</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('交易状态')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="trade.status" readonly="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('交易类型')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="trade.type" readonly="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('卖家昵称')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="trade.sellerNick" readonly="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('买家昵称')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="trade.buyerNick" readonly="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('交易创建时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="trade.created" readonly="true" class="form-control" dataFormat="datetime"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('交易修改时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="trade.modified"  readonly="true" class="form-control" dataFormat="datetime"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('交易结束时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="trade.endTime" class="form-control" readonly="true" dataFormat="datetime"/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('付款时间')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.payTime" readonly="true" class="form-control" dataFormat="datetime"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('实付金额')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.payment" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('交易标题')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.title" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('商品金额')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.totalFee" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('交易内部来源')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.tradeFrom" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('卖家实收支付宝金额')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receivedPayment" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sid')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sid" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('创建交易时的物流方式')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.shippingType" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('是否包含邮费')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.hasPostFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('邮费')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.postFee" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<h4 class="form-unit">子订单列表</h4>
+						<div class="ml10 mr10">
+							<table id="orderInfoDataGrid"></table>
+						</div>
+						<h4 class="form-unit">优惠详情</h4>
+						<div class="ml10 mr10">
+							<table id="promotionInfoDataGrid"></table>
+						</div>
+						<h4 class="form-unit">服务子订单列表</h4>
+						<div class="ml10 mr10">
+							<table id="serviceOrdersDataGrid"></table>
+						</div>
+						<h4 class="form-unit">物流标签</h4>
+						<div class="ml10 mr10">
+							<table id="serviceTagsDataGrid"></table>
+						</div>
+					</div>
+					<div class="item" style="display: none">
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('buyerArea')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.buyerArea" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('买家货到付款服务费')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.buyerCodFee" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('buyerEmail')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.buyerEmail" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('buyerIp')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.buyerIp" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('buyerObtainPointFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.buyerObtainPointFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('买家是否已评价')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.buyerRate" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="item" style="display: none">
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerAlipayNo')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerAlipayNo" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerCanRate')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerCanRate" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerCodFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerCodFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerEmail')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerEmail" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('卖家备注旗帜')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerFlag" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('卖家备注')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerMemo" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerMobile')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerMobile" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerName')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerName" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerPhone')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerPhone" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('sellerRate')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.sellerRate" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="item" style="display: none">
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人的详细地址')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverAddress" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人的所在城市')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverCity" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人国籍')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverCountry" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人的所在地区')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverDistrict" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人的手机号码')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverMobile" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人的姓名')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverName" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人的所在省份')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverState" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('收货人的邮编')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.receiverZip" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="item" style="display: none">
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('encryptAlipayId')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.encryptAlipayId"  readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('卖家手工调整金额')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.adjustFee" readonly="true"  class="form-control"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('alipayId')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.alipayId" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('alipayPoint')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.alipayPoint" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('availableConfirmFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.availableConfirmFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('alipayNo')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.alipayNo" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('codFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.codFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('codStatus')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.codStatus" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('订单中使用红包付款的金额')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.couponFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('commissionFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.commissionFee" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('系统优惠金额')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.discountFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('buyerAlipayNo')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.buyerAlipayNo"  readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<div class="row">
+
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('hasYfx')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.hasYfx" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('pointFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.pointFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('is3D')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.is3D" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('isBrandSale')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.isBrandSale" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('isDaixiao')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.isDaixiao" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('isForceWlb')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.isForceWlb" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('isShShip')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.isShShip" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('isLgtype')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.isLgtype" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('isPartConsign')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.isPartConsign" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('isWt')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.isWt" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('pccAf')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.pccAf" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('	platformSubsidyFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.platformSubsidyFee" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!--<div class="row">
+
+
+						</div>-->
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('realPointFee')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.realPointFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('serviceType')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.serviceType" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="row">
+
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('snapshotUrl')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.snapshotUrl" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('分阶段付款的已付金额')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.stepPaidFee" readonly="true" class="form-control"/>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="row">
+
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('分阶段付款的订单状态')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:input path="trade.stepTradeStatus" class="form-control" readonly="true"/>
+									</div>
+								</div>
+							</div>
+
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('组装O2O多阶段尾款订单的明细数据 总阶段数，当前阶数，阶段金额')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="trade.o2oStepTradeDetail" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> ${text('o2oStepTradeDetailNew')}：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:textarea path="trade.o2oStepTradeDetailNew" readonly="true" rows="4" class="form-control"/>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+			</div>
+				</div>
+			<div class="box-footer">
+				<div class="row">
+					<!--<div class="col-sm-offset-2 col-sm-10">
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>-->
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+    function timestampToTime(timeToTrans) {
+        console.log(timeToTrans)
+        var date = new Date();
+        date.setTime(timeToTrans);
+        //console.log(date)
+        var y = date.getFullYear();
+        var m = date.getMonth() + 1;
+        m = m < 10 ? ('0' + m) : m;
+        var d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        var h = date.getHours();
+        h = h < 10 ? ('0' + h) : h;
+        var minute = date.getMinutes();
+        //var second = date.getSeconds();
+        minute = minute < 10 ? ('0' + minute) : minute;
+       // second = second < 10 ? ('0' + second) : second;
+        return y + '-' + m + '-' + d+' '+h+':'+minute;
+    }
+    $("#orderInfoDataGrid").dataGrid({
+        data: ${toJson(taobaoOrderRds.trade.orders)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'子订单编号', name:'oid', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'商品数字ID', name:'numIid', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'cid', name:'cid', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'SKU值', name:'skuPropertiesName', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'购买数量', name:'num', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'订单状态', name:'status', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'退款状态', name:'refundStatus', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'子订单预计发货时间', name:'estimateConTime', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'子订单的交易结束时间', name:'endTime', editable:false,sortable:false,'class':'form-control',align:'center',dataFormat:'datetime',width:'300px'},
+            {header:'卖家手工调整金额', name:'adjustFee', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'买家是否已评价', name:'buyerRate', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'子订单级订单优惠金额', name:'discountFee', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'分摊之后的实付金额', name:'divideOrderFee', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'是否为代销采购单', name:'isDaixiao', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'是否超卖', name:'isOversold', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'oidStr', name:'oidStr', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'top动态字段', name:'orderAttr', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'子订单来源', name:'orderFrom', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'网店自定义Sku编号', name:'outerSkuId', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'优惠分摊', name:'partMjzDiscount', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'子订单实付金额', name:'payment', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'商品路径', name:'picPath', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'商品价格', name:'price', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+
+            {header:'卖家是否已评价', name:'sellerRate', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'卖家类型', name:'sellerType', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+
+            {header:'订单快照URL', name:'snapshotUrl', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+
+            {header:'商品标题', name:'title', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'应付金额', name:'totalFee', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+
+        ],
+        shrinkToFit: false,
+        autoScroll: true,
+        autowidth: true,
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 5,		// 编辑表格的初始化新增行数
+        // 编辑表格的提交数据参数
+        ajaxSuccess: function(data){
+            var timeToTrans=  $("#orderInfoDataGrid td[aria-describedby='orderInfoDataGrid_endTime']").html();
+            $('#orderInfoDataGrid').find('td[aria-describedby="orderInfoDataGrid_endTime"]').html(timestampToTime(timeToTrans))
+        }
+    });
+    $("#promotionInfoDataGrid").dataGrid({
+        data: ${toJson(taobaoOrderRds.trade.promotionDetails)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'主订单/子订单号', name:'id', editable:false,sortable:false,'class':'form-control',align:'center',width:'350px'},
+            {header:'优惠id', name:'promotionId', editable:false,sortable:false,'class':'form-control',align:'center',width:'350px'},
+            {header:'系统优惠金额', name:'discountFee', editable:false,sortable:false,'class':'form-control',align:'center',width:'350px'},
+            {header:'优惠活动的描述', name:'promotionDesc', editable:false,sortable:false,'class':'form-control',align:'center',width:'350px'},
+            {header:'满送商品名称', name:'promotionName', editable:false,sortable:false,'class':'form-control',align:'center',width:'350px'},
+        ],
+        shrinkToFit: false,
+        autoScroll: true,
+        autowidth: true,
+        // 编辑表格的提交数据参数
+        ajaxSuccess: function(data){
+        }
+    });
+
+    $("#serviceOrdersDataGrid").dataGrid({
+        data: ${toJson(taobaoOrderRds.trade.serviceOrders)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'交易订单号', name:'itemOid', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'虚拟服务子订单号', name:'oid', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'服务数字id', name:'serviceId', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'子订单实付金额', name:'payment', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'购买数量', name:'num', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'卖家昵称', name:'buyerNick', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'服务图片地址', name:'picPath', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'服务价格', name:'price', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'卖家昵称', name:'sellerNick', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'服务详情URL地址', name:'serviceDetailUrl', editable:false,sortable:false,'class':'form-control',align:'center',width:'400px'},
+            {header:'商品名称', name:'title', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'支持家装类物流的类型', name:'tmserSpuCode', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+            {header:'服务子订单总费用', name:'totalFee', editable:false,sortable:false,'class':'form-control',align:'center',width:'300px'},
+        ],
+        shrinkToFit: false,
+        autoScroll: true,
+        autowidth: true,
+        // 编辑表格的提交数据参数
+        ajaxSuccess: function(data){
+
+        }
+    });
+    //serviceTagsDataGrid
+    var datalist = [],
+        List = ${toJson(taobaoOrderRds.trade.serviceTags)};
+        for(i in List){
+            for(j in List[i].logisticServiceTagList){
+                datalist.push({orderId:List[i].orderId,logisticServiceTagList:List[i].logisticServiceTagList[j]});
+            }
+        }
+    console.log(datalist)
+    $("#serviceTagsDataGrid").dataGrid({
+        data: datalist,
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'主/子订单单号', name:'orderId', editable:false,sortable:false,'class':'form-control',align:'center',frozen:true,width:'350px'},
+            {header:'物流服务下的标签属性', name:'logisticServiceTagList.serviceTag', editable:false,sortable:false,'class':'form-control',align:'center',frozen:true,width:'350px'},
+            {header:'serviceType', name:'logisticServiceTagList.serviceType', editable:false,sortable:false,'class':'form-control',align:'center',frozen:true,width:'350px'},
+            ],
+        expandNodeClearPostData: 'serviceTag,serviceType', // 展开节点清理请求参数数据（一般设置查询条件的字段属性，否则在查询后，不能展开子节点数据）	// 加载成功后执行事件
+        // 编辑表格的提交数据参数
+        ajaxSuccess: function(data){
+
+        }
+    });
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+// tab切换
+
+$(function() {
+    slidtab();
+    slidtable();
+
+})
+//切换页签
+var slidtab = function(){
+    $('.form-unitHd span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTab .item').hide()
+        $('.form-unitTab .item').eq(_t.index()).fadeIn()
+        // 手动添加滚动条触发reszie事件解决 点击选择图片定位
+         if(_t.index() ==0) return
+        $('.html_content',window.parent.document).css('overflow','scroll')
+        setTimeout(function(){
+            $('.html_content',window.parent.document).css('overflow','visible')
+        },5)
+    });
+};
+var slidtable = function(){
+    $('.form-unitD span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTable .item').hide()
+        $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+    });
+};
+
+</script>

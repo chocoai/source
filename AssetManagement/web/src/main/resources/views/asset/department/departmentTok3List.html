@@ -1,0 +1,167 @@
+<% layout('/layouts/default.html', {title: '部门关联K3关系表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('部门关联K3关系表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('department:departmentTok3:edit')){ %>
+					<a href="${ctx}/department/departmentTok3/form" class="btn btn-default btnTool" title="${text('新增部门关联K3关系表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				    <a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除图片审核单')}"> ${text('删除')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${departmentTok3}" action="${ctx}/department/departmentTok3/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+
+				<div class="form-group">
+					<label class="control-label">所属部门</label>
+					<div class="control-inline">
+						<#form:treeselect id="office" title="部门"
+						path="department" labelPath="office.officeName" canSelectRoot="true" canSelectParent="true"
+						url="${ctx}/sys/office/treeData" class="required" allowClear="false"/>
+					</div>
+				</div>
+			<div class="form-group">
+				<label class="control-label">编号</label>
+				<div class="control-inline width-200">
+					<#form:input path="departmentCode" maxlength="64" class="form-control width-120"/>
+				</div>
+			</div>
+				<div class="form-group">
+					<label class="control-label">对应部门的K3平台ID</label>
+					<div class="control-inline">
+						<#form:input path="k3Accountid" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">K3帐号</label>
+					<div class="control-inline">
+						<#form:input path="k3Account" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<!--<div class="form-group">
+					<label class="control-label">K3密码</label>
+					<div class="control-inline">
+						<#form:input path="k3Password" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>-->
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'编号', name:'departmentCode', index:'a.department_code', width:150, align:"center", frozen:true, formatter: function(val, obj, row, act){
+			//return '<a href="${ctx}/department/departmentTok3/form?departmentCode='+row.departmentCode+'" class="btnList" data-title="${text('编辑部门关联K3关系表')}">'+(val||row.id)+'</a>';
+                return '<a href="${ctx}/department/departmentTok3/form?departmentCode='+row.departmentCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑部门关联K3关系表')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+		}},
+		{header:'创建人', name:'createBy', index:'a.create_by', width:150, align:"center"},
+        {header:'创建日期', name:'createDate', index:'a.create_date', width:150, align:"center"},
+        {header:'更新人', name:'updateBy', index:'a.update_by', width:150, align:"center"},
+        {header:'更新日期', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+		{header:'所属部门',name:'office.officeName', index:'c.office_name', width:200, align:"center"},
+		{header:'对应部门的K3平台ID', name:'k3Accountid', index:'a.k3_accountid', width:150, align:"center"},
+		{header:'K3帐号', name:'k3Account', index:'a.k3_account', width:150, align:"center"},
+		/*{header:'K3密码', name:'k3Password', index:'a.k3_password', width:150, align:"center"},*/
+
+		/*{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('department:departmentTok3:edit')){ %>
+				actions.push('<a href="${ctx}/department/departmentTok3/form?departmentCode='+row.departmentCode+'" class="btnList" title="${text('编辑部门关联K3关系表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/department/departmentTok3/delete?departmentCode='+row.departmentCode+'" class="btnList" title="${text('删除部门关联K3关系表')}" data-confirm="${text('确认要删除该部门关联K3关系表吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}*/
+	],
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        Concurrency();
+	}
+});
+$('#asDelBtn').click( function(e){
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            url: '${ctx}/amspecimen/amSpecimen',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/department/departmentTok3/deleteDb?ids='+str,
+                            success:function (result) {
+                                var obj = JSON.parse(result);
+                                if(obj.result=='true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                }else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一条记录进行删除')
+    }
+
+});
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_departmentCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/amspecimen/amSpecimen',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                console.log(res)
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+</script>

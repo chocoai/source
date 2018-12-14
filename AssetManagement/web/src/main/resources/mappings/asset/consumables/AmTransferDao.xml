@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.consumables.dao.AmTransferDao">
+	
+
+	<select id="findList" resultType="AmTransfer">
+		SELECT ${sqlMap.column.toSql()},
+		c.details_code AS "amTransferDetails.detailsCode",
+		c.out_location_code AS "amTransferDetails.outLocationCode",
+		c.consumables_code AS "amTransferDetails.consumablesCode",
+		c.consumables_name AS "amTransferDetails.consumablesName",
+		c.specifications AS "amTransferDetails.specifications",
+		c.category_code AS "amTransferDetails.categoryCode",
+		c.measure_unit AS "amTransferDetails.measureUnit",
+		c.in_location_code AS "amTransferDetails.inLocationCode",
+		c.transfer_count AS "amTransferDetails.transferCount",
+		c.transfer_price AS "amTransferDetails.transferPrice",
+		c.transfer_amount AS "amTransferDetails.transferAmount",
+		c.documents_code AS "amTransferDetails.documentsCode.documentsCode"
+		FROM ${sqlMap.table.toSql()}
+		<if test="documentsCode!= null and documentsCode != ''"></if>
+			LEFT JOIN ${_prefix}am_transfer_details c ON c.documents_code=a.documents_code
+
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<delete id="deleteDb" >
+	DELETE from js_am_transfer WHERE documents_code=#{documentsCode}
+	</delete>
+</mapper>

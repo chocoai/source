@@ -1,0 +1,129 @@
+<% layout('/layouts/default.html', {title: '看板有效人员维护管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('看板有效人员维护管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('kanban:amKbAmpersonnel:edit')){ %>
+					<a href="${ctx}/kanban/amKbAmpersonnel/form" class="btn btn-default btnTool" title="${text('新增看板有效人员维护')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+				<a href="#" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除入库表')}"> ${text('删除')}</a>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amKbAmpersonnel}" action="${ctx}/kanban/amKbAmpersonnel/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">联系电话：</label>
+					<div class="control-inline">
+						<#form:input path="phone" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">有效人员：</label>
+					<div class="control-inline">
+						<#form:input path="ampersonnel" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+			<div class="form-group">
+				<label class="control-label">看板编码：</label>
+				<div class="control-inline">
+					<#form:treeselect id="amKanbanFile" title="${text('分类编号')}"
+					path="amKanbanFile.kanbanCode"
+					url="${ctx}/kanban/amKanbanFile/treeData"
+					class="required" allowClear="true"/>
+				</div>
+			</div>
+
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'联系电话', name:'phone', index:'a.phone', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/kanban/amKbAmpersonnel/form?kbAmpersonnelCode='+row.kbAmpersonnelCode+'&phone='+row.phone+'" class="btnList" data-title="${text('编辑看板有效人员维护')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'有效人员', name:'ampersonnel', index:'a.ampersonnel', width:150, align:"left"},
+		{header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'更新人', name:'updateBy', index:'a.update_by', width:150, align:"left"},
+		{header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('kanban:amKbAmpersonnel:edit')){ %>
+		// 		actions.push('<a href="${ctx}/kanban/amKbAmpersonnel/form?kbAmpersonnelCode='+row.kbAmpersonnelCode+'&phone='+row.phone+'" class="btnList" title="${text('编辑看板有效人员维护')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 		actions.push('<a href="${ctx}/kanban/amKbAmpersonnel/delete?kbAmpersonnelCode='+row.kbAmpersonnelCode+'&phone='+row.phone+'" class="btnList" title="${text('删除看板有效人员维护')}" data-confirm="${text('确认要删除该看板有效人员维护吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+
+	}
+});
+
+$('#asDelBtn').click( function(e){
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/kanban/amKbAmpersonnel/deleteDb?ids='+str,
+                            success:function (result) {
+                                result=result.split(',')
+                                var messagea=result[1].split(':')[1];
+                                result=result[0].split(':')
+                                if (result[1].toString()=='"true"'){
+                                    messagea=messagea.replace('}','');
+                                    messagea=messagea.replace('"','');
+                                    messagea=messagea.replace('"','');
+                                    alert(messagea)
+                                    window.location.reload()
+                                }else {
+                                    alert("删除失败")
+                                }
+                            }
+                        })
+                    }
+
+    }else{
+        layer.msg('请至少选择一张订单进行删除')
+    }
+
+
+
+
+
+});
+</script>

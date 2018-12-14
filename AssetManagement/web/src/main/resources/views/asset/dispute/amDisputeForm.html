@@ -1,0 +1,915 @@
+<% layout('/layouts/default.html', {title: '物流纠纷表管理', libs: ['validate','fileupload','dataGrid']}){ %>
+<style>
+    .form-unitHd span {
+        margin-right: 20px;
+        color: #999a9b;
+        cursor: pointer;
+    }
+
+    .form-unitHd span.on {
+        color: #6379bb;
+    }
+</style>
+<style>
+    .form-unitD span {
+        margin-right: 20px;
+        color: #999a9b;
+        cursor: pointer;
+    }
+
+    .form-unitD span.on {
+        color: #6379bb;
+    }
+</style>
+<div class="main-content">
+    <div class="box box-main">
+        <div class="box-header with-border">
+            <div class="box-title">
+                <i class="fa fa-list-alt"></i> ${text(amDispute.isNewRecord ? '新增物流纠纷表' : '编辑物流纠纷表')}
+            </div>
+            <div class="box-tools pull-right">
+                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i>
+                </button>
+            </div>
+        </div>
+        <#form:form id="inputForm" model="${amDispute}" action="${ctx}/dispute/amDispute/save" method="post"
+        class="form-horizontal">
+        <div class="box-body">
+            <div class="form-unit form-unitHd" id="div1">
+                <span class="on">${text('基本信息')}</span>
+                <span>${text('收件信息')}</span>
+                <span>${text('优梵图片')}</span>
+                <span>${text('菜鸟图片')}</span>
+            </div>
+            <div class="form-unitTab">
+                <div class="item">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required ">*</span> 单据编号：<i class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:hidden path="userName" id ="userName"/>
+                                    <#form:hidden path="isNewRecord"/>
+                                    <#form:input path="documentCode" maxlength="64" readonly="${!amDispute.isNewRecord}"
+                                    class="form-control required abc" id="documentCode"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 运输单号：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="singleTranportCode" maxlength="64" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 销售员：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="seller" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 单据状态：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="documentStatus" maxlength="10" class="form-control" readonly="true" id="documentStatus"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 销售出库单号：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="salesLibraryCode" maxlength="64" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 装车时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="loadingTime" class="form-control"
+                                    dataFormat="datetime"  readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 客户：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="client" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 纠纷类型：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="disputeType" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 责任类型：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <% if (amDispute.documentStatus != '受理'){ %>
+                                    <#form:hidden path="dutyType" maxlength="200" class="form-control" />
+                                    <#form:input path="dutyValue" maxlength="200" class="form-control" readonly="true"/>
+                                    <%} else { %>
+                                    <#form:select path="dutyType" dictType="am_duty_type" maxlength="200" class="form-control" />
+                                    <% }%>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 问题描述：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:textarea path="problemDescription" rows="4" maxlength="2000" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 处理结果：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:textarea path="processResult" rows="4" maxlength="2000" class="form-control" readonly="${amDispute.isUpdate}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 驳回备注：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:textarea path="rejectRemarks" rows="4" maxlength="2000" class="form-control" readonly="${amDispute.isCreate}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 赔偿金额：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="damages" class="form-control number" readonly="${amDispute.isUpdate}"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 店铺：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="stores" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 平台：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="platform" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 是否超时：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="isTimedOut" maxlength="10" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 完结人：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="completionPerson" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 完结时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="completionDate" class="form-control"
+                                    dataFormat="datetime"  readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 创建时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="createDate" readonly="true" class="form-control"
+                                    dataFormat="datetime" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 受理时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="acceptDate" class="form-control"
+                                    dataFormat="datetime"  readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 处理人：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="processPerson" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 最近修改人：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="updateBy" class="form-control"
+                                    readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 最近修改时间：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="updateDate" class="form-control"
+                                    dataFormat="datetime"  readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row"></div>
+                </div>
+                <div class="item" style="display: none">
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 客户姓名：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="clientName" maxlength="100" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 配送方式：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="deliveryMethod" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 省份：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="province" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 城市：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="city" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 区县：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="county" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 发货物流：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="logisticsCompany" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 移动电话：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="mobilePhone" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-6">
+                            <div class="form-group">
+                                <label class="control-label col-sm-4" title="">
+                                    <span class="required hide">*</span> 详细地址：<i
+                                        class="fa icon-question hide"></i></label>
+                                <div class="col-sm-8">
+                                    <#form:input path="address" maxlength="200" class="form-control" readonly="true"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row"></div>
+                </div>
+                <div class="item" style="display: none">
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">图片1：</label>
+                                <div class="col-sm-10">
+                                    <% if (amDispute.amDisputeImg != null){ %>
+                                    <% if (amDispute.amDisputeImg.fileid1 != '' && amDispute.amDisputeImg.fileid1 != null){ %>
+                                    <img src="/img/dispute/${amDispute.amDisputeImg.fileid1}.jpg" height="300" width="450" class="thumbnail" id="fileid1"/>
+                                    <% } %>
+                                    <#form:hidden path="amDisputeImg.fileid1" id ="img1" maxlength="200" class="form-control" readonly="true"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">图片2：</label>
+                                <div class="col-sm-10">
+                                    <% if (amDispute.amDisputeImg != null){ %>
+                                    <% if (amDispute.amDisputeImg.fileid2 != '' && amDispute.amDisputeImg.fileid2 != null){ %>
+                                    <img src="/img/dispute/${amDispute.amDisputeImg.fileid2}.jpg" height="300" width="450" class="thumbnail" id="fileid2"/>
+                                    <% } %>
+                                    <#form:hidden path="amDisputeImg.fileid2" id ="img2" maxlength="200" class="form-control" readonly="true"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">图片3：</label>
+                                <div class="col-sm-10">
+                                    <% if (amDispute.amDisputeImg != null){ %>
+                                    <% if (amDispute.amDisputeImg.fileid3 != '' && amDispute.amDisputeImg.fileid3 != null){ %>
+                                    <img src="/img/dispute/${amDispute.amDisputeImg.fileid3}.jpg" height="300" width="450" class="thumbnail" id="fileid3"/>
+                                    <% } %>
+                                    <#form:hidden path="amDisputeImg.fileid3" id ="img3" maxlength="200" class="form-control" readonly="true"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">图片4：</label>
+                                <div class="col-sm-10">
+                                    <% if (amDispute.amDisputeImg != null){ %>
+                                    <% if (amDispute.amDisputeImg.fileid4 != '' && amDispute.amDisputeImg.fileid4 != null){ %>
+                                    <img src="/img/dispute/${amDispute.amDisputeImg.fileid4}.jpg" height="300" width="450" class="thumbnail" id="fileid4"/>
+                                    <% } %>
+                                    <#form:hidden path="amDisputeImg.fileid4" id ="img4" maxlength="200" class="form-control" readonly="true"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">图片5：</label>
+                                <div class="col-sm-10">
+                                    <% if (amDispute.amDisputeImg != null){ %>
+                                    <% if (amDispute.amDisputeImg.fileid5 != '' && amDispute.amDisputeImg.fileid5 != null){ %>
+                                    <img src="/img/dispute/${amDispute.amDisputeImg.fileid5}.jpg" height="300" width="450" class="thumbnail" id="fileid5"/>
+                                    <% } %>
+                                    <#form:hidden path="amDisputeImg.fileid5" id ="img5" maxlength="200" class="form-control" readonly="true"/>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-4">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">图片6：</label>
+                                <div class="col-sm-10">
+                                    <% if (amDispute.amDisputeImg != null){ %>
+                                    <% if (amDispute.amDisputeImg.fileid6 != '' && amDispute.amDisputeImg.fileid6 != null){ %>
+                                    <img src="/img/dispute/${amDispute.amDisputeImg.fileid6}.jpg" height="300" width="450" class="thumbnail" id="fileid6"/>
+                                    <% } %>
+                                    <#form:hidden path="amDisputeImg.fileid6" id ="img6" maxlength="200" class="form-control" readonly="true"/>
+                                    <% } %>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row"></div>
+                    <div class="row"></div>
+                </div>
+                <div class="item" style="display: none">
+                    <div class="row">
+                        <div class="col-xs-12">
+                            <div class="form-group">
+                                <label class="control-label col-sm-2">图片：</label>
+                                <div class="col-sm-10">
+                                    <#form:fileupload id="uploadImage7" bizKey="${amDispute.id}"
+                                    bizType="amDispute_image7" maxUploadNum="10"
+                                    uploadType="image" class="" readonly="${amDispute.isEnd}"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-unit form-unitD">
+                <span class="on">${text('明细信息')}</span>
+                <span>${text('处理进度')}</span>
+            </div>
+            <div class="form-unitTable">
+                <div class="item" >
+                    <% if (hasPermi('dispute:amDispute:edit')){ %>
+                    <!--<a href="#" id="amDisputeDetailDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i-->
+                    <!--class="fa fa-plus"></i> ${text('增行')}</a>-->
+                    <% } %>
+                    <table id="amDisputeDetailDataGrid"></table>
+                </div>
+                <div class="item" style="display: none">
+                    <% if (hasPermi('dispute:amDispute:edit')){ %>
+                    <% if (amDispute.documentStatus == '受理'){ %>
+                    <a href="#" id="amDisputeDisposeDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i
+                            class="fa fa-plus"></i> ${text('增行')}</a>
+                    <% } %>
+                    <% } %>
+                    <table id="amDisputeDisposeDataGrid"></table>
+                </div>
+            </div>
+            <div class="box-footer">
+                <div class="row">
+                    <div class="col-sm-offset-8 col-sm-10">
+                        <% if (amDispute.documentStatus != '已完结'){ %>
+                        <% if (hasPermi('dispute:amDispute:edit')){ %>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="save('0',this)"><i class="fa fa-check"></i> ${text('保 存')}</button>
+                            <button type="submit" class="btn btn-sm btn-primary" style="display: none" id="btnSubmit"><i class="fa fa-check"></i>${text('保 存')} </button>
+                            </button>&nbsp;
+                            <% } %>
+                            <% } %>
+
+                            <button type="button" class="btn btn-sm btn-primary" id="btnSlip"><i class="fa fa-check"></i>
+                                ${text('转 单')}
+                            </button>&nbsp;
+                            <a href="#" onclick="save(0)"  data-title="${text('驳 回')}">  <button type="submit" class="btn btn-sm btn-primary btnList" id="btnReject"><i class="fa fa-check"></i>
+                                ${text('驳 回')}
+                            </button>&nbsp;</a>
+                            <a href="#" onclick="save(2)"  data-title="${text('受 理')}">  <button type="submit" class="btn btn-sm btn-primary btnList" id="btnAccept"><i class="fa fa-check"></i>
+                                ${text('受 理')}
+                            </button>&nbsp;</a>
+
+                            <a href="#" onclick="save(3)"  data-title="${text('完 结')}">  <button type="submit" class="btn btn-sm btn-primary btnList" id="btnEnd"><i class="fa fa-check"></i>
+                                ${text('完 结')}
+                            </button>&nbsp;</a>
+
+                            <button type="button" class="btn btn-sm btn-default" id="btnCancel"
+                                    onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}
+                            </button>
+                    </div>
+                </div>
+            </div>
+        </#form:form>
+    </div>
+</div>
+</div><div id="mask"><span style="text-align: center"></span></div>
+<style>
+    #mask{
+        display: none;
+        background-color: rgba(0,0,0,0.3);
+        color: #ffffff;
+        font-size: 30px;
+        font-weight: bold;
+        text-align: center;
+        position: absolute;
+        top:0;
+        left:0;
+        z-index: 9999;
+    }
+
+    .big{
+        width: 900px;
+        height: 600px;
+        margin: 0 auto;
+    }
+
+</style>
+<% var userType = 'employee'; %>
+<div class="hide"><#form:listselect id="userSelect" title="用户"
+    url="${ctx}/dispute/amDispute/userSelect?userType=${userType}" allowClear="false"
+    checkbox="false" itemCode="userCode" itemName="userName"/></div>
+<% } %>
+<script>
+    // 检查订单是否已结束操作
+    function checkConcurrency(){
+        clearInterval(this.times)
+        this.times = setInterval(function(){
+            $.ajax({
+                url: '${ctx}/redisUnits/updataTime',
+                data: {
+                    'code': GetRequest().documentCode
+                },
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json'
+            })
+        },1000)
+
+        // 截取url
+        function GetRequest() {
+            var url = location.search; //获取url中"?"符后的字串
+
+            var theRequest = new Object();
+            if (url.indexOf("?") != -1) {
+                var str = url.substr(1);
+                strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                for (var i = 0; i < strs.length; i++) {
+                    if (strs[i].split("=")[0] === 'beginTime') {
+                        theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                    } else {
+                        theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                    }
+
+                }
+            }
+            return theRequest;
+        }
+    }
+    //初始化物流纠纷处理进度表DataGrid对象
+    $("#amDisputeDisposeDataGrid").dataGrid({
+
+        data: ${toJson(amDispute.amDisputeDisposeList)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'状态', name:'status', editable:true, hidden:true},
+            {header:'主键', name:'detailCode', editable:true, hidden:true},
+            {header:'单据编码', name:'documentCode.documentCode', editable:true, hidden:true},
+            {header:'处理人', name:'disposeBy', width:420, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+            {header:'处理时间', name:'disposeDate', width:420, editable:true, edittype:'text', editoptions:{'class':'form-control'}},
+            {header:'处理跟进内容', name:'processContent', width:420, editable:true, edittype:'text', editoptions:{'maxlength':'2000', 'class':'form-control', 'rows':'1'}},
+            {header:'处理结果', name:'processResult', width:420, editable:true, edittype:'text', editoptions:{'maxlength':'2000', 'class':'form-control'}}
+        ],
+
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#amDisputeDisposeDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amDisputeDisposeList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,detailCode,detailCode,documentCode.documentCode,disposeBy,disposeDate,processContent,processResult,', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+    //初始化物流纠纷明细表DataGrid对象
+    $("#amDisputeDetailDataGrid").dataGrid({
+
+        data: ${toJson(amDispute.amDisputeDetailList)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'状态', name:'status', editable:true, hidden:true},
+            {header:'主键', name:'detailCode', editable:true, hidden:true},
+            {header:'单据编码', name:'documentCode.documentCode', editable:false, hidden:true},
+            {header:'物料编号', name:'consumablesCode', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+            {header:'物料名称', name:'consumablesName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+            {header:'规格型号', name:'specifications', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+            {header:'数量', name:'amount', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'20', 'class':'form-control digits'}},
+            {header:'纠纷原因', name:'disputeReason', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'2000', 'class':'form-control'}},
+            {header:'签收状态', name:'signStatus', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'200', 'class':'form-control'}}
+        ],
+
+        // 编辑表格参数
+        editGrid: true,				// 是否是编辑表格
+        editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#amDisputeDetailDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amDisputeDetailList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,detailCode,documentCode.documentCode,consumablesCode,consumablesName,specifications,amount,disputeReason,signStatus,', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            checkConcurrency()
+        }
+    });
+</script>
+<script>
+    $("#inputForm").validate({
+        submitHandler: function(form){
+            js.ajaxSubmitForm($(form), function(data){
+                js.showMessage(data.message);
+                if(data.result == Global.TRUE){
+                    js.closeCurrentTabPage(function(contentWindow){
+                        contentWindow.page();
+                    });
+                }
+            }, "json");
+        }
+    });
+    $(function() {
+        slidtab(); // tab切换
+        slidtable();
+        var documentStatus = $('#documentStatus').val();
+        if (documentStatus != '受理') {
+            sq.setInputReadonly($('#amDisputeDisposeDataGrid input[name=processContent]'));
+            sq.setInputReadonly($('#amDisputeDisposeDataGrid input[name=processResult]'));
+        }
+        sq.setInputReadonly($('#amDisputeDisposeDataGrid input[name=disposeBy]'));
+        sq.setInputReadonly($('#amDisputeDisposeDataGrid input[name=disposeDate]'));
+        $('#amDisputeDisposeDataGrid').on('DOMNodeInserted', function() {
+            sq.setInputReadonly($('#amDisputeDisposeDataGrid input[name=disposeBy]'));
+        });
+        $('#amDisputeDisposeDataGrid').on('DOMNodeInserted', function() {
+            sq.setInputReadonly($('#amDisputeDisposeDataGrid input[name=disposeDate]'));
+        });
+    });
+    // tab切换
+    var slidtab = function(){
+        $('.form-unitHd span').click(function(e){
+            var _t = $(e.target)
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTab .item').hide()
+            $('.form-unitTab .item').eq(_t.index()).fadeIn()
+
+            // 手动添加滚动条触发reszie事件解决 点击选择图片定位
+            if(_t.index() !== 3) return
+            $('.html_content',window.parent.document).css('overflow','scroll')
+            setTimeout(function(){
+                $('.html_content',window.parent.document).css('overflow','visible')
+            },10)
+        });
+    };
+
+    // tab切换
+    var slidtable = function(){
+        $('.form-unitD span').click(function(e){
+            var _t = $(e.target)
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTable .item').hide()
+            $('.form-unitTable .item').eq(_t.index()).fadeIn()
+
+        });
+    };
+
+    $('#btnSlip').click(function(){
+        $('#userSelectName').click();
+    });
+    function listselectCallback(id, action, index, layero){
+        if (id == 'userSelect' && action == 'ok'){
+            if ($('#userSelectCode').val() != ''){
+                var documentCode = $('#documentCode').val();
+                $.ajax({
+                    type:'POST',
+                    url: '${ctx}/dispute/amDispute/save?documentCode='+documentCode+'&flag=1&userName='+$('#userSelectName').val(),
+                    success: function (result) {
+                        result=result.split(',')
+                        var message=result[1].split(':')
+                        message=message[1]
+                        message=message.replace('}','')
+                        result=result[0].split(':')
+                        if (result[1].toString()=='"true"'){
+                            js.closeCurrentTabPage(function(contentWindow) {
+                                contentWindow.page();
+                            })
+                        }else {
+                            alert(message);
+                            location.reload();
+                        }
+                    }
+                });
+            }else{
+                js.showMessage('请选择用户');
+            }
+        }
+    }
+    var sq = {};
+    sq.setInputReadonly = function(node) {
+        $(node).each(function(index, item){
+            $(item).attr('readonly', 'true');
+        });
+    }
+
+    function save(flag, t) {
+        t = t || ''
+        var inputForm = document.getElementById("inputForm");
+        if (flag == '2') {
+            inputForm.action = '${ctx}/dispute/amDispute/save?flag=2';
+        } else if (flag == '3') {
+            inputForm.action = '${ctx}/dispute/amDispute/save?flag=3';
+        } else if (flag == '0') {
+            inputForm.action = '${ctx}/dispute/amDispute/save?flag=0';
+        } else {
+            $(t).attr('disabled','disabled')
+            // 纯保存
+            $.fn.webUpLoaderFun(function(code){
+                if(code === 200){
+                    inputForm.action = '${ctx}/dispute/amDispute/save';
+                    $('#btnSubmit').trigger('click')
+                }else{
+                    $(t).attr('disabled','disabled')
+                }
+            })
+        }
+    }
+    $('#amDisputeDisposeDataGridAddRowBtn').click(function () {
+        var d = new Date(),
+            yy = d.getFullYear(),
+            mm = d.getMonth()+1,
+            dd = d.getDate(),
+            hh = d.getHours(),
+            min = d.getMinutes(),
+            second = d.getSeconds();
+
+        if(second < 10){ second = '0'+ d.getSeconds() }
+        if(min < 10){ min = '0'+ d.getMinutes() }
+        if(hh < 10){ hh = '0'+ d.getHours() }
+        if(mm < 10){ mm = '0'+ (d.getMonth()+1) }
+        if(dd < 10){ dd = '0'+ d.getDate() }
+        var ret = yy+'-'+mm+'-'+dd+' '+hh+':'+min+':'+second;    // 年月日时分
+        var userName = $('#userName').val();         // 当前用户
+
+        // 新增行处理时间的id取得
+        var temp = [];
+        var nodes = $('#amDisputeDisposeDataGrid').find('input[name=disposeDate]');
+        $(nodes).each(function(index, item){
+            var id = $(item).attr('id');
+            temp.push(id);
+        });
+        temp = temp.join(',');
+        temp = temp.split(',');
+        var disposeDate= temp[temp.length-1];   // 最后一行的id
+
+        // 新增行处理人的id取得
+        var tmp = [];
+        var nodes = $('#amDisputeDisposeDataGrid').find('input[name=disposeBy]');
+        $(nodes).each(function(index, item){
+            var id = $(item).attr('id');
+            tmp.push(id);
+        });
+        tmp = tmp.join(',');
+        tmp = tmp.split(',');
+        var disposeBy = tmp[tmp.length-1];
+        $('#'+disposeDate).val(ret);
+        $('#'+disposeBy).val(userName);
+
+    });
+//     $(document).on("click",".thumbnail",function() {
+    /**
+     * 图片点击放大事件
+     */
+    $("#fileid1").click(function () {
+        var fileid1 = $('#img1').val();
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><img src='/img/dispute/"+fileid1+".jpg' class='big'></div>");
+        openImg();
+    })
+    $("#fileid2").click(function () {
+        var fileid2 = $('#img2').val();
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><img src='/img/dispute/"+fileid2+".jpg' class='big'></div>");
+        openImg();
+    })
+    $("#fileid3").click(function () {
+        var fileid3 = $('#img3').val();
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><img src='/img/dispute/"+fileid3+".jpg' class='big'></div>");
+        openImg();
+    })
+
+    $("#fileid4").click(function () {
+        var fileid4 = $('#img4').val();
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><img src='/img/dispute/"+fileid4+".jpg' class='big'></div>");
+        openImg();
+    })
+    $("#fileid5").click(function () {
+        var fileid5 = $('#img5').val();
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><img src='/img/dispute/"+fileid5+".jpg' class='big'></div>");
+        openImg();
+    })
+    $("#fileid6").click(function () {
+        var fileid6 = $('#img6').val();
+        //点击弹出全屏遮罩层
+        showMask("#mask", "");
+        $("#mask").append("<div><img src='/img/dispute/"+fileid6+".jpg' class='big'></div>");
+        openImg();
+    })
+    function openImg() {
+        $(".big").bind("click",function () {
+            return false;
+        });
+        $("#mask").bind("click", function () {
+            hideMask("#mask");
+            $(".big").remove();
+        })
+    }
+    function showMask(ele,words){
+        $(ele).show().text(words).css({
+            "width":$(window).width()+"px",
+            "height":$(window).height()+"px",
+            "lineHeight":$(window).height()+"px"
+        })
+    }
+    function hideMask(ele){
+        $(ele).hide();
+    }
+</script>

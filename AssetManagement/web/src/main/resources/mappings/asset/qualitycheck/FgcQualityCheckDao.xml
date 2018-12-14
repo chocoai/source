@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.qualitycheck.dao.FgcQualityCheckDao">
+	
+	<!-- 查询数据 -->
+	<select id="findList" resultType="FgcQualityCheck">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<!-- 梵工厂质检单搜索框[质检单号] 包含关键字 或者 [供应商]包含关键字 或者 [采购员]包含关键字-->
+			<if test="inputValue != null and inputValue !=''">
+				AND (a.billno LIKE '%${inputValue}%' OR
+				a.supplier_name LIKE '%${inputValue}%' OR
+				a.purchaser_name LIKE '%${inputValue}%')
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<select id="getMaxQualityTime" resultType="String">
+		SELECT DATE_FORMAT(MAX(quality_time),"%Y-%m-%d %H:%i:%s") quality_time
+		FROM js_fgc_quality_check
+	</select>
+</mapper>

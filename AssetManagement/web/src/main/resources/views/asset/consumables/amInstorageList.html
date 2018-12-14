@@ -1,0 +1,318 @@
+<% layout('/layouts/default.html', {title: '入库表管理', libs: ['dataGrid']}){ %>
+
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('入库表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('consumables:amInstorage:edit')){ %>
+					<a href="${ctx}/consumables/amInstorage/form" class="btn btn-default btnTool" title="${text('新增入库表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+					<!-- <a href="${ctx}/consumables/amInstorage/delete" id="asDelBtn" class="btn btn-default btnTool" title="${text('删除入库表')}"><i class="fa fa-plus"></i> ${text('删除')}</a> -->
+					<a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除入库表')}"> ${text('删除')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amInstorage}" action="${ctx}/consumables/amInstorage/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">入库单号：</label>
+					<div class="control-inline">
+						<#form:input path="instorageCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据类型：</label>
+					<div class="control-inline width-120">
+						<#form:select path="documentType" dictType="am_enter_lib" blankOption="true" class="form-control "/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">仓库编码：</label>
+					<div class="control-inline width-120">
+						<#form:select path="warehouseCode"  id='warehouseCode' items="${warehouseList}"
+						itemLabel="warehouseName" itemValue="warehouseCode"  maxlength="64" multiple="false" blankOption="true" class="form-control "/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="documentStatus" dictType="am_document_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">经办人：</label>
+					<div class="control-inline">
+						<#form:input path="manager" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">供应商：</label>
+					<div class="control-inline">
+						<#form:input path="supplier" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">入库日期：</label>
+					<div class="control-inline">
+						<#form:input path="incomingDate" readonly="true" id="incomingDate"  maxlength="20" class="form-control Wdate required width-120"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="am_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'入库单号', name:'instorageCode', index:'a.instorage_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/consumables/amInstorage/form?instorageCode='+row.instorageCode+'&warehouseCode='+row.amWarehouse.warehouseCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑入库表')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+		}},
+        {header:'单据类型', name:'documentType', index:'a.document_type', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_enter_lib')}, val, '未知', true);
+            }},
+        {header:'单据状态', name:'documentStatus', index:'a.document_status', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_document_status')}, val, '未知', true);
+            }},
+		{header:'入库仓库', name:'amWarehouse.warehouseName', index:'c.warehouse_code', width:150,align:"center" },
+        {header:'入库日期', name:'incomingDate', dataFormat:"yyyy-MM-dd", index:'a.incoming_date', width:150, align:"center"},
+		{header:'经办人', name:'manager', index:'a.manager', width:150, align:"left"},
+		{header:'供应商', name:'supplier', index:'a.supplier', width:150, align:"left"},
+		{header:'创建者', name:'createBy', index:'a.create_by', width:150, align:"left"},
+		{header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'更新者', name:'updateBy', index:'a.update_by', width:150, align:"left"},
+		{header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+
+        {header:'耗材编号', name:'amInstorageDetails.consumablesCode',index:'b.consumables_code', width:150,  align:"left" },
+        {header:'耗材名称', name:'amInstorageDetails.consumablesName',index:'b.consumables_name', width:150,  align:"left" },
+        {header:'规格型号', name:'amInstorageDetails.specifications',index:'b.specifications', width:150, align:"left" },
+        {header:'分类编码', name:'amInstorageDetails.categoryCode',index:'b.category_code', width:150, align:"left"},
+        {header:'计量单位', name:'amInstorageDetails.measureUnit',index:'b.measure_unit', width:150,  align:"left", formatter: function(val, obj, row, act) {
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_measure_unit')}, val, '未知', true);
+            }},
+        {header:'入库数量', name:'amInstorageDetails.instorageCount',index:'b.instorage_count', width:150, align:"left"},
+        {header:'入库单价', name:'amInstorageDetails.instoragePrice', index:'b.instorage_price',width:150,  align:"left"},
+        {header:'入库金额', name:'amInstorageDetails.instorageAmount', index:'b.instorage_amount', width:150,  align:"left"},
+        {header:'备注', name:'amInstorageDetails.remarks', index:'b.remarks', width:150, align:"left"},
+	],
+	shrinkToFit:false,
+	autoScroll:true,
+	autowidth:true,
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        // function mergeCell(instorageCode,documentType) {
+			// var cellNames="'"+instorageCode+','+documentType+"'";
+        //     var trs = $("#dataGrid>tbody>tr:gt(0)");
+        //     $.each(cellNames.split(','), function (idx, name) {
+        //         var bg = trs.eq(0).children("[aria-describedby='"+dataGridId+"_" + name + "']"),
+        //             index = bg.index(),
+        //             rowsp = 1;
+        //         trs.slice(1).each(function (ind2, tr) {
+        //             var me = $(tr).children("td").eq(index);
+        //             if (bg.text() === me.text()) {
+        //                 rowsp++;
+        //                 me.hide();
+        //             } else {
+        //                 bg.attr("rowspan", rowsp);
+        //                 bg = me;
+        //                 rowsp = 1;
+        //             }
+        //             bg.attr("rowspan", rowsp);
+        //         });
+        //     });
+        // }
+		// 合并订单
+		rowCheckBox()
+
+		// 并发
+		Concurrency()
+
+
+	}
+});
+
+
+// 并发检测
+function Concurrency(){
+	$("#dataGrid td[aria-describedby='dataGrid_instorageCode'] .click_tab").on('click', function(e){
+		var _t = $(this)
+		$.ajax({
+			// url: '${ctx}/redisUnits/getFlag',
+        url: '${ctx}/consumables/amInstorage',
+			data: {
+				'code':_t.html()
+			},
+			type: 'GET',
+			contentType: 'text/plain;charset=UTF-8',
+			dataType: 'json',
+			success:function(res){
+            console.log(res)
+				if(res.flag === 'true'){
+					_t.siblings('a.btnList').trigger('click')
+				}else{
+					layer.msg(res.msg)
+				}
+			}
+		})
+	});
+}
+
+
+// 合并表格
+var rowCheckBox = function(){
+	var a = [], // 暂存
+		num = 1,  // 序号
+		dataId=''
+
+	$('#dataGrid tr').each(function(index,item){
+		var id = $(item).attr('id'),
+			par = $('#dataGrid tr#'+ id);
+
+		if(!id) return
+
+		// css优化
+		$(item).on({
+			'mouseenter':function(){par.addClass('ui-state-hover')},
+			'mouseleave':function(){par.removeClass('ui-state-hover')},
+			'click':function(){par.toggleClass('ui-state-highlight')}
+		})
+
+		if(a.indexOf(id) === -1){  // 不存在
+			a.push(id)
+			$(item).addClass('parFaather').attr('data-RowNum',1).find('td').eq(0).html(num++)
+		}else{  // 已存在进行合并操作
+			var b = [],  // 暂存
+				_tPar = $('#dataGrid .parFaather#'+ a[a.indexOf(id)]),
+				_t = $(item)
+
+
+			_tPar.attr('data-RowNum',_tPar.data().rownum++)  // 更新需要合并的列数
+			$(item).insertAfter(_tPar)  // 重新整理排序
+
+			// 隐藏多余的
+			_t.find('td.jqgrid-rownum').hide() // 序号
+			_t.find('td[aria-describedby="dataGrid_cb"]').hide()  // 复选
+			_t.find('td[aria-describedby="dataGrid_instorageCode"]').hide()  // 单号
+			_t.find('td[aria-describedby="dataGrid_documentType"]').hide()  // 单据类型
+			_t.find('td[aria-describedby="dataGrid_documentStatus"]').hide()  // 单据状态
+			_t.find('td[aria-describedby="dataGrid_amWarehouse.warehouseName"]').hide()  // 入库仓库
+			_t.find('td[aria-describedby="dataGrid_incomingDate"]').hide()  // 入库日期
+			_t.find('td[aria-describedby="dataGrid_manager"]').hide()  // 经办人
+			_t.find('td[aria-describedby="dataGrid_supplier"]').hide()  // 供应商
+			_t.find('td[aria-describedby="dataGrid_createBy"]').hide()  // 创建者
+			_t.find('td[aria-describedby="dataGrid_createDate"]').hide()  // 创建时间
+			_t.find('td[aria-describedby="dataGrid_updateBy"]').hide()  // 更新者
+			_t.find('td[aria-describedby="dataGrid_updateDate"]').hide()  // 更新时间
+			_t.find('td[aria-describedby="dataGrid_actions"]').hide()  // 操作
+
+			// 合并
+			_tPar.find('td.jqgrid-rownum').attr('rowspan',_tPar.data().rownum)  // 序号
+			_tPar.find('td[aria-describedby="dataGrid_cb"]').attr('rowspan',_tPar.data().rownum)  // 复选
+			_tPar.find('td[aria-describedby="dataGrid_instorageCode"]').attr('rowspan',_tPar.data().rownum)  // 单号
+			_tPar.find('td[aria-describedby="dataGrid_documentType"]').attr('rowspan',_tPar.data().rownum)  // 单据类型
+			_tPar.find('td[aria-describedby="dataGrid_documentStatus"]').attr('rowspan',_tPar.data().rownum)  // 单据状态
+
+			_tPar.find('td[aria-describedby="dataGrid_amWarehouse.warehouseName"]').attr('rowspan',_tPar.data().rownum)  // 入库仓库
+			_tPar.find('td[aria-describedby="dataGrid_incomingDate"]').attr('rowspan',_tPar.data().rownum)  // 入库日期
+			_tPar.find('td[aria-describedby="dataGrid_manager"]').attr('rowspan',_tPar.data().rownum)  // 经办人
+			_tPar.find('td[aria-describedby="dataGrid_supplier"]').attr('rowspan',_tPar.data().rownum)  // 供应商
+
+			_tPar.find('td[aria-describedby="dataGrid_createBy"]').attr('rowspan',_tPar.data().rownum)  // 创建者
+			_tPar.find('td[aria-describedby="dataGrid_createDate"]').attr('rowspan',_tPar.data().rownum)  // 创建时间
+			_tPar.find('td[aria-describedby="dataGrid_updateBy"]').attr('rowspan',_tPar.data().rownum)  // 更新者
+			_tPar.find('td[aria-describedby="dataGrid_updateDate"]').attr('rowspan',_tPar.data().rownum)  // 更新时间
+			_tPar.find('td[aria-describedby="dataGrid_actions"]').attr('rowspan',_tPar.data().rownum)  // 操作
+		}
+	})
+}
+
+
+
+
+
+$('#asDelBtn').click( function(e){
+	// 获取所有被选中订单
+	var orderArr = $('#dataGrid :checkbox:checked'),
+		temp = []   // 当前被选中的订单
+	if(orderArr.length>0){
+		for(var i = 0; i<orderArr.length; i++){
+			var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+			temp.push(a)
+		}
+
+		var str = temp.join(',')
+		$.ajax({
+			// url: '${ctx}/redisUnits/getFlag',
+			url: '${ctx}/consumables/amInstorage',
+			data: {
+				'code': str.toString(),
+				'isDel': 'true'
+			},
+			type: 'GET',
+			contentType: 'application/json',
+			dataType: 'json',
+			success:function(res){
+				if(res.flag === 'true'){
+					if(confirm('确认删除吗?')){
+						$.ajax({
+							async:false,
+							url:'${ctx}/consumables/amInstorage/deleteDb?ids='+str,
+							success:function (result) {
+                                var obj = JSON.parse(result);
+                                // alert(obj.message);
+                                if (obj.result == 'true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                } else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+						})
+					}
+				}else{
+					layer.msg(res.msg)
+				}
+			}
+		})
+	}else{
+		layer.msg('请至少选择一张订单进行删除')
+	}
+
+
+
+
+    
+});
+
+function arrHasValue(v, arr) {
+    var output = false;
+    for (var i in arr) {
+        if (v == arr[i]) {
+            output = true;
+            return output;
+        }
+    }
+    output = false;
+    return output;
+}
+</script>

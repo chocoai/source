@@ -1,0 +1,511 @@
+<% layout('/layouts/default.html', {title: '订单管理管理', libs: ['validate','dataGrid']}){ %>
+<style>
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+	.position {
+		position: relative;
+	}
+	.dot{
+		position: absolute;
+		right: 25px;
+		bottom: 2px;
+		color: #888;
+		font-size: 12px;
+	}
+</style>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+</style>
+<style>
+	#animation{
+		position: fixed;
+		top: 40%;
+		left: 40%;
+		width: 140px;
+		height: 100px;
+		padding-top: 8px;
+		background-color: #fff;
+		box-shadow: 0 0 4px #ccc;
+		display : none;
+		z-index: 200;
+	}
+	#animation .img{
+		width:100%;
+		display: flex;
+		justify-content: center;
+		align-content: center;
+		margin-top: 15px;
+	}
+	#animation img{
+		margin-bottom:2px;
+	}
+	#animation p{
+		color: #333333;
+		font-size:12px;
+		display: flex;
+		justify-content: center;
+		align-content: center;
+	}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('查看绩效卡')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${achCard}" action="${ctx}/ach/card/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-1 col-sm-10">
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<div class="form-unit form-unitHd" id="div1">
+				<span class="on">${text('基本信息')}</span>
+			</div>
+			<div id="animation">
+				<div class="img"><img src="https://after-sales-photo.oss-cn-shanghai.aliyuncs.com/stores/after-ales-photo/data/b4fa5bb31a9f487c9e42b1315d5992a5"/></div>
+				<p>正在查询，请耐心等待</p>
+			</div>
+			<div class="form-unitTab">
+				<div class="item">
+					<#form:hidden path="cardCode"/>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('考核月份')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="examineMonth" maxlength="8" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('被考核人')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="examinedStaffCode" maxlength="64" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('所属部门编码')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="departCode" maxlength="64" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('岗位编码')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="postCode" maxlength="64" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('所属部门名称')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="departName" maxlength="64" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('是否有下属')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="hadFollower" maxlength="1" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('一级部门编码')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="firstDepartCode" maxlength="64" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('一级部门名称')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="firstDepartName" maxlength="64" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('考核权重')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="examineWeight" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('考核得分')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="examineScore" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('上上级调整分值')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="secondSuperiorScore" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('考核人')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="assessorCode" maxlength="64" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('最终得分')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="finalScore" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('优点')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="strongPoint" maxlength="2000" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('弱点')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="weakPoint" maxlength="64" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('绩效反馈形式')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="feedbackType" maxlength="1" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('上上级调整备注')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="secondSuperiorRemark" maxlength="2000" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('绩效反馈备注')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="feedbackRemark" maxlength="2000" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('HR调整分数')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="hrScore" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('绩效沟通分钟数')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="feedbackMinutes" maxlength="3" class="form-control digits"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('HR调整分数备注')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="hrScoreRemark" maxlength="2000" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('自评优点')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="selfDoingWell" maxlength="2000" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('自评缺点')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="selfCanBeBetter" maxlength="2000" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('审核人')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="auditBy" maxlength="64" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('审核时间')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="auditDate" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('数据状态')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="dataStatus" maxlength="4" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-unit form-unitD">
+				<span class="on">${text('评分总览')}</span>
+				<span>${text('指标列表')}</span>
+				<span>${text('任务列表')}</span>
+				<span>${text('综合列表')}</span>
+			</div>
+			<div class="form-unitTable">
+				<div class="item">
+					<div class="ml10 mr10">
+						<table id="amOrderDetailDataGrid"></table>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<div class="ml10 mr10">
+						<table id="amOrderDiscountDataGrid"></table>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<div class="ml10 mr10">
+						<table id="achCardMissionGrid"></table>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+					<div class="ml10 mr10">
+						<table id="achCardSyntheticalGrid"></table>
+					</div>
+				</div>
+			</div>
+			<div class="box-footer">
+
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+    //初始化js_am_order_detailDataGrid对象
+    $("#amOrderDetailDataGrid").dataGrid({
+
+        data: ${toJson(achCardScore)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'指标名称', name:'examineName', width:150 },
+            {header:'考核类型', name:'examineType', width:150 },
+            {header:'考核得分', name:'examineScore', width:150 },
+            {header:'标准分值', name:'standardScore', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+            {header:'上期得分', name:'lastExamineScore', width:150, editable:true, hidden:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+            {header:'被考核人', name:'examinedStaffCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+            {header:'自评得分', name:'evaluationScore', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'500', 'class':'form-control'}}
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+    //初始化js_am_order_discountDataGrid对象
+    $("#amOrderDiscountDataGrid").dataGrid({
+
+        data: ${toJson(achUserTarget)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'指标编号', name:'targetCode', width:100},
+            {header:'指标名称', name:'targetName', width:100},
+            {header:'指标级别', name:'targetLevel', width:100},
+            {header:'指标类型', name:'targetType', width:100 },
+            {header:'标准分数', name:'standardScore', width:100 },
+            {header:'统计公式', name:'formula', width:100 },
+            {header:'系数范围', name:'coefficientRange', width:100 },
+            {header:'底线值', name:'bottom', width:100 },
+            {header:'基础下行', name:'basicsDown', width:100 },
+            {header:'基础目标', name:'basicAims', width:100 },
+            {header:'基础上行', name:'basicsUpstream', width:100 },
+            {header:'挑战目标', name:'challengeGoal', width:100 },
+            {header:'得分系数', name:'scoreCoefficient', width:100 },
+            {header:'相关性', name:'relevance', width:100 },
+            {header:'本期实际分数', name:'actualScore', width:100 },
+            {header:'上一期得分', name:'lastScore', width:100 },
+            {header:'上两期得分', name:'lastSecondScore', width:100 },
+            {header:'上三期得分', name:'lastThirdScore', width:100 },
+            {header:'数据状态', name:'dataStatus', width:100 }
+        ],
+
+        // 编辑表格参数
+        editGrid: false,				// 是否是编辑表格
+        editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#amOrderDiscountDataGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amOrderDiscountList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,detailCode,documentCode.documentCode,discount,discountPrice,', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+    //初始化achCardMissionGrid对象
+    $("#achCardMissionGrid").dataGrid({
+
+        data: ${toJson(achCardMission)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'任务名称', name:'missionName', width:150 },
+            {header:'任务类型', name:'missionType', width:150 },
+            {header:'标准得分', name:'standardScore', width:150 },
+            {header:'任务情况', name:'missionSituation', width:150 },
+            {header:'自评级别/加扣分', name:'selfEvaluation', width:150 },
+            {header:'自评得分', name:'selfEvaluationScore', width:150 },
+            {header:'考核级别/加扣分', name:'examineEvaluation', width:150 },
+            {header:'考核得分', name:'examineEvaluationScore', width:150 },
+            {header:'主考备注', name:'examineEvaluationRemark', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+    //初始化achCardSyntheticalGrid对象
+    $("#achCardSyntheticalGrid").dataGrid({
+
+        data: ${toJson(achCardSynthetical)},
+        datatype: "local", // 设置本地数据
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'考核类型', name:'examineType', width:150 },
+            {header:'绩效指标', name:'achQuota', width:150 },
+            {header:'考核标准', name:'examineQuota', width:150 },
+            {header:'标准分', name:'standardScore', width:150 },
+            {header:'最高加分', name:'highScore', width:150 },
+            {header:'自评得分', name:'selfEvaluationScore', width:150 },
+            {header:'考核得分', name:'examineEvaluationScore', width:150 },
+            {header:'主考备注', name:'examineEvaluationRemark', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+        }
+    });
+
+
+    $(function() {
+        slidtable();
+    })
+    var slidtable = function(){
+        $('.form-unitD span').click(function(e){
+            var _t = $(e.target)
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTable .item').hide()
+            $('.form-unitTable .item').eq(_t.index()).fadeIn()
+            $('.html_content',window.parent.document).css('overflow','scroll')
+            setTimeout(function(){
+                $('.html_content',window.parent.document).css('overflow','visible')
+            },10)
+        });
+    };
+</script>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.fz.appreciation.dao.FzAppreciationRecordDao">
+	
+	 <!--查询数据-->
+	<select id="findList" resultType="FzAppreciationRecord">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="praiserName!= null and praiserName != ''">
+				and b.name like "%"#{praiserName}"%"
+			</if>
+			<if test="presenterName!= null and presenterName != ''">
+				and c.name like "%"#{presenterName}"%"
+			</if>
+			<if test="userId!= null and userId != '' and praiserInfo!= null and praiserInfo != ''">
+				and  a.praiser_id=#{userId}
+            </if>
+            <if test="userId!= null and userId != '' and presenterInfo!= null and presenterInfo != ''">
+                    and a.presenter_id=#{userId}
+            </if>
+            <if test="userId!= null and userId != ''">
+                and (a.praiser_id=#{userId} or a.presenter_id=#{userId})
+            </if>
+			<if test="newDate!= null">
+				and a.create_date &lt;=#{newDate}
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	
+</mapper>

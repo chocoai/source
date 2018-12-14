@@ -1,0 +1,137 @@
+<% layout('/layouts/default.html', {title: '一级部门统计', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('一级部门统计')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('report:fzFollowReport:edit')){ %>
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出</a></li>
+					</ul>
+				</div>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzDepartmentRecord}" action="${ctx}/report/fzDepartmentRecord/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="control-inline" style="margin-bottom: 10px;">
+				<#form:input path="month"  readonly="true" maxlength="20" class="form-control Wdate-date"
+				dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM',isShowClear:true});"/>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+				<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				<button type="" class="btn btn-primary  btn-sm" onclick="chooseItem()">${text('选择统计项目')}</button>
+			</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+	</div>
+</div>
+
+<div class="hide"><#form:listselect id="fztypeSelect" title="选择统计项目"
+	url="${ctx}/report/fzStatisticalItem/list" allowClear="false"
+	checkbox="true" itemCode="id" itemName="item"/></div>
+<% } %>
+<script type="text/javascript">
+    var fztypeSelectName = '${fztypeSelectName}';
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('部门')}', name:'department', index:'a.department', width:200, align:"left", frozen:true},
+		{header:'${text('该部门赞赏最多的')}', name:'maxDepartment', index:'a.max_department', width:200, align:"left"},
+		{header:'${text('最多人均赞赏次数')}', name:'avgMax', index:'a.avg_max', width:200, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, '0.00'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('该部门赞赏最少的')}', name:'minDepartment', index:'a.min_department', width:200, align:"left"},
+		{header:'${text('最少人均赞赏次数')}', name:'avgMin', index:'a.avg_min', width:200, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, '0.00'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('人均部门内赞赏/获赞次数')}', name:'avgIn', index:'a.avg_in', width:300, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, '0.00'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('人均跨部门赞赏次数')}', name:'avgOutPresenter', index:'a.avg_out_presenter', width:200, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, '0.00'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('人均跨部门获赞次数')}', name:'avgOutPraiser', index:'a.avg_out_praiser', width:250, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, '0.00'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('人均总赞赏次数')}', name:'sumPresenter', index:'a.sum_presenter', width:200, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, '0.00'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('人均总获赞次数')}', name:'sumPraiser', index:'a.sum_praiser', width:200, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, '0.00'); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('最爱用的赞赏类型')}', name:'maxType', index:'a.max_type', width:200, align:"left"},
+	],
+	// 加载成功后执行事件
+	/*ajaxSuccess: function(data){
+
+	}*/
+	gridComplete:function(){
+        if (fztypeSelectName.indexOf("该部门赞赏最多的") == -1) {
+            $("#dataGrid").hideCol("maxDepartment");
+            $("#dataGrid").hideCol("avgMax");
+        }
+        if (fztypeSelectName.indexOf("该部门赞赏最少的") == -1) {
+            $("#dataGrid").hideCol("minDepartment");
+            $("#dataGrid").hideCol("avgMin");
+        }
+        if (fztypeSelectName.indexOf("人均部门内赞赏/获赞次数") == -1) {
+            $("#dataGrid").hideCol("avgIn");
+        }
+        if (fztypeSelectName.indexOf("人均跨部门赞赏次数") == -1) {
+            $("#dataGrid").hideCol("avgOutPresenter");
+        }
+        if (fztypeSelectName.indexOf("人均跨部门获赞次数") == -1) {
+            $("#dataGrid").hideCol("avgOutPraiser");
+        }
+        if (fztypeSelectName.indexOf("人均总赞赏次数") == -1) {
+            $("#dataGrid").hideCol("sumPresenter");
+        }
+        if (fztypeSelectName.indexOf("人均总获赞次数") == -1) {
+            $("#dataGrid").hideCol("sumPraiser");
+        }
+        if (fztypeSelectName.indexOf("最爱用的赞赏类型") == -1) {
+            $("#dataGrid").hideCol("maxType");
+        }
+	}
+
+});
+
+
+
+     function chooseItem(){
+        $('#fztypeSelectName').click();
+    }
+	$('#btnExport').click(function(){
+		js.ajaxSubmitForm($('#searchForm'), {
+			url:'${ctx}/report/fzDepartmentRecord/exportData',
+			downloadFile:true
+		});
+	});
+
+	function listselectCallback(id, action, index, layero,selectData){
+
+			if ($('#fztypeSelectCode').val() != ''){
+				var fztypeSelectName = $('#fztypeSelectName').val();
+                window.location.href = "report/fzDepartmentRecord/list?fztypeSelectName="+ encodeURI(fztypeSelectName);
+
+			}else{
+				js.showMessage('请选择赞赏类型');
+			}
+
+	}
+
+</script>

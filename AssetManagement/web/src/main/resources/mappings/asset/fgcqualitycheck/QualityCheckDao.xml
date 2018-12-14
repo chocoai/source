@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.fgcqualitycheck.dao.QualityCheckDao">
+	<resultMap id="syncQcBillToK3" type="com.jeesite.modules.asset.fgcqualitycheck.entity.SyncQcBillToK3">
+		<result column="fid" property="fid" />
+		<result	column="billno" property="billno"/>
+		<result column="fentityId" property="fentityId" />
+		<result column="structural_test" property="structuralTest" />
+		<result column="appearance_test" property="appearanceTest" />
+		<result column="pack_test" property="packTest" />
+		<result column="sample_qty" property="sampleQty" />
+		<result column="qc_qualified_qty" property="qcQualifiedQty" />
+		<result column="qc_disqualified_qty" property="qcDisqualifiedQty" />
+		<result column="sample_disqualified_qty" property="sampleDisqualifiedQty" />
+		<result column="sample_qualified_qty" property="sampleQualifiedQty" />
+		<result column="bad_ratio" property="badRatio" />
+		<result column="reexamination_num" property="reexaminationNum" />
+		<result column="avg_bad_ratio" property="avgBadRatio" />
+		<result column="rectify_type" property="rectifyType" />
+		<result column="remarks" property="remarks" />
+		<result column="is_check" property="isCheck" />
+		<result column="submit_time" property="submitTime" />
+		<result column="reverse_write" property="reverseWrite"/>
+		<result column="structural_disqualifiedQty" property="structuralDisqualifiedQty"/>
+		<result column="appearance_disqualifiedQty" property="appearanceDisqualifiedQty"/>
+		<result column="package_disqualifiedQty" property="packageDisqualifiedQty"/>
+	</resultMap>
+	<!-- 查询数据 -->
+	<select id="findList" resultType="QualityCheck">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="userName != null and userName !=''">
+				AND REPLACE(a.quality_inspector_name,' ','') = #{userName}
+			</if>
+			<if test="billStatus != null and billStatus !=''">
+				AND a.document_status in ('完成','已反写K3')
+				AND create_time &gt;= #{endDate}
+				AND create_time &lt;= #{nowDate}
+			</if>
+			<!-- 梵工厂质检单搜索框[质检单号] 包含关键字 或者 [供应商]包含关键字 或者 [采购员]包含关键字-->
+			<if test="inputValue != null and inputValue !=''">
+				AND (a.billno LIKE '%${inputValue}%' OR
+				a.supplier_name LIKE '%${inputValue}%' OR
+				a.purchaser_name LIKE '%${inputValue}%')
+			</if>
+			<if test="endDate != null">
+
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<select id="getMaxQualityTime" resultType="String">
+		SELECT DATE_FORMAT(MAX(quality_time),"%Y-%m-%d %H:%i:%s") quality_time
+		FROM js_fgc_quality_check
+	</select>
+
+
+	<select id="getData" resultType="QualityCheck">
+		SELECT * FROM
+		js_fgc_quality_check
+		WHERE billno = #{billNo}
+	</select>
+
+	<select id="findSaveK3QcBill" resultType="syncQcBillToK3">
+		SELECT DISTINCT a.fid,a.billno,b.fentityId,b.structural_test,b.appearance_test,b.pack_test,b.sample_qty,b.qc_qualified_qty,b.qc_disqualified_qty,b.sample_disqualified_qty,b.sample_qualified_qty,b.bad_ratio,b.reexamination_num,b.avg_bad_ratio,b.rectify_type,
+		b.structural_disqualifiedQty,b.appearance_disqualifiedQty,b.package_disqualifiedQty,b.remarks,b.is_check,b.submit_time,b.reverse_write FROM js_fgc_quality_check  AS A
+		LEFT JOIN js_fgc_quality_check_details AS B ON a.fid = b.fid
+		WHERE b.is_check = '1' AND (reverse_Write != '1' OR reverse_write is null)
+	</select>
+
+
+	<select id="findAudioK3QcBill" resultType="syncQcBillToK3">
+		SELECT DISTINCT a.fid,a.billno,b.fentityId,b.reverse_write
+		FROM js_fgc_quality_check  AS A
+		LEFT JOIN js_fgc_quality_check_details AS B ON a.fid = b.fid
+		WHERE a.document_status = '完成'
+	</select>
+</mapper>

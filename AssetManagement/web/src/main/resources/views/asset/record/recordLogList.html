@@ -1,0 +1,117 @@
+<% layout('/layouts/default.html', {title: '日志管理管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('日志管理管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('record:recordLog:edit')){ %>
+				<a href="${ctx}/record/recordLog/form" class="btn btn-default btnTool" title="${text('新增日志管理')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${recordLog}" action="${ctx}/record/recordLog/listData" method="post" class="form-inline"
+			data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">${text('标题')}：</label>
+				<div class="control-inline">
+					<#form:input path="title" maxlength="225" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('来源')}：</label>
+				<div class="control-inline">
+					<#form:input path="type" maxlength="100" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('生成时间')}：</label>
+				<div class="control-inline">
+
+					<#form:input path="createTime_gte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="createTime_gte"
+					dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:true,onpicked:function(){createTime_lte.click()}});"/>
+					-
+					<#form:input path="createTime_lte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="createTime_lte"
+					dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:true});"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('写入时间')}：</label>
+				<div class="control-inline">
+					<#form:input path="writeTime_gte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="writeTime_gte"
+					dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:true,onpicked:function(){writeTime_lte.click()}});"/>
+					-
+					<#form:input path="writeTime_lte"  readonly="true" maxlength="20" class="form-control Wdate-date" id="writeTime_lte"
+					dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:true});"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('内容')}：</label>
+				<div class="control-inline">
+					<#form:input path="content" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('级别')}：</label>
+				<div class="control-inline">
+					<#form:input path="level" maxlength="15" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">${text('路径')}：</label>
+				<div class="control-inline">
+					<#form:input path="path" maxlength="225" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+				<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+			</div>
+		</#form:form>
+		<table id="dataGrid"></table>
+		<div id="dataGridPage"></div>
+	</div>
+</div>
+</div>
+<% } %>
+<script>
+    // 初始化DataGrid对象
+    $('#dataGrid').dataGrid({
+        searchForm: $("#searchForm"),
+        columnModel: [
+            {header:'${text('标题')}', name:'title', index:'a.title', width:150, align:"left"},
+            {header:'${text('来源')}', name:'type', index:'a.type', width:150, align:"left"},
+            {header:'${text('生成时间')}', name:'createTime', index:'a.create_time', width:150, align:"center"},
+            {header:'${text('写入时间')}', name:'writeTime', index:'a.write_time', width:150, align:"center"},
+            {header:'${text('内容')}', name:'content', index:'a.content', width:150, align:"left"},
+            {header:'${text('级别')}', name:'level', index:'a.level', width:150, align:"left"},
+            {header:'${text('路径')}', name:'path', index:'a.path', width:150, align:"left"},
+            /*{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+                    var actions = [];
+                <% if(hasPermi('record:recordLog:edit')){ %>
+                        actions.push('<a href="${ctx}/record/recordLog/form?logCode='+row.logCode+'" class="btnList" title="${text('编辑日志管理')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+                        actions.push('<a href="${ctx}/record/recordLog/delete?logCode='+row.logCode+'" class="btnList" title="${text('删除日志管理')}" data-confirm="${text('确认要删除该日志管理吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                    <% } %>
+                    return actions.join('');
+                }}*/
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            $('#dataGrid td[aria-describedby="dataGrid_content"]').on('click',function () {
+                layer.open({
+                    type: 1,
+                    title: '公司简介',
+                    closeBtn: 1, //不显示关闭按钮
+                    anim: 2,
+                    skin: 'layui-layer-demo',
+                    shadeClose: true, //开启遮罩关闭
+                    content: '<div style="padding:20px;width: 300px;overflow-x: scroll;overflow-y: scroll">'+$(this).html()+'</div>'
+                });
+            })
+
+        }
+    });
+</script>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.kanban.dao.AmKanbanFileDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="AmKanbanFile">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<!-- 查询仓库名称-->
+	<select id="getKanbanFileByName" resultType="AmKanbanFile">
+		SELECT *
+			FROM js_am_kanban_file a
+		WHERE a.kanban_name = #{kanbanName}
+	</select>
+	<!-- 删除数据-->
+	<delete id="deleteDb">
+		DELETE FROM js_am_kanban_file
+		WHERE kanban_code=#{kanbanCode}
+	</delete>
+</mapper>

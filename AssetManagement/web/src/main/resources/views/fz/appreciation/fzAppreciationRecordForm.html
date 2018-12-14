@@ -1,0 +1,165 @@
+<% layout('/layouts/default.html', {title: '赞赏记录表管理', libs: ['validate','fileupload','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(fzAppreciationRecord.isNewRecord ? '新增赞赏记录表' : '编辑赞赏记录表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${fzAppreciationRecord}" action="${ctx}/fz/appreciation/fzAppreciationRecord/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="appreciationCode"/>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 获赞者Id：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="praiserId" maxlength="255" class="form-control required"  readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 赠送者id：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="presenterId" maxlength="255" class="form-control required" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 赠币数量：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="coinNumber" maxlength="11" class="form-control required digits" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 赞币总数量：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="coinCount" maxlength="255" class="form-control digits" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-12">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> 理由：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="content" rows="4" maxlength="1000" class="form-control" readonly="true" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 照片：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8" id="record_img">
+
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<h4 class="form-unit">跟赞表</h4>
+				<div class="ml10 mr10">
+					<table id="fzAppreciationFollowDataGrid"></table>
+
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('appreciation:fzAppreciationRecord:edit')){ %>
+							<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+//初始化跟赞表DataGrid对象
+$("#fzAppreciationFollowDataGrid").dataGrid({
+
+	data: ${toJson(fzAppreciationRecord.fzAppreciationFollowList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:false, hidden:true},
+		{header:'主键', name:'appreciationFollowCode', editable:false, hidden:true},
+		{header:'赞赏表主键', name:'appreciationCode.appreciationCode', editable:false, hidden:true},
+		{header:'跟赞者id', name:'presenterId', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'255', 'class':'form-control'}},
+        {header:'跟赞者名字', name:'dingUser.presenterName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'255', 'class':'form-control'}},
+		{header:'赠币数量', name:'coinNumber', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'11', 'class':'form-control'}},
+		{header:'跟赞理由', name:'content', width:150, editable:false, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},
+		{header:'备注', name:'remarks', width:150, editable:false, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},
+
+	],
+	
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#fzAppreciationFollowDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {appreciationFollowCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'fzAppreciationFollowList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,appreciationFollowCode,appreciationCode.appreciationCode,presenterId,coinNumber,content,createBy,createDate,updateBy,updateDate,remarks,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+
+$(function() {
+
+    //遍历图片
+    let data = ${toJson(fzAppreciationRecord.imgList)};
+    console.log(data)
+    for(let i=0;i<data.length;i++){
+		var html = "<img src="+data[i]+" style=\'height: 90px;width: 90px;margin-right: 10px\'>"
+        $("#record_img").append(html);
+    }
+
+});
+
+</script>

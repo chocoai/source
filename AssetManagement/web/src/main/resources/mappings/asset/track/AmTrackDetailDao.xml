@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.track.dao.AmTrackDetailDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="AmTrackDetail">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="getDetail" resultType="AmTrackDetail">
+	  select * from js_am_track_detail where entry_id=#{arg0} and  consumables_code=#{arg1}
+	</select>
+</mapper>

@@ -1,0 +1,298 @@
+<% layout('/layouts/default.html', {title: '耗材成本调整单管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('耗材成本调整单管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除入库表')}"> ${text('删除')}</a>
+				<!--<% if(hasPermi('consumables:amCostAdjustment:edit')){ %>-->
+					<!--<a href="${ctx}/consumables/amCostAdjustment/form" class="btn btn-default btnTool" title="${text('新增耗材成本调整单')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<!--<% } %>-->
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amCostAdjustment}" action="${ctx}/consumables/amCostAdjustment/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">单据单号：</label>
+					<#form:input path="documentCode" maxlength="64" class="form-control width-120"/>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据日期：</label>
+					<div class="control-inline">
+						<#form:input path="adjustmentData" readonly="true" id="adjustmentData"  maxlength="20" class="form-control Wdate required width-120"
+						dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">仓库编码：</label>
+					<div class="control-inline width-120">
+						<#form:select path="warehouseCode"  id='warehouseCode' items="${warehouseList}"
+						itemLabel="warehouseName" itemValue="warehouseCode"  maxlength="64" multiple="false" blankOption="true" class="form-control "/>
+						<!--<#form:input path="warehouseCode" maxlength="64" class="form-control width-120"/>-->
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="documentStatus" dictType="am_document_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'单据单号', name:'documentCode', index:'a.document_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/consumables/amCostAdjustment/form?documentCode='+row.documentCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑入库表')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+
+                // return '<a href="${ctx}/consumables/amCostAdjustment/form?documentCode='+row.documentCode+'" class="btnList" data-title="${text('编辑耗材成本调整单')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'单据日期', name:'adjustmentData', index:'a.adjustment_data', width:150, align:"center"},
+		{header:'仓库编码', name:'warehouseCode', index:'a.warehouse_code', width:150, align:"left"},
+		// {header:'仓库名称', name:'warehouseName', index:'a.warehouse_name', width:150, align:"left"},
+		{header:'单据状态', name:'documentStatus', index:'a.document_status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('am_document_status')}, val, '${text('未知')}', true);
+		}},
+        {header:'耗材编号', name:'amAdjustDetail.consumablesCode', index:'b.consumables_code', width:150, align:"left"},
+        {header:'耗材名称', name:'amAdjustDetail.consumablesName', index:'b.consumables_name', width:150, align:"left"},
+        {header:'规格型号', name:'amAdjustDetail.specifications', index:'b.specifications', width:150, align:"left"},
+        {header:'调整金额', name:'amAdjustDetail.adjustmentAmount', index:'b.adjustment_amount', width:150, align:"left"},
+		{header:'备注', name:'amAdjustDetail.remarks', index:'b.remarks', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('consumables:amCostAdjustment:edit')){ %>
+				actions.push('<a href="${ctx}/consumables/amCostAdjustment/form?documentCode='+row.documentCode+'" class="btnList" title="${text('编辑耗材成本调整单')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/consumables/amCostAdjustment/delete?documentCode='+row.documentCode+'" class="btnList" title="${text('删除耗材成本调整单')}" data-confirm="${text('确认要删除该耗材成本调整单吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+    showCheckbox:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        // $('#dataGrid').dataGrid('mergeCell', 'documentCode');
+       rowCheckBox()
+       Concurrency()
+	}
+});
+
+
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_documentCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/consumables/amTransfer',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                console.log(res)
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+
+
+
+var rowCheckBox = function(){
+    var a = [], // 暂存
+        num = 1,  // 序号
+        dataId=''
+
+    $('#dataGrid tr').each(function(index,item){
+        var id = $(item).attr('id'),
+            par = $('#dataGrid tr#'+ id);
+
+        if(!id) return
+
+        // css优化
+        $(item).on({
+            'mouseenter':function(){par.addClass('ui-state-hover')},
+            'mouseleave':function(){par.removeClass('ui-state-hover')},
+            'click':function(){par.toggleClass('ui-state-highlight')}
+        })
+
+        if(a.indexOf(id) === -1){  // 不存在
+            a.push(id)
+            $(item).addClass('parFaather').attr('data-RowNum',1).find('td').eq(0).html(num++)
+        }else{  // 已存在进行合并操作
+            var b = [],  // 暂存
+                _tPar = $('#dataGrid .parFaather#'+ a[a.indexOf(id)]),
+                _t = $(item)
+
+
+            _tPar.attr('data-RowNum',_tPar.data().rownum++)  // 更新需要合并的列数
+            $(item).insertAfter(_tPar)  // 重新整理排序
+
+            // 隐藏多余的
+            _t.find('td.jqgrid-rownum').hide() // 序号
+            _t.find('td[aria-describedby="dataGrid_cb"]').hide()  // 复选
+            _t.find('td[aria-describedby="dataGrid_documentCode"]').hide()  // 调拨单号
+            _t.find('td[aria-describedby="dataGrid_adjustmentData"]').hide()  // 调拨状态
+            _t.find('td[aria-describedby="dataGrid_warehouseCode"]').hide()  // 单据状态
+            _t.find('td[aria-describedby="dataGrid_documentStatus"]').hide()  // 调拨日期
+        
+
+            // 合并
+            _tPar.find('td.jqgrid-rownum').attr('rowspan',_tPar.data().rownum)  // 序号
+            _tPar.find('td[aria-describedby="dataGrid_cb"]').attr('rowspan',_tPar.data().rownum)  // 复选
+            _tPar.find('td[aria-describedby="dataGrid_documentCode"]').attr('rowspan',_tPar.data().rownum)  // 单号
+            _tPar.find('td[aria-describedby="dataGrid_adjustmentData"]').attr('rowspan',_tPar.data().rownum)  // 调拨状态
+            _tPar.find('td[aria-describedby="dataGrid_warehouseCode"]').attr('rowspan',_tPar.data().rownum)  // 单据类型
+            _tPar.find('td[aria-describedby="dataGrid_documentStatus"]').attr('rowspan',_tPar.data().rownum)  // 调拨日期
+           
+        }
+    })
+}
+
+// $('#dataGrid input[type=checkbox]').on('click', function(e){
+//     var nodes = $('#dataGrid').find('input[type=checkbox]');
+//     var temp = [];
+//     alert('ok');
+//     $(nodes).each(function(index, item){
+//         var checked = $(item).attr('checked'); // 是否被选中
+//         if(checked) {
+//             var id = $(item).attr('id');
+//
+//             if(id.indexOf('_')) { // 如果有分割符的话，先分割
+//                 id = id.split('_');
+//                 id = id[2];
+//             }
+//
+//             if(!arrHasValue(id, temp)) { // 检查数组是否已经有该值，如果有，不存到数组里面
+//                 temp.push(id);
+//             }
+//         }
+//     });
+//     temp = temp.join(',');
+//     $('#asDelBtn').attr('href', temp);
+// });
+
+// $('#asDelBtn').click( function(e){
+//     var nodes = $('#dataGrid').find('input[type=checkbox]');
+//     var temp = [];
+//     $(nodes).each(function(index, item){
+//         var checked = $(item).attr('checked'); // 是否被选中
+//         if(checked) {
+//             var id = $(item).attr('id');
+//
+//             if(id.indexOf('_')) { // 如果有分割符的话，先分割
+//                 id = id.split('_');
+//                 id = id[2];
+//             }
+//
+//             if(!arrHasValue(id, temp)) { // 检查数组是否已经有该值，如果有，不存到数组里面
+//                 temp.push(id);
+//             }
+//         }
+//     });
+//     temp = temp.join(',');
+//     if(confirm('确认删除吗?')){
+//         $.ajax({
+//             async:false,
+//             url:'${ctx}/consumables/amCostAdjustment/deleteDb?ids='+temp,
+//             success:function (result) {
+//                 result=result.split(',')
+//                 var messagea=result[1].split(':')[1];
+//                 result=result[0].split(':')
+//                 if (result[1].toString()=='"true"'){
+//                     messagea=messagea.replace('}','');
+//                     messagea=messagea.replace('"','');
+//                     messagea=messagea.replace('"','');
+//                     alert(messagea)
+//                 }else {
+//                     alert("删除失败")
+//                 }
+//             }
+//         })}
+// });
+
+function arrHasValue(v, arr) {
+    var output = false;
+    for (var i in arr) {
+        if (v == arr[i]) {
+            output = true;
+            return output;
+        }
+    }
+    output = false;
+    return output;
+}
+
+
+$('#asDelBtn').click( function(e){
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            url: '${ctx}/consumables/amCostAdjustment',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/consumables/amCostAdjustment/deleteDb?ids='+str,
+                            success:function (result) {
+                                var obj = JSON.parse(result);
+                                if (obj.result == 'true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                } else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一张订单进行删除')
+    }
+
+
+
+
+
+});
+</script>

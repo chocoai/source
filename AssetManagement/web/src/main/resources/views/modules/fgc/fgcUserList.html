@@ -1,0 +1,73 @@
+<% layout('/layouts/default.html', {title: '梵工厂用户表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('梵工厂用户表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fgcUser}" action="${ctx}/fgc/fgcUser/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">用户名：</label>
+					<div class="control-inline">
+						<#form:input path="userName" maxlength="200" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'OpenID', name:'openId', index:'a.open_id', width:150, align:"left",frozen:true, formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/fgc/fgcUser/form?documentCode='+row.documentCode+'" class="btnList" data-title="编辑耗材档案">'+(val||row.id)+'</a>';
+            }},
+        {header:'系统登录账号', name:'sysLoginCode', index:'a.sys_login_code', width:150, align:"left"},
+        {header:'系统登录密码', name:'sysLoginPas', index:'a.sys_login_pas', width:150, align:"left"},
+		{header:'微信用户名', name:'nickname', index:'a.nickname', width:150, align:"left"},
+		{header:'性别', name:'sex', index:'a.sex', width:150, align:"left"},
+        {header:'省份', name:'province', index:'a.province', width:150, align:"left"},
+        {header:'城市', name:'city', index:'a.city', width:150, align:"left"},
+        {header:'国家', name:'country', index:'a.country', width:150, align:"left"},
+		{header:'创建者', name:'createBy', index:'a.create_by', width:150, align:"left"},
+		{header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'更新者', name:'updateBy', index:'a.update_by', width:150, align:"left"},
+		{header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+		{header:'状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('js_fgc_user_status')}, val, '${text('未知')}', true);
+		}},
+
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('fgc:fgcUser:edit')){ %>
+					if (row.status ==='0'){
+                        actions.push('<a href="${ctx}/fgc/fgcUser/updataStatus?documentCode='+row.documentCode+'" class="btnList" title="${text('停用微信用户')}" data-confirm="${text('确认要停用该微信用户吗？')}"><i class="glyphicon glyphicon-ban-circle"></i></a>&nbsp;');
+                    }
+                    if (row.status ==='1'){
+                        actions.push('<a href="${ctx}/fgc/fgcUser/updataStatus?documentCode='+row.documentCode+'" class="btnList" title="${text('启用微信用户')}" data-confirm="${text('确认要启用该微信用户吗？')}"><i class="glyphicon glyphicon-ok-circle"></i></a>&nbsp;');
+                    }
+						<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

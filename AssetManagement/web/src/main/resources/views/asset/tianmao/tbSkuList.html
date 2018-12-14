@@ -1,0 +1,122 @@
+<% layout('/layouts/default.html', {title: '商品-SKU管理管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('商品-SKU管理管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('tianmao:tbSku:edit')){ %>
+					<a href="${ctx}/tianmao/tbSku/form" class="btn btn-default btnTool" title="${text('新增商品-SKU管理')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${tbSku}" action="${ctx}/tianmao/tbSku/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">sku所属商品id：</label>
+					<div class="control-inline">
+						<#form:input path="numIid" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">规格名称：</label>
+					<div class="control-inline">
+						<#form:input path="propertiesName" maxlength="128" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">价格：</label>
+					<div class="control-inline">
+						<#form:input path="price" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">数量：</label>
+					<div class="control-inline">
+						<#form:input path="quantity" maxlength="32" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">sku的销售属性组合字符串：</label>
+					<div class="control-inline">
+						<#form:input path="properties" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">sku创建日期：</label>
+					<div class="control-inline">
+						<#form:input path="created" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商家设置的外部id：</label>
+					<div class="control-inline">
+						<#form:input path="outerId" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">sku最后修改日期：</label>
+					<div class="control-inline">
+						<#form:input path="modified" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">sku状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">商品级别的条形码：</label>
+					<div class="control-inline">
+						<#form:input path="barcode" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'sku所属商品id', name:'numIid', index:'a.num_iid', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/tianmao/tbSku/form?skuId='+row.skuId+'" class="btnList" data-title="${text('编辑商品-SKU管理')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'规格名称', name:'propertiesName', index:'a.properties_name', width:150, align:"left"},
+		{header:'价格', name:'price', index:'a.price', width:150, align:"left"},
+		{header:'数量', name:'quantity', index:'a.quantity', width:150, align:"center"},
+		{header:'sku的销售属性组合字符串', name:'properties', index:'a.properties', width:150, align:"left"},
+		{header:'sku创建日期', name:'created', index:'a.created', width:150, align:"left"},
+		{header:'商家设置的外部id', name:'outerId', index:'a.outer_id', width:150, align:"left"},
+		{header:'sku最后修改日期', name:'modified', index:'a.modified', width:150, align:"left"},
+		{header:'sku状态', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'商品级别的条形码', name:'barcode', index:'a.barcode', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('tianmao:tbSku:edit')){ %>
+				actions.push('<a href="${ctx}/tianmao/tbSku/form?skuId='+row.skuId+'" class="btnList" title="${text('编辑商品-SKU管理')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/tianmao/tbSku/delete?skuId='+row.skuId+'" class="btnList" title="${text('删除商品-SKU管理')}" data-confirm="${text('确认要删除该商品-SKU管理吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

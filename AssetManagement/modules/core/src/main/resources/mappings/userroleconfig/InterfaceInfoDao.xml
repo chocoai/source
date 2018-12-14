@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.userroleconfig.dao.InterfaceInfoDao">
+    <select id="findList" resultType="InterfaceInfo">
+        SELECT ${sqlMap.column.toSql()}
+        FROM ${sqlMap.table.toSql()}
+        <if test="userCode!= null and userCode != ''">
+            LEFT JOIN ${_prefix}sys_user_data_permission b ON a.interface_code=b.interface_code
+        </if>
+		<if test="roleCode!= null and roleCode != ''">
+			LEFT JOIN ${_prefix}sys_role_data_permission c ON a.interface_code=c.interface_code
+		</if>
+        <where>
+            ${sqlMap.where.toSql()}
+            <if test="userCode!= null and userCode != ''">
+                and b.user_code=#{userCode}
+            </if>
+			<if test="roleCode!= null and roleCode != ''">
+				and c.role_code=#{roleCode}
+			</if>
+
+        </where>
+        ORDER BY ${sqlMap.order.toSql()}
+    </select>
+    <select id="listDataByUserCode" resultType="InterfaceInfo">
+	select a.* from js_sys_interface a left join js_sys_user_data_permission b ON a.interface_code=b.interface_code where b.user_code=#{userCode}
+	</select>
+	<select id="listDataByRoleCode" resultType="InterfaceInfo">
+	select a.* from js_sys_interface a left join js_sys_role_data_permission b ON a.interface_code=b.interface_code where b.role_code=#{roleCode}
+	</select>
+    <delete id="deluserInfterface">
+	DELETE from js_sys_user_data_permission
+	WHERE user_code=#{arg0} and interface_code=#{arg1}
+	</delete>
+    <!-- 查询用户没有的接口-->
+    <select id="getInfoByNotInUser" resultType="InterfaceInfo">
+ SELECT
+	*
+FROM
+	js_sys_interface
+WHERE
+	interface_code NOT IN (
+		SELECT
+			interface_code
+		FROM
+			js_sys_user_data_permission c
+		WHERE
+			user_code = #{userCode}
+	)
+AND  STATUS != "1"
+
+</select>
+	<!-- 查询角色没有的接口-->
+	<select id="getInfoByNotInRole" resultType="InterfaceInfo">
+ SELECT
+	*
+FROM
+	js_sys_interface
+WHERE
+	interface_code NOT IN (
+		SELECT
+			interface_code
+		FROM
+			js_sys_role_data_permission c
+		WHERE
+			role_code = #{roleCode}
+	)
+AND  STATUS != "1"
+
+</select>
+
+    <delete id="deleteDb" >
+	DELETE from js_sys_interface
+	WHERE interface_code=#{interFaceCode}
+	</delete>
+	<!--根据用户id和接口ID查询接口信息-->
+	<select id="getInfoByUserCodeAndIntCode" resultType="InterfaceInfo">
+		SELECT a.*,b.interface_sql as interfaceSql FROM js_sys_interface a LEFT JOIN js_sys_user_data_permission b ON a.interface_code = b.interface_code
+		where b.user_code=#{arg0} and b.interface_code=#{arg1}
+		</select>
+
+	<!--根据角色id和接口ID查询接口信息-->
+	<select id="getInfoByRoleCodeAndIntCode" resultType="InterfaceInfo">
+		SELECT a.*,b.interface_sql as interfaceSql FROM js_sys_interface a LEFT JOIN js_sys_role_data_permission b ON a.interface_code = b.interface_code
+		where b.role_code=#{arg0} and b.interface_code=#{arg1}
+		</select>
+		<!--删除角色拥有的接口-->
+	<delete id="delRoleInfterface">
+	DELETE from js_sys_role_data_permission
+	WHERE role_code=#{arg0} and interface_code=#{arg1}
+	</delete>
+</mapper>

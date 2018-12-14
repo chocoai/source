@@ -1,0 +1,148 @@
+<% layout('/layouts/default.html', {title: '即时库存', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('即时库存')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('inventory:k3ReportInventory:edit')){ %>
+					<a href="${ctx}/inventory/k3ReportInventory/form" class="btn btn-default btnTool" title="${text('新增即时库存')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+				<div class="btn-group">
+					<a href="javascript:" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+						<i class="fa fa-navicon"></i> <span class="caret"></span>
+					</a>
+					<ul class="dropdown-menu">
+						<li><a href="javascript:" id="btnExport"><i class="glyphicon glyphicon-export"></i> 导出</a></li>
+					</ul>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${k3ReportInventory}" action="${ctx}/inventory/k3ReportInventory/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('物料编码')}：</label>
+					<div class="control-inline">
+						<#form:input path="materialCode" maxlength="80" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('物料名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="materialName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('Bom版本')}：</label>
+					<div class="control-inline">
+						<#form:input path="bomVersion" maxlength="80" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('仓库名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="stockName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('仓位名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="stockLocName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('批号')}：</label>
+					<div class="control-inline">
+						<#form:input path="lot" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+			<!--<div class="form-group">
+                <label class="control-label">${text('库存主单位')}：</label>
+                <div class="control-inline">
+                    <#form:input path="stockUnit" maxlength="255" class="form-control width-120"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">${text('库存量')}：</label>
+                <div class="control-inline">
+                    <#form:input path="stockQty" class="form-control width-120"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">${text('可用量')}：</label>
+                <div class="control-inline">
+                    <#form:input path="avbQty" class="form-control width-120"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">${text('库存状态')}：</label>
+                <div class="control-inline">
+                    <#form:input path="stockStatus" maxlength="255" class="form-control width-120"/>
+                </div>
+            </div>-->
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('物料编码')}', name:'materialCode', index:'a.material_code', width:150, align:"left", frozen:true
+			//,formatter: function(val, obj, row, act){
+			//return '<a href="${ctx}/inventory/k3ReportInventory/form?fid='+row.fid+'" class="btnList" data-title="${text('编辑即时库存')}">'+(val||row.id)+'</a>';
+			//}
+		},
+		{header:'${text('物料名称')}', name:'materialName', index:'a.material_name', width:150, align:"left"},
+		{header:'${text('Bom版本')}', name:'bomVersion', index:'a.bom_version', width:150, align:"left"},
+		{header:'${text('仓库名称')}', name:'stockName', index:'a.stock_name', width:150, align:"left"},
+		{header:'${text('仓位名称')}', name:'stockLocName', index:'a.stock_loc_name', width:150, align:"left"},
+		{header:'${text('批号')}', name:'lot', index:'a.lot', width:150, align:"left"},
+		{header:'${text('库存主单位')}', name:'stockUnit', index:'a.stock_unit', width:150, align:"left"},
+		{header:'${text('库存量')}', name:'stockQty', index:'a.stock_qty', width:150, align:"right"
+			//,formatter: function(val, obj, row, act){
+			//return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+			//}
+		},
+		{header:'${text('可用量')}', name:'avbQty', index:'a.avb_qty', width:150, align:"right"
+			//, formatter: function(val, obj, row, act){
+			//return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+			//}
+		},
+		{header:'${text('库存状态')}', name:'stockStatus', index:'a.stock_status', width:150, align:"left"},
+		//{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			//var actions = [];
+			//<% if(hasPermi('inventory:k3ReportInventory:edit')){ %>
+			//	actions.push('<a href="${ctx}/inventory/k3ReportInventory/form?fid='+row.fid+'" class="btnList" title="${text('编辑即时库存')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+			//<% } %>
+			//return actions.join('');
+		//}}
+	],
+    shrinkToFit: false,
+    autoScroll: true,
+    autowidth: true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#searchForm'), {
+        url:'${ctx}/inventory/k3ReportInventory/exportData',
+        downloadFile:true
+    });
+    alert("导出数据需要较长时间，请耐心等待！请按确定开始");
+});
+
+</script>

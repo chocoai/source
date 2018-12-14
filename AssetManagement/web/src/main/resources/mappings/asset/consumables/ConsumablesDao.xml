@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.consumables.dao.ConsumablesDao">
+	
+
+	<select id="findList" resultType="Consumables">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}  and b.status='0'
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+	<delete id="deleteOne" parameterType="String">
+	DELETE from js_am_consumables
+	where consumables_code=#{consumables_code}
+
+	</delete>
+
+
+	<!--<select id="getImgPath" resultType="ImgUntilentity">-->
+		<!--SELECT f.file_id AS "fileId",-->
+		<!--g.file_path AS "filePath",-->
+		<!--f.create_date,-->
+		<!--g.file_extension AS "fileExtension"-->
+		<!--FROM js_sys_file_upload f LEFT JOIN js_sys_file_entity g ON f.file_id = g.file_id  LEFT JOIN js_am_consumables a ON a.consumables_code = f.biz_key-->
+		<!--WHERE a.`status`='0' and a.consumables_code =#{consumables_code}  ORDER BY f.create_date DESC;-->
+	<!--</select>-->
+
+</mapper>

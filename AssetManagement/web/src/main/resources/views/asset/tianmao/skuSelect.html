@@ -1,0 +1,218 @@
+<% layout('/layouts/default.html', {title: '商品-SKU管理管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<!--<div class="box-header">-->
+		<!--<div class="box-title">-->
+		<!--<i class="fa fa-list-alt"></i> ${text('商品-SKU管理管理')}-->
+		<!--</div>-->
+		<!--<div class="box-tools pull-right">-->
+		<!--<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>-->
+		<!--</div>-->
+		<!--</div>-->
+		<div class="box-body">
+			<#form:form id="searchForm" model="${tbSku}" action="${ctx}/tianmao/tbSku/listData" method="post"
+			class="form-inline"
+			data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}"
+			data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">SKU：</label>
+				<div class="control-inline">
+					<div class="col-sm-8">
+						<#form:input path="outerId" class="form-control"/>
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">物料名称：</label>
+				<div class="control-inline  width-460">
+					<#form:input path="skuName" class="form-control width-460"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+				<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+			</div>
+			<div class="form-group">
+				<label class="control-label">打印模板： </label>
+				<div class="control-inline width-160">
+					<#form:select path="template" dictType="print_template" id="template" class="form-control"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="button" id="btnPrint" class="btn btn-primary btn-sm" >${text('批量打印')}</button>
+			</div>
+		</#form:form>
+		<div class="row">
+			<div class="col-xs-10 pr10">
+				<table id="dataGrid"></table>
+				<div id="dataGridPage"></div>
+			</div>
+			<div class="col-xs-2 pl0">
+				<div id="selectData" class="tags-input"></div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+
+<% } %>
+<script>
+    var selectData = JSON.parse(js.decodeUrl('${selectData}')), selectNum = 0,//当前页数
+        arrzzz=[];
+// 初始化DataGrid对象
+dataGrid = $('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'skuId', name:'skuId', index:'b.sku_id', hidden:true, width:100, align:"left",key:true},
+		{header:'SKU', name:'outerId', index:'b.outer_id', width:100, align:"left"},
+        {header:'物料名称', name:'skuName',index:'c.sku_name', width:150, align:"left"},
+        {header:'行数据', name:'rowData', hidden:true, formatter: function(val, obj, row, act){
+            return JSON.stringify(row);
+        }},
+	],
+    autoGridHeight: function(){
+        var height = $(window).height() - $('#searchForm').height() - $('#dataGridPage').height() - 73;
+        $('.tags-input').height($('.ui-jqgrid').height() - 10);
+        return height;
+    },
+    cellEdit:false,
+    showCheckbox: '${checkbox!}' == 'true',
+    multiboxonly: false, 
+    ajaxSuccess: function(data){
+        $.each(selectData, function(key, value, isSelect){
+			dataGrid.dataGrid('setSelectRow', key);
+        });
+        initSelectTag();
+    },
+    onSelectRow: function(id, isSelect, event){
+        if ('${checkbox!}' == 'true'){
+            if(isSelect){
+                selectData[id] = JSON.parse(dataGrid.dataGrid('getRowData', id).rowData);
+            }else{
+                arrzzz.splice(arrzzz.indexOf(selectData[id].outerId),1);
+                delete selectData[id];
+            }
+        }else{
+            selectData = {};
+            selectData[id] = JSON.parse(dataGrid.dataGrid('getRowData', id).rowData);
+        }
+        initSelectTag();
+    },
+    onSelectAll: function(ids, isSelect){
+        if ('${checkbox!}' == 'true'){
+            for (var i=0; i<ids.length; i++){
+                if(isSelect){
+                    selectData[ids[i]] = JSON.parse(dataGrid.dataGrid('getRowData', ids[i]).rowData);
+                }else{
+
+                    delete selectData[ids[i]];
+                    arrzzz = [];
+                }
+            }
+        }
+        initSelectTag();
+    },
+    ondblClickRow: function(id, rownum, colnum, event){
+        if ('${checkbox!}' != 'true'){
+            js.layer.$('#' + window.name).closest('.layui-layer')
+                .find(".layui-layer-btn0").trigger("click");
+        }
+        initSelectTag();
+    },
+});
+    //添加选中信息
+    function initSelectTag(){
+        selectNum = 0;
+        var html = [];
+        $.each(selectData, function(key, value){
+            selectNum ++;
+            html.push('<span class="tag" id="'+key+'_tags-input"><span>'+value.outerId+' </span>'
+                + '<a href="#" onclick="removeSelectTag(\''+key+'\');" title="取消选择">x</a></span>');
+            if(arrzzz.indexOf(value.outerId)==-1) arrzzz.push(value.outerId);
+        });
+        html.unshift('<div class="title">当前已选择<span id="selectNum">'+selectNum+'</span>项：</div>');
+        $('#selectData').empty().append(html.join(''));
+    }
+    //删除选中信息
+    function removeSelectTag(key){
+        arrzzz.splice(arrzzz.indexOf(selectData[key].outerId),1);
+        delete selectData[key];
+        dataGrid.dataGrid('resetSelection', key);
+        $('#selectNum').html(--selectNum);
+        $('#'+key+'_tags-input').remove();
+    }
+    //点击确定触发
+    function getSelectData(){
+        return selectData;
+    }
+    $('#btnPrint').click(function () {
+        var template = $('#template').val();
+        console.log(selectData)
+        if (JSON.stringify(selectData) == "{}") {
+            js.showMessage("请至少选择一项数据再打印");
+            return false;
+		}
+        console.log(arrzzz)
+        var url = '${ctx}/tianmao/tbSku/print';
+        // var data = JSON.stringify({type:template,
+        //             arrzzz:arrzzz});
+        openPostWindow(url,template,arrzzz);
+        // $.ajax({
+        //     url: '${ctx}/tianmao/tbSku/print',
+        //     type: 'POST',
+        //     data:JSON.stringify({
+        //         type:template,
+        //         arrzzz:arrzzz
+        //     }),
+        //     contentType: 'text/plain;charset=UTF-8',
+        //     async:false,
+        //     dataType: 'json',
+        //     success: function (result) {
+        //         if (result.code == 200) {
+        //             location.reload();
+			// 	}
+        //         js.showMessage(result.msg)
+        //     }
+        // })
+    })
+    // $('#btnPrint').click(function () {
+    //     var template = $('#template').val();
+    //     window.open('${ctx}/tianmao/tbSku/print?type='+template+'&arrzzz='+arrzzz);
+    // })
+
+</script>
+<script>
+
+    function openPostWindow(url,data1,data2){
+        var tempForm = document.createElement("form");
+		console.log(tempForm)
+        tempForm.id = "tempForm1";
+        tempForm.method = "post";
+        tempForm.action = url;
+        tempForm.target="_blank"; //打开新页面
+		tempForm.enctype = "text/plain";
+        var hideInput1 = document.createElement("input");
+        hideInput1.type = "hidden";
+        hideInput1.name="type"; //后台要接受这个参数来取值
+        hideInput1.value = data1; //后台实际取到的值
+        var hideInput2 = document.createElement("input");
+        hideInput2.type = "hidden";
+        hideInput2.name="arrzzz";
+        hideInput2.value = data2;
+        tempForm.appendChild(hideInput1);
+        tempForm.appendChild(hideInput2);
+        if(document.all){
+            tempForm.attachEvent("onsubmit",function(){});        //IE
+        }else{
+            var subObj = tempForm.addEventListener("submit",function(){},false);    //firefox
+        }
+        document.body.appendChild(tempForm);
+        if(document.all){
+            tempForm.fireEvent("onsubmit");
+        }else{
+            tempForm.dispatchEvent(new Event("submit"));
+        }
+        tempForm.submit();
+        document.body.removeChild(tempForm);
+    }
+</script>

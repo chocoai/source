@@ -1,0 +1,228 @@
+<% layout('/layouts/default.html', {title: '用户列表', libs: ['dataGrid']}){ %>
+	<style>
+		.mar-b10{margin-bottom:10px}
+		.inlineB{display: inline-block}
+		.main-top .ui-jqgrid-bdiv{height: 260px!important;}
+		#dataGrid tr{cursor: pointer;}
+		.main-bottom .box-tools #btnSearch-bottom{margin-right: 20px}
+		#dataGrid-bottom-edit,
+		#dataGrid-bottom-add,
+		#dataGrid-bottom-operation{padding: 20px}
+		.selectBox select{display: inline;}
+		.width-290{width: 290px}
+		.width-150{width: 150px}
+		.form-group .control-inline>.select2.select2-container{z-index: 1!important;}
+
+		#writeFormula-edit,
+		#writeFormula-add{padding-right: 30px}
+		/* 公式 */
+		.info-message{position:absolute;top:0;right:-235px;background-color:#333A4C;padding:6px;color:#fff;z-index: 10;top: 0;display: none}
+		.info-message p{margin:0 0 10px}
+		.info-message .ok{color:#1bb99a}
+		.info-message .error{color:#ff3015}
+		.message{position: absolute;font-size: 20px;right: 6px;top: 6px;cursor: help;}
+	</style>
+	
+	<!-- 配置用户权限 -->
+	<div class="main-content main-top">
+		<div class="box box-main">
+			<div class="box-header">
+				<div class="box-title">
+					<i class="fa fa-list-alt"></i> ${text('用户表管理')}
+				</div>
+				<div class="box-tools pull-right">
+					<a href="#" class="btn btn-default" id="btnSearch-top" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				</div>
+			</div>
+			<div class="box-body">
+				<#form:form id="searchForm-top" model="${basicUserInfo}" action="${ctx}/fz/ding/dingUser/listData" method="post" class="form-inline hide"
+						data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+					<div class="form-group">
+						<label class="control-label">姓名：</label>
+						<div class="control-inline">
+							<#form:input path="name" maxlength="100" class="form-control width-120"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<label class="control-label">工号：</label>
+						<div class="control-inline">
+							<#form:input path="jobnumber" maxlength="100" class="form-control width-120"/>
+						</div>
+					</div>
+					<div class="form-group">
+						<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+						<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+					</div>
+				</#form:form>
+				<table id="dataGrid"></table>
+				<div id="dataGridPage"></div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 菜单列表 -->
+	<div class="main-content main-bottom">
+		<div class="box box-main">
+			<div class="box-header mar-b10">
+				<div class="box-title">
+					<i class="fa fa-list-alt"></i> ${text('代理用户列表')}
+				</div>
+				<div class="box-tools pull-right">
+					<a href="#" class="btn btn-default hidden" id="btnSearch-bottom" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+	
+					<a href="javascript:void(0)" class="btn btn-primary" id="add-bottomSearch" title="${text('配置')}"><i class="fa icon-plus"></i> ${text('配置')}</a>
+				</div>
+			</div>
+			<div class="box-body">		
+				<#form:form id="searchForm-bottom" action="${ctx}/ach/userAgent/listData" method="post" class="form-inline hide">
+						<#form:hidden path="userId" id="userId"  maxlength="127" class="form-control width-120" value="nothing"/>
+					<div class="form-group">
+						<button type="submit" id="submit-searchBottom" class="btn btn-primary btn-sm">${text('查询')}</button>
+						<button type="reset" id="reset-searchBottom" class="btn btn-default btn-sm">${text('重置')}</button>
+					</div>
+				</#form:form>
+				<table id="dataGrid-bottom"></table>
+			</div>
+		</div>
+	</div>
+
+	<div class="hide"><#form:listselect id="userSelect" title="用户选择" url="${ctx}/fz/ding/dingUser/userSelect" allowClear="false" checkbox="true" itemCode="userid" itemName="name"/></div>
+	
+	<% } %>
+	
+	
+	<script>
+	var L = {
+		userDataPermission: {  // 提交数据 (对应外层用户数据之间关系 - 新增)
+            userId : '',    // 用户id
+		}
+	};
+	
+	// 初始化DataGrid对象 --- 配置用户权限
+	$('#dataGrid').dataGrid({
+		searchForm: $("#searchForm-top"),
+		columnModel: [
+            {header:'${text('姓名')}', name:'name',width:200, align:"center"},
+            {header:'${text('工号')}', name:'jobnumber', index:'a.jobnumber', width:150, align:"center", frozen:true},
+            {header:'${text('手机')}', name:'mobile', index:'a.mobile', width:140, align:"center"},
+            {header:'${text('部门')}', name:'departmentNames', index:'a.department', width:200, align:"center"},
+            {header:'${text('职位')}', name:'position', index:'a.position', width:200, align:"center"},
+            {header:'${text('中文名')}', name:'chineseName', index:'a.name', width:140, align:"center"}
+		],
+		// 加载成功后执行事件
+		ajaxSuccess: function(data){},
+		onSelectRow: function(rowid,status){
+            L.userDataPermission.userId = rowid;
+			$('#userId').val(rowid);
+            $('#submit-searchBottom').trigger('click');
+		}
+	});
+	
+	
+	// 初始化DataGrid对象 --- 菜单列表
+	$('#dataGrid-bottom').dataGrid({
+		searchForm: $("#searchForm-bottom"),
+		columnModel: [
+            {header:'${text('姓名')}', name:'dingUser.name', index:'a.dingUser.name',width:200, align:"center"},
+            {header:'${text('工号')}', name:'dingUser.jobnumber', index:'a.jobnumber', width:150, align:"center", frozen:true},
+            {header:'${text('手机')}', name:'dingUser.mobile', index:'a.mobile', width:140, align:"center"},
+            {header:'${text('职位')}', name:'dingUser.position', index:'a.position', width:200, align:"center"}
+		],
+		onSelectRow: function(rowid,status){
+			if(!$('#'+rowid).hasClass('ui-state-highlight')){
+				L.selRow_dataGrid_bottom = ''
+				L.setInterface = ''
+				return
+			}
+			L.selRow_dataGrid_bottom = rowid
+			L.setInterface = rowid
+		},
+		showCheckbox:false,
+		// 加载成功后执行事件
+		ajaxSuccess: function(data){
+			// 点击行取消其他行选中样式
+			// $('#dataGrid-bottom').find('tr').off().click(function(){
+			// 	$(this).addClass('ui-state-highlight').siblings('tr').removeClass('ui-state-highlight')
+			// })
+		}
+	});
+	
+	
+	// 菜单信息管理 -- 新增列表
+	$('#dataGrid-bottomAdd').dataGrid({
+		searchForm: $("#searchForm-bottomAdd"),
+		columnModel: [
+            {header:'菜单代码', name:'dictCode', index:'a.dictData.dictCode', hidden:true},
+            {header:'菜单代码', name:'description', index:'a.dictData.description',  width:400, align:"left"},
+            {header:'菜单名称', name:'dictValue', index:'a.dictData.dictValue', width:200, align:"left", frozen:true}
+		],
+		showCheckbox:true,
+		// 加载成功后执行事件
+		ajaxSuccess: function(data){}
+	});
+	
+	
+	
+	
+	</script>
+	
+	
+	<script>
+	$(function(){
+		click_showSearch('btnSearch-top','searchForm-top')
+
+		// 公式提示
+		$('.message').hover(function(){
+			$(this).next('.info-message').show()
+		},function(){
+			$('.info-message').hide()
+		})
+	})
+	
+	// 搜索框展示
+	function click_showSearch(id,showBox){
+		$('#'+id).click(function(){
+			var s = $('#'+showBox).attr('class').indexOf('hide')
+			if(s < 0) $('#'+showBox).addClass('hide')
+			else $('#'+showBox).removeClass('hide')
+		})
+	}
+	
+	// 菜单信息管理 -- 新增
+	$('#add-bottomSearch').click(function(){
+        $('#userSelectName').click();
+	})
+
+    function listselectCallback(id, action, index, layero,selectData){
+        if(!L.userDataPermission.userId){
+            layer.msg('请选择需要配置权限的用户')
+            return false
+        }
+    	var data = [{ agentUserId: null, userId: L.userDataPermission.userId  }];
+        debugger;
+        $.each(selectData, function(key, value){
+            data.push({ agentUserId: value.userid, userId: L.userDataPermission.userId  });
+        });
+        // 保存修改菜单信息
+        $.ajax({
+            url: '${ctx}/ach/userAgent/saveAgent',
+            type: 'POST',
+            data: JSON.stringify(data),
+            contentType: 'application/json;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                if(res.code == '500'){
+                    layer.msg(res.msg)
+                }
+                else{
+                    layer.msg('保存成功')
+                    L.interfaceQuerys = []  // 清空数据
+                    $('#submit-searchBottom').trigger('click')  // 手动刷新菜单信息管理
+                    console.log(res)
+                }
+
+            }
+        })
+    }
+	
+	</script>

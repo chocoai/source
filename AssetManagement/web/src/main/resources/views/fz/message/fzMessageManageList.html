@@ -1,0 +1,152 @@
+<% layout('/layouts/default.html', {title: '消息推送', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('消息推送')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('message:fzMessageManage:edit')){ %>
+					<a href="${ctx}/message/fzMessageManage/form" class="btn btn-default btnTool" title="${text('新增消息推送')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzMessageManage}" action="${ctx}/message/fzMessageManage/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<!--<div class="form-group">
+					<label class="control-label">${text('接收用户')}：</label>
+					<div class="control-inline">
+						<#form:input path="touser" class="form-control width-120"/>
+					</div>
+				</div>-->
+			 <div class="form-group">
+				<label class="control-label">创建时间：</label>
+				<div class="control-inline">
+					<#form:input path="createDate_gte" readonly="true" maxlength="20" class="form-control Wdate-date"
+					dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true,onpicked:function(){date_lte.click()}});"/>
+					&nbsp;--&nbsp;
+					<#form:input path="createDate_lte" readonly="true" maxlength="20" class="form-control Wdate-date"
+					dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:true});"/>
+				</div>
+			 </div>
+				<div class="form-group">
+					<label class="control-label">${text('应用id')}：</label>
+					<div class="control-inline">
+						<#form:input path="agendId" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+<!--				<div class="form-group">
+					<label class="control-label">${text('消息提示文案')}：</label>
+					<div class="control-inline">
+						<#form:input path="title" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('会话框文案')}：</label>
+					<div class="control-inline">
+						<#form:input path="text" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('跳转页面路径')}：</label>
+					<div class="control-inline">
+						<#form:input path="singleurl" maxlength="400" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('页面跳转显示标题')}：</label>
+					<div class="control-inline">
+						<#form:input path="singletitle" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('状态')}：</label>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('成功失败信息')}：</label>
+					<div class="control-inline">
+						<#form:input path="remarks" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>-->
+
+				<div class="form-group">
+					<label class="control-label">${text('是否推送成功')}：</label>
+					<div class="control-inline width-120">
+						<!--<#form:input path="result" maxlength="1" class="form-control width-120"/>-->
+						<#form:select path="result" dictType="is_success" blankOption="true" class="form-control" id="result"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'${text('接收用户')}', name:'touser', index:'a.touser', width:250, align:"center", frozen:true},
+        {header:'${text('是否推送成功')}', name:'result', index:'a.result', width:150, align:"center",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('is_success')}, val, '${text('未知')}', true);
+            }},
+        {header:'${text('接收失败用户')}', name:'remarks', index:'a.remarks', width:250, align:"center"},
+		{header:'${text('应用id')}', name:'agendId', index:'a.agend_id', width:150, align:"center"},
+		{header:'${text('消息提示文案')}', name:'title', index:'a.title', width:250, align:"center"},
+		{header:'${text('会话框文案')}', name:'text', index:'a.text', width:150, align:"center"},
+		{header:'${text('跳转页面路径')}', name:'singleurl', index:'a.singleurl', width:250, align:"center"},
+		{header:'${text('页面跳转显示标题')}', name:'singletitle', index:'a.singletitle', width:150, align:"center"},
+
+
+
+	],
+    shrinkToFit:false,
+    autoScroll:true,
+    autowidth:true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        $('#dataGrid td[aria-describedby="dataGrid_touser"]').on('click',function () {
+            layer.open({
+                type: 1,
+                title: '接收用户',
+                closeBtn: 1, //不显示关闭按钮
+                anim: 2,
+                skin: 'layui-layer-demo',
+                shadeClose: true, //开启遮罩关闭
+                content: '<div style="padding:20px;width: 300px">'+$(this).html()+'</div>'
+            });
+        })
+        $('#dataGrid td[aria-describedby="dataGrid_remarks"]').on('click',function () {
+                layer.open({
+                    type: 1,
+                    title: '接收失败用户',
+                    closeBtn: 1, //不显示关闭按钮
+                    anim: 2,
+                    skin: 'layui-layer-demo',
+                    shadeClose: true, //开启遮罩关闭
+                    content: '<div style="padding:20px;width: 300px">' + $(this).html() + '</div>'
+                });
+        })
+        $('#dataGrid td[aria-describedby="dataGrid_singleurl"]').on('click',function () {
+            layer.open({
+                type: 1,
+                title: '跳转页面路径',
+                closeBtn: 1, //不显示关闭按钮
+                anim: 2,
+                skin: 'layui-layer-demo',
+                shadeClose: true, //开启遮罩关闭
+                content: '<div style="padding:20px;width: 300px;overflow-x: scroll;overflow-y: scroll">'+$(this).html()+'</div>'
+            });
+        })
+	}
+});
+</script>

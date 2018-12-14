@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.order.dao.AmOrderShoppingDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="AmOrderShopping">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="getSkuInfo" resultType="com.jeesite.modules.asset.order.entity.Shopping">
+		SELECT
+			a.num_iid id,
+			a.title name,
+			a.pic_url pic,
+			a.nick storeName,
+			b.sku_id skuid,
+			b.outer_id outerCode,
+			b.properties property,
+			b.quantity quantity,
+			b.real_price price
+		FROM
+		tb_product a
+		LEFT JOIN tb_sku b ON a.num_iid = b.num_iid
+		WHERE
+			b.sku_id = #{arg0}
+	</select>
+
+	<!-- 根据skuid获取商品真实售价，库存数-->
+	<select id="selectBySkuId" resultType="com.jeesite.modules.asset.tianmao.entity.TbSku">
+		SELECT *
+		FROM tb_sku
+		<where>
+			sku_id in
+			<foreach collection="list" item="skuIdList" index="index" open="(" separator="," close=")">
+				#{skuIdList}
+			</foreach>
+			AND quantity>0
+		</where>
+	</select>
+
+	<update id="updateBySkuIdList" parameterType="java.util.List">
+		UPDATE js_am_order_shopping
+		SET goods_status = 1,update_time = now()
+		WHERE guide_code =#{userCode} AND goods_status = 0 AND sku_id IN
+		<foreach item="list" index="index" collection="skuIdList" open="(" separator="," close=")">
+			#{list}
+		</foreach>
+	</update>
+	<!--AND guide_code =#{userCode} AND goods_status = 0-->
+</mapper>

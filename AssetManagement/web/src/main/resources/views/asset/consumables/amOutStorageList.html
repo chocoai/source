@@ -1,0 +1,279 @@
+<% layout('/layouts/default.html', {title: '耗材出库表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('耗材出库表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default active" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('consumables:amOutStorage:edit')){ %>
+					<a href="${ctx}/consumables/amOutStorage/form?isNewRecord=true" class="btn btn-default btnTool" title="${text('新增耗材出库表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+					<a href="javascript:void(0)" class="btn btn-primary btnList" id="delBtn" title="${text('删除耗材出库表')}" > ${text('删除')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${amOutStorage}" action="${ctx}/consumables/amOutStorage/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">出库单号：</label>
+					<div class="control-inline">
+						<#form:input path="outstorageCode" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据类型：</label>
+					<div class="control-inline width-120">
+						<#form:select path="billType" dictType="am_out_lib" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">出库仓库：</label>
+					<div class="control-inline width-120" >
+						<#form:treeselect id="amWarehouse" title="${text('仓库选择')}"
+						path="amWarehouse.warehouseCode" labelPath="amWarehouse.warehouseName"
+						url="${ctx}/warehouse/amWarehouse/treeData" class="required" allowClear="true"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">领用部门：</label>
+					<div class="control-inline width-120" >
+						<#form:treeselect id="office" title="${text('部门选择')}"
+						path="office.officeCode" labelPath="office.officeName"
+						url="${ctx}/sys/office/treeData" class="required" allowClear="true"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">领用人：</label>
+					<div class="control-inline">
+						<#form:hidden path="staffCode" maxlength="100" class="form-control width-120"/>
+						<#form:input path="amStaff.staffName" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">单据状态：</label>
+					<div class="control-inline width-120">
+						<#form:select path="billStatus" dictType="am_document_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'出库单号', name:'outstorageCode', index:'a.outstorage_code', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+                // return '<a href="${ctx}/consumables/amOutStorage/form?outstorageCode='+row.outstorageCode+'" class="btnList"  data-title="${text('编辑耗材出库表')}">'+(val||row.id)+'</a><a href="javascript:void(0);" class="click_tab">\'+(val||row.id)+\'</a>';
+                return '<a href="${ctx}/consumables/amOutStorage/form?outstorageCode='+row.outstorageCode+'" class="btnList" style="cursor: pointer;display:none" data-title="${text('编辑耗材出库表')}">'+(val||row.id)+'</a> <a href="javascript:void(0);" class="click_tab">'+(val||row.id)+'</a>';
+
+            }},
+        {header:'单据状态', name:'billStatus', index:'a.bill_status', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_document_status')}, val, '${text('')}', true);
+            }},
+        {header:'单据类型', name:'billType', index:'a.bill_type', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('am_out_lib')}, val, '${text('')}', true);
+            }},
+		{header:'出库日期', name:'outDate', index:'a.out_date', width:150, align:"left"},
+		{header:'出库仓库', name:'amWarehouse.warehouseName', index:'d.warehouse_code', width:150, align:"left"},
+		{header:'领用部门', name:'office.officeName', index:'e.office_name', width:150, align:"left"},
+		{header:'领用人', name:'amStaff.staffName', index:'c.staff_name', width:150, align:"left"},
+		{header:'出库备注', name:'remarks', index:'a.remarks', width:150, align:"left"},
+        {header:'创建者', name:'createBy', index:'a.create_by', width:150, align:"center"},
+        {header:'创建时间', name:'createDate', index:'a.create_date', width:150, align:"center"},
+        {header:'更新者', name:'updateBy', index:'a.update_by', width:150, align:"center"},
+        {header:'更新时间', name:'updateDate', index:'a.update_date', width:150, align:"center"},
+        {header:'耗材编码', name:'outStorageDetails.consumablesCode', index:'b.consumables_code',width:150, align:"center"},
+        {header:'耗材名称', name:'outStorageDetails.consumablesName', index:'b.consumables_name',width:150, align:"center"},
+        {header:'规格型号', name:'outStorageDetails.specifications', index:'b.specifications',width:150, align:"center"},
+        {header:'计量单位', name:'outStorageDetails.measureUnit', index:'b.measure_unit',width:150, align:"center",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_measure_unit')}, val, '', true);
+            }},
+        {header:'出库数量', name:'outStorageDetails.outstorageCount', index:'b.outstorage_count',width:150, align:"center"},
+        {header:'出库单价', name:'outStorageDetails.outstoragePrice', index:'b.outstorage_price',width:150, align:"center"},
+        {header:'出库金额', name:'outStorageDetails.outstorageAmount', index:'b.outstorage_amount',width:150, align:"center"},
+        {header:'备注', name:'outStorageDetails.remarks', index:'b.remarks',width:150, align:"center"}
+	],
+	showCheckbox:true,
+	shrinkToFit: false,
+	autoScroll: true,
+	autowidth: true,
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		// 合并订单
+		rowCheckBox()
+        Concurrency()
+	}
+});
+
+
+
+// 合并表格   [单据类型/单据状态/创建者/创建时间/更新者/更新时间/操作]
+var rowCheckBox = function(){
+	var a = [], // 暂存
+		num = 1,  // 序号 
+		dataId=''
+
+	$('#dataGrid tr').each(function(index,item){
+		var id = $(item).attr('id'),
+			par = $('#dataGrid tr#'+ id);
+		
+		if(!id) return
+		
+		// css优化
+		$(item).on({
+			'mouseenter':function(){par.addClass('ui-state-hover')},
+			'mouseleave':function(){par.removeClass('ui-state-hover')},
+			'click':function(){par.toggleClass('ui-state-highlight')}
+		})
+
+		if(a.indexOf(id) === -1){  // 不存在
+			a.push(id)	
+			$(item).addClass('parFaather').attr('data-RowNum',1).find('td').eq(0).html(num++)
+		}else{  // 已存在进行合并操作
+			var b = [],  // 暂存	
+				_tPar = $('#dataGrid .parFaather#'+ a[a.indexOf(id)]),
+				_t = $(item)
+				
+
+			_tPar.attr('data-RowNum',_tPar.data().rownum++)  // 更新需要合并的列数
+			$(item).insertAfter(_tPar)  // 重新整理排序
+
+			// 隐藏多余的 
+			_t.find('td.jqgrid-rownum').hide() // 序号 
+			_t.find('td[aria-describedby="dataGrid_cb"]').hide()  // 复选 
+			_t.find('td[aria-describedby="dataGrid_outstorageCode"]').hide()  // 单号	
+			_t.find('td[aria-describedby="dataGrid_billType"]').hide()  // 单据类型			
+			_t.find('td[aria-describedby="dataGrid_outDate"]').hide()  // 出库日期
+			_t.find('td[aria-describedby="dataGrid_amWarehouse.warehouseName"]').hide()  // 出库仓库
+			_t.find('td[aria-describedby="dataGrid_office.officeName"]').hide()  // 领用部门
+			_t.find('td[aria-describedby="dataGrid_amStaff.staffName"]').hide()  // 领用人
+			_t.find('td[aria-describedby="dataGrid_remarks"]').hide()  // 出库备注
+			_t.find('td[aria-describedby="dataGrid_billStatus"]').hide()  // 单据状态
+			_t.find('td[aria-describedby="dataGrid_createBy"]').hide()  // 创建者
+			_t.find('td[aria-describedby="dataGrid_createDate"]').hide()  // 创建时间
+			_t.find('td[aria-describedby="dataGrid_updateBy"]').hide()  // 更新者
+			_t.find('td[aria-describedby="dataGrid_updateDate"]').hide()  // 更新时间
+
+			// 合并		
+			_tPar.find('td.jqgrid-rownum').attr('rowspan',_tPar.data().rownum)   // 序号
+			_tPar.find('td[aria-describedby="dataGrid_cb"]').attr('rowspan',_tPar.data().rownum)   // 复选
+			_tPar.find('td[aria-describedby="dataGrid_outstorageCode"]').attr('rowspan',_tPar.data().rownum)   // 单号
+			_tPar.find('td[aria-describedby="dataGrid_billType"]').attr('rowspan',_tPar.data().rownum)   // 单据类型
+			_tPar.find('td[aria-describedby="dataGrid_billStatus"]').attr('rowspan',_tPar.data().rownum)   // 单据状态
+			_tPar.find('td[aria-describedby="dataGrid_outDate"]').attr('rowspan',_tPar.data().rownum)    // 出库日期
+			_tPar.find('td[aria-describedby="dataGrid_amWarehouse.warehouseName"]').attr('rowspan',_tPar.data().rownum)    // 出库仓库
+			_tPar.find('td[aria-describedby="dataGrid_office.officeName"]').attr('rowspan',_tPar.data().rownum)    // 领用部门
+			_tPar.find('td[aria-describedby="dataGrid_amStaff.staffName"]').attr('rowspan',_tPar.data().rownum)    // 领用人
+			_tPar.find('td[aria-describedby="dataGrid_remarks"]').attr('rowspan',_tPar.data().rownum)    // 出库备注
+			_tPar.find('td[aria-describedby="dataGrid_createBy"]').attr('rowspan',_tPar.data().rownum)   // 创建者
+			_tPar.find('td[aria-describedby="dataGrid_createDate"]').attr('rowspan',_tPar.data().rownum)   // 创建时间
+			_tPar.find('td[aria-describedby="dataGrid_updateBy"]').attr('rowspan',_tPar.data().rownum)   // 更新者
+			_tPar.find('td[aria-describedby="dataGrid_updateDate"]').attr('rowspan',_tPar.data().rownum)   // 更新时间	
+		}
+	})
+}
+
+
+
+
+
+
+$('#delBtn').click( function(e){
+    // 获取所有被选中订单
+    var orderArr = $('#dataGrid :checkbox:checked'),
+        temp = []   // 当前被选中的订单
+    if(orderArr.length>0){
+        for(var i = 0; i<orderArr.length; i++){
+            var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+            temp.push(a)
+        }
+
+        var str = temp.join(',')
+        $.ajax({
+            url: '${ctx}/consumables/amOutStorage',
+            data: {
+                'code': str.toString(),
+                'isDel': 'true'
+            },
+            type: 'GET',
+            contentType: 'application/json',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    if(confirm('确认删除吗?')){
+                        $.ajax({
+                            async:false,
+                            url:'${ctx}/consumables/amOutStorage/delete?outStorageCode='+str,
+                            success:function (result) {
+                                var obj = JSON.parse(result);
+                                // alert(obj.message);
+                                if(obj.result=='true') {
+                                    js.showMessage(obj.message)
+                                    window.location.reload()
+                                }else {
+                                    js.showMessage(obj.message)
+                                }
+                            }
+                        })
+                    }
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    }else{
+        layer.msg('请至少选择一张订单进行删除')
+    }
+
+
+
+
+
+});
+
+function arrHasValue(v, arr) {
+    var output = false;
+    for (var i in arr) {
+        if (v == arr[i]) {
+            output = true;
+            return output;
+        }
+    }
+    output = false;
+    return output;
+}
+// 并发检测
+function Concurrency(){
+    $("#dataGrid td[aria-describedby='dataGrid_outstorageCode'] .click_tab").on('click', function(e){
+        var _t = $(this)
+        $.ajax({
+            // url: '${ctx}/redisUnits/getFlag',
+            url: '${ctx}/consumables/amOutStorage',
+            data: {
+                'code':_t.html()
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                if(res.flag === 'true'){
+                    _t.siblings('a.btnList').trigger('click')
+                }else{
+                    layer.msg(res.msg)
+                }
+            }
+        })
+    });
+}
+</script>

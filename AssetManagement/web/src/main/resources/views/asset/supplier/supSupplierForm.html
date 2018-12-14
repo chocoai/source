@@ -1,0 +1,1327 @@
+<% layout('/layouts/default.html', {title: '供应商资料管理', libs: ['validate','fileupload','dataGrid']}){ %>
+    <!-- 图片上传 -->
+    <link rel="stylesheet" href="${ctxStatic}/easyUpload/css/zyupload.css">
+    <script src="${ctxStatic}/easyUpload/js/zyfile.js?${_version}"></script>
+    <script src="${ctxStatic}/easyUpload/js/zyupload.js?${_version}"></script>
+    <style>
+        .selData .dataItem{width: 98px;display: inline-block;*display: inline;*zoom: 1;}
+        .uploadImg .selData{font-size: 14px;display: block!important;width: 275px;margin-left: 0;height: 30px;line-height: 30px;}
+        .photoShow{position: absolute;top: 0;left: 0;right: 0;bottom: 0;width: 100%;height: 100%;background-color: rgba(000, 000, 000, 0.7);z-index: 100;}
+        .photoShow .close{position: absolute;right: 3%;top: 1%;display: block;width: 60px;height: 60px;opacity: 0.5;filter:Alpha(opacity=50);z-index: 50;}
+        .photoShow .close img{width: 100%;height: 100%;}
+        .photoShow .close:hover{opacity: 1;filter:Alpha(opacity=100);}
+        .photoShow .cont{position: absolute;display: table-cell;vertical-align: middle;width: 100%;text-align: center;color: #edeaea;top: 200px}
+        .photoShow .cont .img{max-width: 1024px;}
+    	.addImgSet{position: relative;}
+        .chosen-container{display: none}
+    	.progress{position: absolute;display: block;left: -1px;right: -1px;height: 30px;top: -1px;bottom: 0;border: 0;background-color: transparent}
+	    .progress span{width: 0;display: block}
+        .filePicker{    border: 0; float: none;background: none repeat scroll 0 0 #fff;color: #565656;cursor: pointer;box-shadow: 0 0 1px 1px rgba(0,0,0,.1);font-size: 14px;padding: 0 18px; position: relative;text-align: center;line-height: 32px;
+            height: 32px;transition: border .2s;-moz-transition: border .2s;-webkit-transition: border .2s;-o-transition: border .2s;}
+    	#bgLoading{position: absolute;top: 0;left: 0;bottom: 0;right: 0;min-width: 100%;max-height: 100%;display: none;z-index: 9999;}
+    </style>
+    <div class="main-content">
+        <div class="box box-main">
+            <div class="box-header with-border">
+                <div class="box-title">
+                    <i class="fa fa-list-alt"></i> ${text(supSupplier.isNewRecord ? '新增供应商资料' : '编辑供应商资料')}
+                </div>
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                </div>
+            </div>
+            <#form:form id="inputForm" model="${supSupplier}" action="${ctx}/supplier/supSupplier/save" method="post" class="form-horizontal">
+            <div class="box-body">
+                <div class="form-unit">${text('基本信息')}</div>
+                <#form:hidden path="supplierCode" id="supSupplierCode"/>
+                <#form:hidden path="isNewRecord"/>
+                <div class="row">
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 公司全称：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="companyName"  readonly="true" maxlength="64" class="form-control required"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 公司成立日期：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="dateStartup" readonly="true" maxlength="20" class="form-control Wdate required"
+                                dataFormat="date"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 公司性质：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:hidden path="companyProperty"  id="companyProperty"/>
+                                <#form:input path="companyPropertyName" class="form-control" readonly="true"/>
+    
+                            </div>
+                        </div>
+                    </div>
+    
+                </div>
+                <div class="row">
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                公司网址：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="companyOnlineadd" maxlength="100" class="form-control" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:hidden path="supplierStatus"  id="supplierStatus"/>
+                                <#form:input path="supplierStatusName" class="form-control" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 注册资本（万元）：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="registeredCapital" maxlength="20" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+    
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 税号/统一社会信用代码号：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="taxNumber" maxlength="225" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 占地面积（㎡）：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="space" maxlength="20" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 员工数量（人）：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="employees" maxlength="20" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+    
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 经营类型：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <!--<#form:select path="businessType" dictType="business_type" class="form-control required" readonly="true"/>-->
+                                <#form:hidden path="businessType"  id="businessType"/>
+                                <#form:input path="businessTypeName" class="form-control" readonly="true"/>
+    
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 企业经营范围：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <!--<#form:select path="businessScope" dictType="business_scope" class="form-control required" readonly="true"/>-->
+                                <#form:hidden path="businessScope"  id="businessScope"/>
+                                <#form:input path="businessScopeName" class="form-control" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 月生产能力（万元）：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="monthProduction" maxlength="20" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+    
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 月富余生产能力（万元）：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="monthSurplusProduction" maxlength="20" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 年营业额（万元）：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="yearTurnover" maxlength="20" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 公司电话：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="companyTel" maxlength="25" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div  class="row">
+    
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 公司传真：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="companyFax" maxlength="25" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 邮政编码：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="companyPostcode" maxlength="25" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                已写入K3：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <!--<#form:select path="written" dictType="written" class="form-control"/>-->
+                                <#form:input path="written"  maxlength="125" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+    
+    
+                </div>
+    
+    
+                <div class="row">
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 国家：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="country" maxlength="125" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 省份：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="province" maxlength="125" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 城市：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="city" maxlength="125" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span>综合评分：<i class="fa icon-question hide required"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="score" id="score" class="form-control required"/>
+                            </div>
+                        </div>
+                    </div>
+    
+    
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span>K3名称：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="abbreviationName" maxlength="125" id="abbreviationName" class="form-control required"/>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <!-- <div class="col-sm-8" style="width: 100%;">
+                                <div class="filePicker" style="width: 100%;" name="report" type="all">上传报告文件</div>
+                            </div> -->
+                            <!-- <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 上传报告文件:<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <input style="width: 180px;" type="file" name="" id="report">
+                            </div> -->
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required " aria-required="true">*</span> 上传报告文件：<i class="fa icon-question hide"></i>
+                            </label>
+                            <div class="col-sm-8">
+                                <a href="javascript:void(0)" title="上传附件"  class="addImgSet btn btn-primary btn-sm">
+                                    <input type="file" class="hideInput" style="position:absolute;width:100%;height:100%;top:0;left:0;z-index:1000;opacity:0" onchange="uploadFile.upload(this)" data-type="file" id="upLoadFile" />
+                                    <span class="progress">
+                                        <span class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0"></span>
+                                    </span>
+                                    <i class="fa fa-plus" style="position:relative;z-index:2"></i>
+                                    <span class="font-msg" style="position:relative;z-index:2">上传</span>
+                                </a>&nbsp;
+                                <a href="javascript:void(0)" title="下载附件" style="display:none" class="downloadFile hasImgSet btn btn-primary btn-sm" style="display:inline" onclick="uploadFile.down(this);return false;">下载</a>&nbsp;
+                                <a href="javascript:void(0)" title="查看图片" style="display:none" id="look" class="hasImgSet btn btn-primary btn-sm" onclick="uploadFile.show(this);return false;">查看</a>&nbsp;
+                                <a href="javascript:void(0)" title="删除附件" style="display:none" id="delete" data-d="del" filepath="" hasBase="true" data-type="file" class="hasImgSet btn btn-danger btn-sm" onclick="uploadFile.del(this);return false;">删除</a>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+    
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-sm-1" title="">
+                                <span class="required ">*</span> 公司详细地址：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-11">
+                                <#form:input path="fullAddress" maxlength="200" class="form-control required" readonly="true"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <div class="form-group">
+                            <label class="control-label col-sm-1" title="">
+                                公司简介：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-11">
+                                <#form:textarea path="companyIntroduction" maxlength="1000" rows="6" class="form-control" height="200" readonly="true"/>
+                                <#form:hidden path="savePath"  id="savePath"/>
+                                <#form:hidden path="relativePath"  id="relativePath"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="form-unit">公司联系人</h4>
+                <div class="ml10 mr10 mb20">
+                    <!--<% if (hasPermi('supplier:supSupplier:edit')){ %>
+                    <a href="#" id="supSupplierContactDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+                    <% } %>-->
+                    <table id="supSupplierContactDataGrid"></table>
+                </div>
+                <h4 class="form-unit">主要合作客户</h4>
+                <div class="ml10 mr10 mb20">
+                    <!--<% if (hasPermi('supplier:supSupplier:edit')){ %>
+                    <a href="#" id="supSupplierCustomersDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+                    <% } %>-->
+                    <table id="supSupplierCustomersDataGrid"></table>
+    
+                </div>
+    
+                <h4 class="form-unit">供应商资料</h4>
+                <div class="ml10 mr10">
+                    <div id="upLoader">
+    
+                    </div>
+                </div>
+            </div>
+    
+    
+            <div class="box-footer">
+                <div class="row">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <% if (hasPermi('supplier:supSupplier:edit')){ %>
+                        <!--<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit" style="display: none"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+                        <a href="javascript:void(0)" class="btn btn-sm btn-primary" id="sub-simulation"><i class="fa fa-check"></i> ${text('保 存')}</a>-->
+                         <a href="javascript:void(0)" id="exportInfoToK3" class="btn btn-primary" title="${text('写入K3')}"> ${text('写入K3')}</a>&nbsp;&nbsp;
+                        <a href="#" data-title="${text('保 存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check">
+                        </i> ${text('保 存')}</button></a>&nbsp;
+                        <a href="#" data-title="${text('审 核')}">  <button type="submit" class="btn btn-sm btn-primary" id="examine" onclick="">
+                            ${text('审 核')}</button></a>
+                        <a href="#" data-title="${text('反 审 核')}">  <button type="submit" class="btn btn-sm btn-primary" id="unexamine" onclick="">
+                            ${text('重 新 审 核')}</button></a>
+                        <% } %>
+                        <!--  -->
+                        <button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+                    </div>
+                </div>
+            </div>
+        </#form:form>
+    </div>
+    
+    <!-- 日期选择 -->
+    <div class="copyData" style="display: none">
+        <div class="selData">有效期
+            <div class="dataItem"><input type="text" id="" name="fullAddress" value="" maxlength="20" class="form-control dataEF" onclick="
+                        WdatePicker({
+                        onpicking:function(dp){
+                            this.value = dp.cal.getNewDateStr()
+                        }
+                    })"></div>
+            <div class="dataItem"><input type="text" id="" name="fullAddress" value="" maxlength="20" class="form-control Wdate dataEX" onclick="
+                        var prevD = this.parentNode.previousElementSibling.children[0].value
+                        WdatePicker({onpicking:function(dp){this.value = dp.cal.getNewDateStr()},minDate:prevD})"></div>
+        </div>
+    </div>
+    
+    
+    <!-- 图片查看背景 -->
+    <div class="photoShow" style="display: none">
+        <a href="javascript:void(0)" class="close"><img src="/static/easyUpload/images/del.png"/></a>
+        <div class="cont">
+            <p class="title">文件需要下载预览</p>
+            <img src="" class="img">
+        </div>
+        <!-- <div class="cz">
+            <a href="javascript:void(0)" class="prev" title=""></a>
+            <a href="javascript:void(0)" class="next"></a>
+        </div> -->
+    </div>
+    
+    </div>
+    <% } %>
+    
+	<div id="bgLoading"></div>  <!-- 遮罩 -->
+    <script>
+        // 关闭页面
+        function closePage(){
+            var flag = true
+            $('.def_upload.important').each(function(){
+                if($(this).find('.upload_append_list').length  === 0){
+                    flag = false
+                    layer.msg('请上传的必传的供应商资料文件')
+                    return false
+                }
+            })
+    
+            if(flag) js.closeCurrentTabPage()
+        }
+    
+    
+        // 检查订单是否已结束操作
+        function checkConcurrency(){
+            clearInterval(this.times)
+            this.times = setInterval(function(){
+                $.ajax({
+                    url: '${ctx}/redisUnits/updataTime',
+                    data: {
+                        'code': GetRequest().supplierCode
+                    },
+                    type: 'GET',
+                    contentType: 'text/plain;charset=UTF-8',
+                    dataType: 'json'
+                })
+            },1000)
+    
+            // 截取url
+            function GetRequest() {
+                var url = location.search; //获取url中"?"符后的字串
+    
+                var theRequest = new Object();
+                if (url.indexOf("?") != -1) {
+                    var str = url.substr(1);
+                    strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+                    for (var i = 0; i < strs.length; i++) {
+                        if (strs[i].split("=")[0] === 'beginTime') {
+                            theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                        } else {
+                            theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                        }
+    
+                    }
+                }
+                return theRequest;
+            }
+        }
+        $('.photoShow .close').click(function(){
+            $('.photoShow').fadeOut()
+        })
+    
+    
+        //初始化公司联系人DataGrid对象
+        $("#supSupplierContactDataGrid").dataGrid({
+    
+            data: ${toJson(supSupplier.supSupplierContactList)},
+            datatype: "local", // 设置本地数据
+            autoGridHeight: function(){return 'auto'}, // 设置自动高度
+    
+            // 设置数据表格列
+            columnModel: [
+                {header:'状态', name:'status', editable:true, hidden:true},
+                {header:'主键', name:'contactCode', editable:true, hidden:true},
+                {header:'供应商编号', name:'supplierCode.supplierCode', editable:false, hidden:true},
+                {header:'职位', name:'contactPosition', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'25', 'class':'form-control required'}},
+                {header:'姓名', name:'contactName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+                {header:'微信', name:'wechat', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+                {header:'QQ', name:'qq', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'60', 'class':'form-control'}},
+                {header:'手机', name:'phonenum', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'30', 'class':'form-control required'}},
+                {header:'邮箱', name:'email', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'30', 'class':'form-control required email'}},
+                /* {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+    
+                         var actions = [];
+                         if (val == 'new'){
+                             actions.push('<a href="javaScript:void(0)" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#supSupplierContactDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                         }else{
+                             actions.push('<a href="javaScript:void(0)" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#supSupplierContactDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                         }
+                         return actions.join('');
+                     }, editoptions: {defaultValue: 'new'}}*/
+            ],
+    
+            // 编辑表格参数
+            editGrid: true,				// 是否是编辑表格
+            editGridInitRowNum: 5,		// 编辑表格的初始化新增行数
+            // 编辑表格的提交数据参数
+            editGridInputFormListName: 'supSupplierContactList', // 提交的数据列表名
+            editGridInputFormListAttrs: 'status,contactCode,supplierCode.supplierCode,contactPosition,contactName,wechat,qq,phonenum,email,', // 提交数据列表的属性字段
+            // 加载成功后执行事件
+            ajaxSuccess: function(data){
+    
+            }
+        });
+        //初始化主要合作客户DataGrid对象
+        $("#supSupplierCustomersDataGrid").dataGrid({
+    
+            data: ${toJson(supSupplier.supSupplierCustomersList)},
+            datatype: "local", // 设置本地数据
+            autoGridHeight: function(){return 'auto'}, // 设置自动高度
+    
+            // 设置数据表格列
+            columnModel: [
+                {header:'状态', name:'status', editable:true, hidden:true},
+                {header:'主键', name:'customerCode', editable:true, hidden:true},
+                {header:'供应商编号', name:'supplierCode.supplierCode', editable:false, hidden:true},
+                {header:'客户名称', name:'customerName', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+                {header:'年合作份额（万元）', name:'cooperationShare', width:150, sortable:false, fixed:true, editoptions:{'maxlength':'20', 'class':'form-control required'},formatter: function(val, obj, row, act){
+                        var actions = row.cooperationShare;
+                        return actions;
+                    }, editoptions: {defaultValue: 'new'}},
+                {header:'主要合作产品类型', name:'effectiveDate', width:150, editable:false, edittype:'text', editoptions:{'maxlength':'225', 'class':'form-control required'}},
+            ],
+    
+            // 编辑表格参数
+            editGrid: true,				// 是否是编辑表格
+            editGridInitRowNum: 2,		// 编辑表格的初始化新增行数
+            // 编辑表格的提交数据参数
+            editGridInputFormListName: 'supSupplierCustomersList', // 提交的数据列表名
+            editGridInputFormListAttrs: 'status,customerCode,supplierCode.supplierCode,customerName,cooperationShare,effectiveDate,', // 提交数据列表的属性字段
+            // 加载成功后执行事件
+            ajaxSuccess: function(data){
+                checkConcurrency();
+            }
+        });
+    
+    
+    </script>
+    <script>
+        $("#inputForm").validate({
+            submitHandler: function(form){
+                js.ajaxSubmitForm($(form), function(data){
+                    js.showMessage(data.message);
+                    var flag = $("#isNewRecord").val();
+                    if(data.result == Global.TRUE){
+                        btncheck();
+                        if (flag === "true") {
+                            js.closeCurrentTabPage(function(contentWindow){
+                                contentWindow.page();
+                            });
+                        } else {
+                            location.reload();
+                        }} else {
+                        btncheck();
+                    }
+                }, "json");
+            }
+        });
+    
+        // window.onload=function(){
+        //     btncheck()
+        // };
+        //判断 审核 保存按钮 点击状态
+        function btncheck(){
+            var flag = $("#supplierStatus").val();
+            if (flag === "0"||flag === "1") {
+                $('#unexamine').attr("disabled", true);
+            } else if (flag === "2"){
+                $('#btnSubmit').attr("disabled", true);
+                $('#examine').attr("disabled", true);
+                $('#score').attr("readonly",true);
+                $('#abbreviationName').attr("readonly",true);
+            }
+        }
+        //保存
+        // function save(index) {
+        //     var inputForm = document.getElementById("inputForm");
+        //     inputForm.action = '${ctx}/supplier/supSupplier/save?supplierStatus='+index;
+        // }
+    
+        $(function(){
+            btncheck()
+            // if($("#relativePath").val() !=""){
+            //     $("#upLoadFile").hide
+            // }
+            let status = $("#supplierStatus").val(),
+                pathVal = $("#relativePath").val(),
+                patharr = pathVal.split(".")
+                console.log("单据状态："+ status)
+                uploadFile.src[1] = $("#savePath").val()
+                uploadFile.src[0] = $("#relativePath").val()
+            if(status == 0||status == 1){
+                if(pathVal != ""){
+                    $("#upLoadFile").hide();
+                    $(".addImgSet").hide();
+                    $("#delete").show();
+                    if(patharr[patharr.length-1] ==='image' || patharr[patharr.length-1] === 'jpeg' || patharr[patharr.length-1] === 'jpg' || patharr[patharr.length-1] === 'png'){
+                        $("#look").show();
+                        $(".downloadFile").hide();
+                    }else{
+                        $("#look").hide();
+                        $(".downloadFile").show();
+                    }
+                }else{
+                    $("#upLoadFile").show();
+                    $(".addImgSet").show();
+                    $(".downloadFile").hide();
+                    $("#look").hide();
+                    $("#delete").hide();
+                }
+            }else if(status == 2){
+                $("#upLoadFile").hide();
+                $(".addImgSet").hide();
+                $("#delete").hide();
+                if(patharr[patharr.length-1] ==='image' || patharr[patharr.length-1] === 'jpeg' || patharr[patharr.length-1] === 'jpg' || patharr[patharr.length-1] === 'png'){
+                    $("#look").show();
+                    $(".downloadFile").hide();
+                }else{
+                    $("#look").hide();
+                    $(".downloadFile").show();
+                }
+            }
+            //简称只能输入英文字符
+            var isAbbreviationName = true;
+            $("#abbreviationName").change(function(){
+                var _t = $(this);
+                var regName=/^[a-zA-Z]+$/;
+                if( regName.test( _t.val() ) ) {
+                    $(_t).next('.err').remove()
+                    isAbbreviationName = true
+                }else{
+                    if($(_t).next('.err').length === 0) {
+                        $(_t).after('<span style="color:red" class="err">K3名称只能为英文字母(必填)</span>')
+                    }
+                    isAbbreviationName = false
+                }
+    
+            });
+            //综合评分
+            var isSorce = true;
+            $("#score").change(function(){
+                var _t = $(this);
+                var reg=new RegExp("^(\\d|[1-9]\\d|100)(\\.\\d{1})?$");
+                if( _t.val()>=0 &&_t.val()<=100 && reg.test(_t.val())) {
+                    $(_t).next('.err').remove()
+                    isSorce = true
+                }else{
+
+                    if($(_t).next('.err').length === 0) {
+                        $(_t).after('<span style="color:red" class="err">综合评分范围0~100，默认保留一位小数(必填)</span>')
+                    }
+                    isSorce = false
+                }
+    
+            });
+    
+            var supSupplierQualifications='${qualificationsInfo}';
+    
+            // 格式化千分位
+            var Format = {
+                needFormat: function(el){ // 初始化千分位
+                    var el = $(el),
+                        _t = this,
+                        num = this.numFormat(el.val(),el)
+    
+                    if(el.val()) el.val(num)
+                    else el.html(num)
+    
+                    el.on('keyup',function(e){
+    
+                        if($(this).val()){
+                            var v = $(this).val().split('.')[0];
+                            num = _t.numFormat(v,el)
+                            el.val(num)
+                        }else {
+                            var v = $(this).html().split('.')[0];
+                            num = _t.numFormat(v,el)
+                            el.html(num)
+                        }
+                    })
+                },
+                numFormat: function(num,elem){ // 数字千位格式化
+                    if(num) num = num.toString().replace(/\,/ig,'') || "0"
+                    else  num = elem.html().replace(/\,/ig,'') || "0"
+    
+    
+                    var ret = ''
+                    while(num.length > 3){
+                        ret = ',' + num.slice(-3) + ret;
+                        num = num.slice(0, num.length - 3)
+                    }
+                    if(num) ret = num + ret
+                    return ret
+                },
+                delFormat: function(el){ // 删除千分位,
+                    if($(el).val()){
+                        var num = $(el).val().replace(/\,/ig,'')
+                        $(el).val(num)
+                    }else {
+                        var num = $(el).html().replace(/\,/ig,'')
+                        $(el).html(num)
+                    }
+    
+                }
+            }
+    
+    
+            // 调用初始化千分位/输入千分位
+            Format.needFormat('#registeredCapital')
+            Format.needFormat('#space')
+            Format.needFormat('#monthProduction')
+            Format.needFormat('#yearTurnover')
+            Format.needFormat('#employees')
+            Format.needFormat('#monthSurplusProduction')
+            Format.needFormat('#supSupplierCustomersDataGrid td[aria-describedby="supSupplierCustomersDataGrid_cooperationShare"]')
+    
+            function deleteformat(){
+                // 删除千分位,
+                Format.delFormat('#registeredCapital')
+                Format.delFormat('#space')
+                Format.delFormat('#monthProduction')
+                Format.delFormat('#yearTurnover')
+                Format.delFormat('#employees')
+                Format.delFormat('#monthSurplusProduction')
+                Format.delFormat('#supSupplierCustomersDataGrid td[aria-describedby="supSupplierCustomersDataGrid_cooperationShare"]')
+    
+            }
+            //提交必填字段检验
+            function checkziduan(){
+                //检测是否为英文简称
+                if(!isAbbreviationName){
+                    layer.msg('K3名称只能为英文字母(必填)')
+                    return false
+                }
+                //检测综合评分
+                if(!isSorce){
+                    layer.msg('综合评分范围0~100，默认保留一位小数(必填)')
+                    return false
+                }
+                if($("#relativePath").val()==""){
+                    layer.msg('请上传报告文件')
+                    return false
+                }
+                return true
+            }
+            //提交参数
+            function submit(index){
+                var saveform = document.getElementById("inputForm");
+                saveform.action = "${ctx}/supplier/supSupplier/save?supstatus="+index;
+            }
+            $("#btnSubmit").off().click(function(){
+                if($("#relativePath").val() != uploadFile.src[0]){
+                    $("#savePath").val(uploadFile.src[1])
+                    $("#relativePath").val(uploadFile.src[0])
+                }
+                if(!checkziduan()){
+                    return false
+                }
+                deleteformat()
+                submit(0)
+            })
+            $("#examine").off().click(function(){
+                if($("#relativePath").val() != uploadFile.src[0]){
+                    $("#savePath").val(uploadFile.src[1])
+                    $("#relativePath").val(uploadFile.src[0])
+                }
+                if(!checkziduan()){
+                    return false
+                }
+                deleteformat()
+                submit(2)
+            })
+            $("#unexamine").off().click(function(){
+                if(!checkziduan()){
+                    return false
+                }
+                deleteformat()
+                submit(1)
+            })
+    
+            // 判断当前输入公司名字是否存在
+            var isCompanyName = true
+            $('#companyName').keyup(function(){
+                var _t = $(this)
+                $.ajax({
+                    url: '${ctx}/supplier/supSupplier/checkCompanyName',
+                    type: "POST",
+                    contentType: 'text/plain;charset=UTF-8',
+                    data: JSON.stringify({
+                        "supplierCode": $('#supSupplierCode').val(),   // 单据号
+                        "companyName" : _t.val()   // 公司名
+                    }),
+                    success: function (res) {
+                        res = JSON.parse(res)
+                        if(res.result === "false"){
+                            if($(_t).next('.err').length === 0){
+                                $(_t).after('<span style="color:red" class="err">当前公司已存在请更换名字</span>')
+                            }
+    
+                            isCompanyName = false
+                        }else{
+                            $(_t).next('.err').remove()
+                            isCompanyName = true
+                        }
+                    }
+                });
+            })
+    
+    
+    
+    
+            upLoader()
+            function upLoader(){
+                $(window).on('resize',function(){
+                    $('#upLoader').width($('.form-unit').width())
+                })
+                $('#upLoader').zyUpload({
+                    width: $('.form-unit').width(),
+                    height: "",
+                    baseUrl: '${ctx}',
+                    itemWidth: "300px",
+                    itemHeight: "300px",
+                    dataInfo: '${qualificationsInfo}',
+                    url: "${ctx}/supplier/supSupplier/saveProfiles",
+                    multiple: true,
+                    dragDrop: false,
+                    del: true,
+                    finishDel: false,
+                    onSelect: function(files, allFiles) {
+                        // console.info("当前选择了以下文件：");
+                        // console.info(files);
+                        // console.info("之前没上传的文件：");
+                        // console.info(allFiles);
+                    },
+                    onDelete: function(file, surplusFiles) {
+                        // console.info("当前删除了此文件：");
+                        // console.info(file);
+                        // console.info("当前剩余的文件：");
+                        // console.info(surplusFiles);
+                    },
+                    onSuccess: function(file) {
+                        // console.info("此文件上传成功：");
+                        // console.info(file);
+                        layer.closeAll();
+                    },
+                    onFailure: function(file) {
+                        // console.info("此文件上传失败：");
+                        layer.closeAll();
+                        // console.info(file);
+                    },
+                    onComplete: function(responseInfo) {
+                        // console.info("文件上传完成");
+                        // console.info(responseInfo);
+                    }
+                });
+            }
+    
+    
+    
+            // 模拟提交
+            $('#sub-simulation').click(function(){
+                if(!isCompanyName){
+                    layer.msg('当前公司名重复请再输入')
+                    return false
+                }
+                //检测是否为英文简称
+                if(!isAbbreviationName){
+                    layer.msg('K3名称只能为英文字母')
+                    return false
+                }
+                // 检测公司联系人 / 主要合作客户 是否少于最少条数
+                if($('#supSupplierContactDataGrid tr.ui-widget-content:visible').length < 5){
+                    layer.msg('请至少填入5位公司联系人')
+                    return false
+                }
+    
+                if($('#supSupplierCustomersDataGrid tr.ui-widget-content:visible').length < 2){
+                    layer.msg('请至少填入2位主要合作客户')
+                    return false
+                }
+    
+                $('.upload_btn').trigger("click");
+            })
+            // end
+        })
+    
+    
+        // 企业经营范围软体/软木 环评报告可选
+        $('#businessScope').change(function(){
+            var val = $(this).val(),   // 0 木器  1 软体  2软木
+                html = $(this).find('option[value='+val+']').html()
+    
+            console.log(val,html)
+            if((val === "1" && html === '软体') || (val === "2" && html === '软木')){
+                $('.def_upload[name="pdf-1"]').removeClass('important')
+                $('.def_upload[name="pdf-1"]').find('.filePicker').html('上传环评报告证明(可选/pdf)')
+            }else{
+                $('.def_upload[name="pdf-1"]').addClass('important')
+                $('.def_upload[name="pdf-1"]').find('.filePicker').html('上传环评报告证明(必选/pdf)')
+            }
+        })
+
+
+            // 图片上传/附件
+    var uploadFile = {
+        addLoadFiles: [],  // 已经上传阿里云
+        need_addAliFile : [],  // 需提交阿里云文件
+        delloadFile : [],  // 需要删除的文件
+        uploadCode : [],   // 提交成功返回
+        src:['',''],
+        down : function(t){ // 下载附件
+            var imgSrc =  this.src[0];
+            var downName = ''
+            var arr = this.addloadFile
+
+            var name2 = ''
+            for(var i in arr){
+                if(id === arr[i].detailCode && arr[i].delType === 'file'){
+                    name2 = arr[i].name
+                }
+            }
+
+            
+            var $a = document.createElement('a');
+            $a.setAttribute("href", imgSrc);
+            $a.setAttribute("download",name2);
+            var evObj = document.createEvent('MouseEvents');
+            evObj.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, true, false, 0, null);
+            $a.dispatchEvent(evObj);
+
+        },
+        del : function(t){  // 删除图片
+            var _t = $(t),
+                delType = _t.attr('data-type'),   // 删除类型
+                filepath = $("#relativePath").val(),   // 阿里云删除地址
+                hasBase = _t.attr('hasBase'),   // 是否存在数据库
+                _this = this
+                this.addLoadFiles= []  // 已经上传阿里云
+                this.need_addAliFile = []  // 需提交阿里云文件
+                this.delloadFile = []  // 需要删除的文件
+                this.uploadCode = []
+            js.confirm("你确认要删除", function(){
+                _t.parent().find('.progress span').width('0px') // 进度条重置
+                _t.parent().find('.hideInput').attr('disabled',false)  // 上传图片按钮允许点击
+                _t.attr('hasBase','')
+                $("#upLoadFile").show();
+                $(".addImgSet").show();
+                $(".downloadFile").hide();
+                $("#look").hide();
+                $("#delete").hide();
+                _this.src = ['',''];
+                layer.msg('删除成功')
+                
+            })
+        },
+        show : function(t){  // 查看图片
+            src = this.src[0]
+            $('.photoShow .img').attr('src',src)
+            $('.photoShow').fadeIn()
+        },
+        upaliyun: function(callback){  // 上传阿里云
+            if(this.need_addAliFile.length === 0){
+                callback(200)
+                return false
+            }
+            var _this = this
+
+            // 阿里云上传地址
+            var alyData = {
+                policy: '',
+                OSSAccessKeyId: '',  // 密钥
+                success_action_status: "200",  // 状态
+                signature: '',  // 签名
+                key: '',
+                callback: ''  // 回调
+            }
+
+            var getData = {
+                url: '' // 阿里云地址
+            }
+
+
+            // 获取签名
+            $.ajax({
+                // url: '${ctx}/a/aliyunimage/amAliyunImage/getPolicy',
+                url: 'https://am.uvanart.com/a/aliyunimage/amAliyunImage/getPolicy',
+                type: 'GET',
+                contentType: 'text/plain;charset=UTF-8',
+                dataType: 'json',
+                success: function (res) {
+                    getData.url = res.data.host;
+                    alyData.policy = res.data.policy;
+                    alyData.OSSAccessKeyId = res.data.accessId;
+                    alyData.signature = res.data.signature;
+                    alyData.key = res.data.dir;
+                    alyData.callback = res.data.callBack;
+                    subAliAjax()
+                }
+            })
+
+            //上传
+            function subAliAjax(){
+                if(_this.need_addAliFile.length === 0){
+                    callback(200);
+                    return false
+                }
+
+                var arr = _this.need_addAliFile
+                var dataDay = new Date(),
+                    dnum = dataDay.getFullYear().toString() + dataDay.getMonth().toString() + dataDay.getDate().toString() + dataDay.getMinutes().toString() + dataDay.getMilliseconds().toString() + dataDay.getSeconds().toString();
+
+                // 提交到阿里云的图片
+                var formData = new FormData;
+                formData.append('OSSAccessKeyId', alyData.OSSAccessKeyId)
+                formData.append('policy', alyData.policy)
+                formData.append('Signature', alyData.signature)
+                formData.append('key', alyData.key + dnum + arr.qualificationName)
+                formData.append('success_action_status', alyData.success_action_status)
+                formData.append('callback', alyData.callback)
+                formData.append('file', arr.file)
+                console.log(getData)
+                console.log(alyData)
+                $.ajax({
+                    type: "POST",
+                    url: getData.url,   // 阿里云上传地址
+                    data: formData,
+                    processData: false,
+                    cache: false,
+                    async: true,
+                    contentType: false,
+                    dataType: "json",
+                    header: {
+                        'content-type': "multipart/form-data"
+                    },
+                    success: function (res) {
+                        if (res.code === 200) {
+                            arr.file = getData.url+res.data
+                            arr.filePath = res.data
+                            _this.src = [getData.url+res.data,res.data]
+                            _this.addLoadFiles.push(arr)
+                            _this.need_addAliFile = []
+                            subAliAjax()
+                        }else{
+                            layer.msg('提交失败,请重新尝试')
+                            callback(400)
+                            return false
+                        }
+                    },
+                    error: function(res){
+                        layer.msg('提交失败,请重新尝试')
+                        callback(400)
+                        return false
+                    }
+                });
+
+
+            }
+
+        },
+        upload : function(t){  // 上传
+            // if($("#isNewRecord").val() === 'true'){
+            // 	layer.msg('请先保存再进行图片/附件上传')
+            // 	return false
+            // }
+
+            $(t).attr('disabled',true)  // 禁止点击
+            var	dataType = $(t).attr('data-type'),   // 类型
+                _this = this;
+
+            var f = t.files[0],
+                type = f.type.split('/')
+
+
+            // 限制当前上传大小
+            if (f.size >= 52428800) {
+                layer.msg('您这个"' + f.name + '"文件大小过大,请重新上传,最大50M');
+                $(t).attr('disabled',false)  // 允许点击
+                return false
+            }
+
+
+            // 转二进制
+            function dataURLtoBlob(dataurl) {
+                var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+                    bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+                while(n--){
+                    u8arr[n] = bstr.charCodeAt(n);
+                }
+                return new Blob([u8arr], {type:mime});
+            }
+
+            // 图片压缩
+            function canvasDataURL(path,imgType,_t,callback){
+                var img = new Image();
+                img.src = path
+
+                img.onload = function(){
+                    var that = this;
+                    // 默认按比例压缩
+                    var w = that.width,   // 当前图片宽度
+                        h = that.height,  // 当前图片高度
+                        scale = w / h;  // 比例
+
+
+                    w = (that.width > 1024 ? 1024 : that.width)
+                    h = w / scale;
+
+                    var quality = 0.7;  // 默认图片质量为0.7
+                    //生成canvas
+                    var canvas = document.createElement('canvas');
+                    var ctx = canvas.getContext('2d');
+                    // 创建属性节点
+                    var anw = document.createAttribute("width");
+                    anw.nodeValue = w;
+                    var anh = document.createAttribute("height");
+                    anh.nodeValue = h;
+                    canvas.setAttributeNode(anw);
+                    canvas.setAttributeNode(anh);
+                    ctx.drawImage(that, 0, 0, w, h);
+
+
+                    // quality值越小，所绘制出的图像越模糊
+                    var base64 = canvas.toDataURL(imgType, quality);
+                    // 回调函数返回base64的值
+                    callback(base64);
+                }
+            }
+
+            // 手动添加数据
+            var subObj = {
+                detailCode : '',
+                qualificationName: f.name,
+                file : '',
+                filePath : '',
+                typeName:'',
+                profileSurfix : f.name.slice(f.name.lastIndexOf('.'))
+            }
+
+
+            $('#bgLoading').show()  // 开启遮罩
+
+            var fileReader = new FileReader()
+            fileReader.readAsDataURL(f);
+            var parTd = $(t).parent()  // 父级td
+
+
+            parTd.find('.font-msg').html('上传中')
+            parTd.find('.addImgSet').addClass('w1')
+
+            // 读取前开启滚动条
+            fileReader.onloadstart = function(){
+                parTd.find('.progress span').width('0px')
+            };
+
+
+            // 读取过程
+            fileReader.onprogress = function (e) {
+                parTd.find('.progress span').width(e.loaded/e.total*100+"%")
+            }
+
+            fileReader.onload = function(e) {
+                if(!e.target.result){
+                    layer.msg('上传失败请重新上传')
+                    return
+                }
+
+                parTd.find('.progress span').width(e.loaded/e.total*100+"%")
+                if(type[0] === 'image'){
+                    canvasDataURL(e.target.result,f.type,$(t),function(base_64){
+                        $(t).attr('srcbase',base_64)
+                        subObj.typeName = 'img'
+                        subObj.file = dataURLtoBlob(base_64)
+                        if(base_64 && $(t).attr('srcbase')){
+                            setTimeout(function(){
+                                parTd.find('.progress span').width(0)
+                                $(t).hide()
+                                $(".addImgSet").hide();
+                                $("#delete").show();
+                                $("#look").show();
+                                $(".downloadFile").hide();
+                                // $(t).closest('td').find('.addImgSet').hide()
+                                // $(t).closest('td').find('.hasImgSet').show()
+                                // $(t).closest('td').find('.downloadFile').hide()
+                                parTd.find('.font-msg').html('上传')
+                                parTd.find('.addImgSet').removeClass('w1')
+                                $('#bgLoading').hide()  // 关闭遮罩
+                            },1000)
+                        }
+                    })
+                }else{
+                    subObj.typeName = 'file'
+                    var base_64 = e.target.result
+
+                    $(t).attr('srcbase',base_64)
+                    if($(t).attr('srcbase')){
+                        setTimeout(function(){
+                            parTd.find('.progress span').width(0)
+                            $(t).hide()
+                            $(".addImgSet").hide();
+                            $("#delete").show();
+                            $("#look").hide();
+                            $(".downloadFile").show();
+                            // $(t).closest('td').find('.addImgSet').hide()
+                            // $(t).closest('td').find('.hasImgSet').show()
+                            // $(t).closest('td').find('.downloadFile').hide()
+                            parTd.find('.font-msg').html('上传')
+                            parTd.find('.addImgSet').removeClass('w1')
+                            $('#bgLoading').hide()  // 关闭遮罩
+                        },1000)
+                    }
+
+                    subObj.file = f
+                }
+            }
+
+
+            _this.addFile(subObj)
+
+        },
+        addFile : function(files){  // 判断数组中是否已存在文并添加
+            this.need_addAliFile = files
+            uploadFile.subFrom('save')
+        },
+        subFrom : function(subType){ // 上传图片/文件
+            var fail = this.failoadFile,
+                delArr = this.delloadFile,
+                _this = this,
+                uploadFileCount = 0, // 当前已经上传文件的总数
+                arrLen = this.need_addAliFile.length // 当前一共需要上传多少文件
+
+
+            if(delArr.length === 0){
+                _this.upaliyun(function(code){
+                    console.log(code)
+                    if(code === 200)
+                        subAjax()
+                    else
+                        layer.closeAll();
+                })
+            }
+            else{
+                subDelAjax()
+                function subDelAjax(){
+                    if(delArr.length === 0){
+                        _this.upaliyun(function(code){
+                            if(code === 200)
+                                subAjax()
+                            else
+                                layer.closeAll();
+                        })
+                    }
+
+
+                    $.ajax({
+                        url: '${ctx}/amspecimen/amSpecimen/deletFile',
+                        type: "POST",
+                        data: JSON.stringify({
+                            "detailCode": delArr[0].detailCode,
+                            "typeName" : delArr[0].typeName,
+                            "filePath": delArr[0].filePath
+                        }),
+                        cache: false,//上传文件无需缓存
+                        processData: false,//用于对data参数进行序列化处理 这里必须false
+                        contentType: false, //必须
+                        success: function (res) {
+                            delArr.splice(0,1)
+                            subDelAjax()
+                        },
+                        error:function(err){}
+                    });
+                }
+            }
+
+            
+            function subAjax(){
+                var arr = _this.addLoadFiles
+                if(arr.length === 0){
+                    if(subType === 'save') $('#btnSubmit').trigger("click");    // 点击保存
+                    if(subType === 'shenhe') save('1')   // 点击审核
+                    layer.closeAll();
+                    return false
+                }
+                 
+            }
+        }
+    }
+        $('#exportInfoToK3').click(function(){
+            layer.load(1, {
+                content: '<div id="ReciprocalNum" style="min-width: 100px;position: relative;left: -25px;top: 44px;text-align:center">正在传输数据</span>',
+                shade: [0.1,'#000'] //0.1透明度的白色背景
+            });
+           // var checkedCode = $('#dataGrid :checkbox:checked');
+               // var supplierCode = $(checkedCode[0]).attr('name').replace(/jqg_dataGrid_/g,'')
+            var supplierCode=$("#supSupplierCode").val();
+                $.ajax({
+                    url:'${ctx}/supplier/supSupplier/exportSupplierInfo?supplierCode='+supplierCode,
+                    success:function (res) {
+                        var obj = JSON.parse(res);
+                        window.location.reload()
+                        js.showMessage(obj.message)
+                        // alert(obj.message);
+                        if(obj.result=='true') {
+                            layer.closeAll();
+
+                        }
+                    }
+                })
+
+        })
+    </script>
+    
+    
+    
+    <script type="text/javascript" src="${ctxStatic}/chosen/chosen.jquery.min.js"></script>
+    <script type="text/javascript" src="${ctxStatic}/chosen/area_chs.js"></script>
+    
+    
+    

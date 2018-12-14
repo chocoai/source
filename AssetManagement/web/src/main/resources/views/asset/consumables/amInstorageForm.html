@@ -1,0 +1,795 @@
+<% layout('/layouts/default.html', {title: '入库表管理', libs: ['validate','dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(amInstorage.isNewRecord ? '新增入库表' : '编辑入库表')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${amInstorage}" action="${ctx}/consumables/amInstorage/save" method="post" class="form-horizontal" >
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 入库单号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:hidden path="isNewRecord" id="isNewRecord"/>
+								<#form:input path="instorageCode" maxlength="64" readonly="true" class="form-control required abc"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 入库日期：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="incomingDate" id="incomingDate" readonly="true" maxlength="20" class="form-control Wdate required"
+								dataFormat="date" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据类型：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="documentType" id="documentType" dictType="am_enter_lib" blankOption="false" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 入库仓库：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="warehouseCode"  id='warehouseCode' items="${warehouseList}"
+								itemLabel="warehouseName" itemValue="warehouseCode"  multiple="false" blankOption="true" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 经办人：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="manager" id="manager" maxlength="100"   class="form-control"/>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 供应商：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="supplier" id="supplier" maxlength="100" class="form-control"/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="row">
+					<div class="col-xs-8">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide"></span> 入库备注：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="remarks" id="remarks" rows="1" maxlength="1000"   class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 单据状态：<i class="fa icon-question hide"></i></label>
+							<div id="1" class="col-sm-8">
+								<#form:hidden path="documentStatus"  id="documentStatus"/>
+								<!--<#form:select path="documentStatus"  id="documentStatus" disabled="true" dictType="am_document_status" blankOption="true" class="form-control"/>-->
+								<#form:input path="documentStatusName" maxlength="64" readonly="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="row">
+
+
+				<div class="row">
+
+				</div>
+				<h4 class="form-unit">入库明细</h4>
+				<div class="ml10 mr10" >
+					<% if (hasPermi('consumables:amInstorage:edit')){ %>
+						<a href="#" id="amInstorageDetailsDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+					<% } %>
+					<table id="amInstorageDetailsDataGrid"></table>
+
+				</div>
+			</div>
+			<div class="box-footer">
+                <div class="row" style="position: relative; height: 1.8rem; margin-bottom: 6px;">
+                    <div id="bottom_instorageCount" style="color: red; display: inline-block; position: absolute;">
+                        数量：
+                        <span id="sq_count_allcount"></span>
+                    </div>
+                    <div id="bottom_instorageAmount" style="color: red; display: inline-block; position: absolute;">
+                        合计：￥
+                        <span id="sq_count_all"></span>
+                    </div>
+                </div>
+
+				<div class="row">
+
+					<div class="col-sm-offset-9 col-sm-3">
+						<!-- <div  style="color: red" >数量:<span id="sq_count_allcount"></span>	</div>
+
+						<div  style="color: red" >合计:￥  <span id="sq_count_all"></span>	</div> -->
+						<% if (hasPermi('consumables:amInstorage:edit')){ %>
+						<a href="#" onclick="save('1')" class="" data-title="${text('审 核')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;</a>
+						<% } %>
+
+						<!--<a href="#" class="" data-title="${text('审 核')}"><a  class="btn btn-sm btn-primary btnList ddddd" id="examine" onclick="">${text('审 核')}</a></a>-->
+						<a href="#" onclick="save('2')" class="" data-title="${text('审 核')}"><button  type="submit" class="btn btn-sm btn-primary btnList" id="examine" onclick="">${text('审 核')}</button></a>
+						<a href="#" onclick="save('3')"  data-title="${text('反 审 核')}">	<button type="submit" class="btn btn-sm btn-primary btnList " id="unexamine" onclick="">
+							 ${text('反 审 核')}</button></a>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+
+// 检查订单是否已结束操作
+function checkConcurrency(){
+    clearInterval(this.times)
+    this.times = setInterval(function(){
+        $.ajax({
+            url: '${ctx}/redisUnits/updataTime',
+            data: {
+                'code': GetRequest().instorageCode
+            },
+            type: 'GET',
+            contentType: 'text/plain;charset=UTF-8',
+            dataType: 'json'
+        })
+    },2000)
+    
+    // 截取url
+    function GetRequest() {
+        var url = location.search; //获取url中"?"符后的字串
+
+        var theRequest = new Object();
+        if (url.indexOf("?") != -1) {
+            var str = url.substr(1);
+            strs = (url.indexOf("&") != -1 ? str.split("&") : str.split("%26"))
+            for (var i = 0; i < strs.length; i++) {
+                if (strs[i].split("=")[0] === 'beginTime') {
+                    theRequest[strs[i].split("=")[0]] = turnTtime(decodeURIComponent(strs[i].split("=")[1]))
+                } else {
+                    theRequest[strs[i].split("=")[0]] = decodeURIComponent(strs[i].split("=")[1]);
+                }
+
+            }
+        }
+        return theRequest;
+    }
+}
+
+//初始化入库明细DataGrid对象
+$("#amInstorageDetailsDataGrid").dataGrid({
+
+	data: ${toJson(amInstorage.amInstorageDetailsList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+	// 设置数据表格列
+	columnModel: [
+        {header:'${text('操作')}', name:'actions', width:50, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                var actions = [];
+                if (val == 'new'){
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amInstorageDetailsDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\');sq.countAll(); sq.countAllCount();});return false; "><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }else{
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amInstorageDetailsDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'});sq.countAll();sq.countAllCount();});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');  return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }
+                return actions.join('');
+            }, editoptions: {defaultValue: 'new'}},
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'入库单号', name:'instorageCode.instorageCode', editable:true, hidden:true},
+
+        {header:'库位编码', name:'locationCode', width:150, editable:true, hidden:true, editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'库位', name:'locationName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'耗材编号', name:'consumablesCode', width:150,editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control required'}
+			},
+		{header:'耗材名称', name:'consumablesName', width:150,  editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control required'}},
+		{header:'规格型号', name:'specifications', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'100', 'class':'form-control'}},
+		{header:'分类编码', name:'categoryCode', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control required'}},
+        {header:'计量单位value', name:'measureUnit', width:150, editable:true, hidden:true, editoptions:{'maxlength':'64', 'class':'form-control required'}},
+		{header:'计量单位', name:'measureValue', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'1', 'class':'form-control required'},
+            // formatter: function(val, obj, row, act) {
+            //     return js.getDictLabel(${@DictUtils.getDictListJson('sys_measure_unit')}, val, '未知', true);
+            // }
+            },
+		{header:'入库数量', name:'instorageCount',  width:150, editable:true, edittype:'text',  editoptions:{'maxlength':'20',  'class':'form-control required digits'}},
+		{header:'入库单价', name:'instoragePrice',  width:150, editable:true, edittype:'text', editoptions:{'class':'form-control required number'}},
+		{header:'入库金额', name:'instorageAmount',  width:150,
+            editable: true, // 不可编辑
+			edittype:'text',
+			editoptions:{'class':'form-control '}
+		},
+        // {header:'图片', name:'imgPath', index:'', width:150, align:"left",
+        //     formatter: function(val, obj, row, act){
+        //         if(row.imgPath==null){
+        //             return "";
+        //         }
+        //         else{ return  "<img src='"+val+"' class=\"thumbnail\" onclick=\"getVal('"+val+"')\" height=\"80\" width=\"120\"/>"}
+        //     }
+        // },
+		{header:'备注', name:'remarks', width:150, editable:true, edittype:'textarea', editoptions:{'maxlength':'1000', 'class':'form-control', 'rows':'1'}},
+
+	],
+    onCellSelect:function(rowid, index, contents, event){
+		console.log(rowid)
+    },
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 1,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#amInstorageDetailsDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'amInstorageDetailsList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,instorageCode.instorageCode,locationCode,consumablesCode,consumablesName,specifications,categoryCode,measureUnit,instorageCount,instoragePrice,instorageAmount,remarks,detailCode,', // 提交数据列表的属性字段
+
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+        
+        checkConcurrency()
+        
+	}
+});
+
+
+</script>
+<script>
+
+    
+
+
+
+$("#inputForm").validate({              //提交表单之后，做操作，刷新页面还是跳转也在这里控制
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+
+            var flag = $("#isNewRecord").val();
+            if (flag === "true") {
+                $('#examine').attr("disabled", true);
+                $('#unexamine').attr("disabled", true);
+            } else if (flag === "false"){
+                var documentStatus = $("#documentStatus").val();
+                if (documentStatus!=='1') {
+                    document.getElementById('unexamine').disabled=true;
+                }else {   $('#examine').attr("disabled", true);
+                    $('#btnSubmit').attr("disabled", true);
+                }
+
+            }
+            if(data.result == Global.TRUE){
+                if (flag === "true") {
+                    js.closeCurrentTabPage(function(contentWindow){
+                        contentWindow.page();
+                    });
+                } else {
+                    location.reload();
+                }
+            // var documentStatus = $("#documentStatus").val();
+            // if (documentStatus!=='1') {
+             //    document.getElementById('unexamine').disabled=true;
+			// }
+            // if(data.result == Global.TRUE){
+             //    var isNewRecord=document.getElementById("isNewRecord").value;
+             //    if (isNewRecord === "true") {
+             //        js.closeCurrentTabPage(function(contentWindow){
+             //            contentWindow.page();
+             //        });
+             //    } else {
+             //        location.reload();
+             //    }
+            // }
+            // else {
+                // location.reload();
+            //
+             //    }
+			}
+		}, "json");
+    }
+});
+    // squid 代码
+	// 事件代理
+    $('#amInstorageDetailsDataGrid').on('click', function(e) {                     //全局触发事件，点击
+		var warehouseCode=document.getElementById('warehouseCode').value;
+        // console.log($(e.target).prop("className"));
+        var targetName = $(e.target).attr('name');                                   //得到列的name
+        var targetId   = $(e.target).attr('id');                                       //得到列的ID
+
+		if(targetId.indexOf('_') > -1) {
+            var targetArr  = targetId.split('_');
+            var rowId      = targetArr[0];
+		} else {
+		    var rowId      = targetId;
+		}
+
+        var documentStatus = $("#documentStatus").val();                      //获取单据状态
+        if (documentStatus==='1'){
+
+		}else {
+        if(targetName.indexOf('consumablesCode') > -1) {
+            // clickToOpenWindow('耗材型号', {width: '1200px', height: '800px'}); // 开启窗口
+			var colName = ['consumablesCode', 'consumablesName', 'specifications', 'categoryCode', 'measureUnit','measureValue'];
+            clickToOpenWindow('/a/consumables/amInstorage/formUtil', colName, rowId);
+        }
+		if(targetName == 'locationName') { // demo
+			var colName = ['locationCode','locationName'];
+			var url='/a/amlocation/amLocation/selectAmLocation?warehouseCode='+warehouseCode;
+			clickToOpenWindow(url, colName, rowId);
+		}
+        }
+
+	});
+
+    // 事件代理 输出框的一个值的变更
+    $('#amInstorageDetailsDataGrid').on('input propertychange', function(e) { // e是事件event 监听某个值，当有变化就做操作
+        var targetName = $(e.target).attr('name'); // 当前输入框的name
+        var targetId   = $(e.target).attr('id');
+		if(targetId.indexOf('_') > -1) {
+            var targetArr  = targetId.split('_');
+            targetId       = targetArr[0];
+		}
+
+        if (targetName.indexOf('instoragePrice') > -1) { // 入库单价
+            var instorageCount = $('#' + targetId).find('input[name$=instorageCount]').val();
+            /** 下面是可编辑的状态可以监听值变化并赋值 */
+            var instorageAmountNode = $('#' + targetId).find('input[name$=instorageAmount]');
+            // var instorageAmountNode = $('#' + targetId).find('td:nth-child(13)'); // 不可编辑状态
+            var targetVal  = $(e.target).val();
+            targetVal      = !isNaN(targetVal) ? targetVal : 0;  // 判断是否数字
+            instorageCount = !isNaN(instorageCount) ? instorageCount : 0;
+            /** 下面是不可编辑的状态可以监听值变化并赋值 */
+            instorageAmountNode.val(sq.mul(instorageCount, targetVal));
+            // instorageAmountNode.html(sq.mul(instorageCount, targetVal));
+
+            sq.countAll();
+		}
+        if (targetName.indexOf('instorageCount') > -1) { // 点击入库数量
+            var instoragePrice = $('#' + targetId).find('input[name$=instoragePrice]').val();  //获取入库单价
+            /** 下面是可编辑的状态可以监听值变化并赋值 */
+            var instorageAmountNode = $('#' + targetId).find('input[name$=instorageAmount]');   //获取入库金额
+            var targetVal  = $(e.target).val();//变化的值
+            targetVal = !isNaN(targetVal) ? targetVal : 0; // 判断是否数字
+            instoragePrice = !isNaN(instoragePrice) ? instoragePrice : 0;
+            /** 下面是不可编辑的状态可以监听值变化并赋值 */
+            instorageAmountNode.val(sq.mul(instoragePrice, targetVal));  //赋值
+            sq.countAllCount();
+            sq.countAll();
+        }
+
+        if (targetName.indexOf('instorageAmount') > -1) { // 点击金额
+            console.log('修改金额');
+            var instorageCount = $('#' + targetId).find('input[name$=instorageCount]').val();  //获取入数量
+            // alert(typeof (instorageCount))
+            // if (instorageCount.length>0){
+            //     alert('aaa');
+            // }
+            /** 下面是可编辑的状态可以监听值变化并赋值 */
+            var instorageAmount = $('#' + targetId).find('input[name$=instorageAmount]');   //获取入库金额
+
+            var instoragePriceNode = $('#' + targetId).find('input[name$=instoragePrice]');  //获取入库单价
+            console.log(instoragePriceNode)
+            var targetVal = $(e.target).val();//变化的值
+            /** 下面是不可编辑的状态可以监听值变化并赋值 */
+            if (sq.division(targetVal, instorageCount)==="Infinity") {
+                instoragePriceNode.val(0.00);
+			}
+			else if (sq.division(targetVal, instorageCount)==="NaN"){
+                instoragePriceNode.val(0.00);
+			}
+			else {
+                instoragePriceNode.val(sq.division(targetVal, instorageCount));  //赋值
+            }
+            sq.countAll();
+        }
+
+	});
+	/** 定义一个命名空间，里面放了一些浮点类型的处理方法 */
+	var sq = {};
+	/** 浮点处理函数 */
+	//处理双精度相乘
+	sq.mul = function (a, b) {
+        var c = 0,
+            d = a.toString(),
+            e = b.toString();
+        try {
+            c += d.split(".")[1].length;
+        } catch (f) {}
+        try {
+            c += e.split(".")[1].length;
+        } catch (f) {}
+        // alert(Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c));
+        var float = Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c);
+        return float.toFixed(2)
+    }
+    //处理双精度相除
+    sq.division = function (a, b) {
+        var c = 0,
+            d = a.toString(),
+            e = b.toString();
+        try {
+            c += d.split(".")[1].length;
+        } catch (f) {}
+        try {
+            c += e.split(".")[1].length;
+        } catch (f) {}
+        // alert(Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c));
+        var float = Number(d.replace(".", "")) / Number(e.replace(".", "")) / Math.pow(10, c);
+        return float.toFixed(2)
+    }
+    //处理浮点类型相加
+    sq.add = function(arg1,arg2){
+        var r1,r2,m;
+        try{r1=arg1.toString().split(".")[1].length}catch(e){r1=0}
+        try{r2=arg2.toString().split(".")[1].length}catch(e){r2=0}
+        m=Math.pow(10,Math.max(r1,r2))
+        return (arg1*m+arg2*m)/m
+    }
+    // 合计
+    sq.countAll = function() {
+	    // debugger
+
+        var tdNodes = $('#amInstorageDetailsDataGrid input[name$=instorageAmount]');
+		// var par = $('#amInstorageDetailsDataGrid input[name$=instorageAmount]').closest('tr');
+        var count = 0;
+
+        tdNodes.each(function(index, item){
+            if($(item).closest('tr').css('display') !== 'none'){
+                var itemValue = item.value; // 获得当前item的值
+                if (isNaN(itemValue) || !itemValue) { // 如果不是数字，则当前值设置为0，用来正常的相加
+                    itemValue = 0;
+                }
+                count = sq.add(count, parseFloat(itemValue));
+			}
+
+        });
+        count = parseFloat(count).toFixed(2);
+        if(isNaN(count)) count = 0 . toFixed(2);
+        $('#sq_count_all').html(count); // 赋值
+    }
+    // 合计数量
+    sq.countAllCount = function() {
+        // debugger
+
+        var tdNodes = $('#amInstorageDetailsDataGrid input[name$=instorageCount]');
+        // var par = $('#amInstorageDetailsDataGrid input[name$=instorageAmount]').closest('tr');
+        var count = 0;
+
+        tdNodes.each(function(index, item){
+            if($(item).closest('tr').css('display') !== 'none'){
+                var itemValue = item.value;
+                if(isNaN(itemValue)){
+                    itemValue = 0;
+                }
+                count = sq.add(count, itemValue);
+            }
+
+        });
+        if(isNaN(count)) count = 0 ;
+        $('#sq_count_allcount').html(count); // 赋值
+    }
+
+    sq.setInputReadonly = function(node) {       //改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+		$(node).each(function(index, item){
+			$(item).attr('readonly', 'true');
+		});
+	}
+
+	/** 页面加载后执行的方法 */
+    $(function() {
+        /** 把表单的这些字段设为只读*/
+
+        sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=consumablesName]'));//当页面加载时改变amInstorageDetailsDataGrid表格的name=instorageAmount的readonly属性
+        sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=specifications]'));
+        sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=categoryCode]'));
+        sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=measureUnit]'));
+        sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=measureValue]'));
+        // sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=locationName]'));
+        // sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=instorageAmount]'));
+    	/** 锁定把表单的这些字段设为只读*/
+		// $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+		// 	sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=instorageAmount]'));
+		// });
+        $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+            sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=consumablesName]'));
+        });
+        $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+            sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=specifications]'));
+        });
+        $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+            sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=categoryCode]'));
+        });
+        $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+            sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=measureUnit]'));
+        });
+        $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+            sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=measureValue]'));
+        });
+        // $('#amInstorageDetailsDataGrid').on('DOMNodeInserted', function() {
+        //     sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=locationName]'));
+        // });
+
+
+        /** 底部统计位置 2018年5月16日14:35:00 */
+        var instorageCount_node  = $('#amInstorageDetailsDataGrid_instorageCount'), // 表格标题的节点
+            instorageAmount_node = $('#amInstorageDetailsDataGrid_instorageAmount'),
+            bottomCount_node     = $('#bottom_instorageCount'), // 底部统计的节点
+            bottomAmount_node     = $('#bottom_instorageAmount');
+        var instorageCount_offset  = instorageCount_node.offset(), // 保存偏移量
+            instorageAmount_offset = instorageAmount_node.offset();
+
+        bottomCount_node.css({left: instorageCount_offset.left + 6}); // 距离左边多少px再加原来表格的padding
+        bottomAmount_node.css({left: instorageAmount_offset.left + 6});
+
+        sq.countAll(); // 统计
+        sq.countAllCount();
+    });
+
+	
+    // 弹窗测试
+	/*
+	 *  @squid 传参的定义
+	 *  url: 弹窗页面，需要先写好
+	 *  colName: 表单字段，需要传值的字段，可以根据表单的input标签name属性来定义
+	 *  trId: 表单行的id
+	 */
+    var clickToOpenWindow = function(url, colName, trId, callback){
+        if ($("#instorageCodeButton").hasClass("disabled")){
+            return true;
+        }
+        var selectData = {},
+        boxWidth = $(top.window).width() - 100,
+        boxHeight = $(top.window).height() - 100;
+        boxWidth = boxWidth < 350 ? 350 : boxWidth;
+        boxHeight = boxHeight < 250 ? 250 : boxHeight;
+        if(typeof listselectGetSelectData == 'function'){
+            selectData = listselectGetSelectData('instorageCode'); // 如果你需要打开其他的列表，你得自己定义一个code，目前的话是打开耗材的列表
+        }
+        var options = {
+            type: 2, // 弹窗类型，2是iframe，content必须是url，一个正常显示的页面
+            maxmin: true,
+            shadeClose: true,
+            title: '分类编号',
+            area: [boxWidth+'px', boxHeight+'px'],
+            content: url,
+            contentFormData: {
+                checkbox: 'false',
+                selectData: js.encodeUrl(JSON.stringify(selectData))
+            },
+            success: function(layero, index){
+                if ($(js.layer.window).width() < boxWidth
+                    || $(js.layer.window).height() < boxHeight){
+                    js.layer.full(index);
+                }
+            },
+            btn: ['<i class="fa fa-check"></i> 确定'],
+            btn1: function(index, layero){
+                var win = js.layer.iframeWindow(index);
+                selectData = win.getSelectData();
+                if(typeof listselectCheck == 'function'){
+                    if (!listselectCheck('instorageCode', selectData)){
+                        return false;
+                    }
+                }
+                // 点击确定，获取用户选择数据
+                if(typeof listselectSetSelectData == 'function'){
+                    listselectSetSelectData('instorageCode', selectData);
+                }
+
+                try { $('#instorageCodeCode,#instorageCodeName').valid(); }catch(e){}
+
+				/** 传值到目标表单 START */
+				var colCount = selectData.length; // 行数
+
+				for (var index in selectData) {
+					var subItem = selectData[index];
+					for(var subIndex in subItem) {
+
+						for(var colIndex in colName) {
+
+							if(subIndex == colName[colIndex]) { // 将列名称数组遍历，填充值
+								var selector = '#' + trId + '_' + colName[colIndex];
+								var val = subItem[subIndex];
+								if(callback) {
+								    val = callback(val);
+								}
+								$(selector).val(val);
+							}
+
+						}
+					}
+				}
+				/** END */
+
+            }
+        };
+        options.btn.push('<i class="fa fa-close"></i> 关闭');
+        options['btn'+options.btn.length] = function(index, layero){
+            if(typeof listselectCallback == 'function'){
+                listselectCallback('instorageCode', 'cancel', index, layero);
+            }
+        };
+        js.layer.open(options);
+    };
+
+// $("#inputForm").check(function(){
+// var documentType = document.getElementById("documentType").valueOf();
+// alert("documentType");
+// if (documentType.equals('1')){
+//     document.getElementById("shenhe").style.display="none";
+// }else {
+//     document.getElementById("shenhe").style.display="block";
+// }}
+// );
+
+	//耗材档案
+    function consumablesList(_this,id,_this,detailCode) {
+        js.layer.open({
+            type: 2,   //
+            anim: 5,   // 动画
+            title: "测试新增",
+            area: ['900px','700px'],
+            shadeClose: true,
+            skin: 'layui-layer-molv', // 颜色
+            shade: 0.8,
+            closeBtn: 1,
+            content: '${ctx}/consumables/amInstorage/formUtil',
+            end: function () {
+                js.getCurrentTabPage(currentTabCallback);
+            }
+        });
+    }
+
+    function save(isSH){
+        // if(isSH==true) {
+		// 	console.log(typeof $('#inputForm').serialize());
+         //    console.log($('#inputForm').serialize());
+        // $.ajax({
+         //    type: "POST",//方法类型
+         //    // dataType: "json",//预期服务器返回的数据类型
+         //    url: "${ctx}/consumables/amInstorage/save?documentStatusSH=1" ,//url
+         //    data: $("#inputForm").serialize(),
+         //    success: function (result) {
+         //        console.log(result);//打印服务端返回的数据(调试用)
+         //        location.reload();
+         //        result=result.split(',')
+		// 		var message=result[1].split(':')
+		// 		message=message[1]
+		// 		alert(message);
+         //        result=result[0].split(':')
+        //
+         //        if (result[1].toString()=='"true"'){
+         //            alert(message);
+         //            location.reload();
+         //        }else {
+         //            alert(message);
+         //        }
+        //
+         //        ;
+        //
+         //    },
+         //    error : function(erro) {
+         //        console.log(erro);
+         //    }
+        // });
+        // }else {
+         //    $.ajax({
+         //        type: "POST",//方法类型
+         //        // dataType: "json",//预期服务器返回的数据类型
+         //        url: "${ctx}/consumables/amInstorage/save?documentStatusSH=2" ,//url
+         //        data: $("#inputForm").serialize(),
+         //        success: function (result) {
+         //            location.reload();
+         //            console.log(result);//打印服务端返回的数据(调试用)
+         //            result=result.split(',')
+         //            var message=result[1].split(':')
+         //            message=message[1]
+         //            alert(message);
+         //            result=result[0].split(':')
+        //
+         //            if (result[1].toString()=='"true"'){
+         //                alert(message);
+         //            }else {
+         //                alert(message);
+         //            }
+         //            ;
+         //            location.reload();
+         //        },
+         //        error : function(erro) {
+         //            console.log(erro);
+         //        }
+         //    });
+		// }
+        var testform = document.getElementById("inputForm");
+        if(isSH==='2') {
+            // document.getElementById("isNewRecord").value=false;
+            testform.action = "${ctx}/consumables/amInstorage/save?documentStatusSH=1";
+
+
+        }else if (isSH=='3') { var isNewRecord=document.getElementById("isNewRecord").value;
+            // document.getElementById("isNewRecord").value=false;
+            testform.action = "${ctx}/consumables/amInstorage/save?documentStatusSH=2";
+
+		}else {
+            testform.action = "${ctx}/consumables/amInstorage/save";
+		}
+    }
+
+    window.onload=function(){
+        var flag = $("#isNewRecord").val();
+        var documentStatus = $("#documentStatus").val();
+        // alert(flag)
+		// console.log(documentStatus)
+        if (flag === 'true') {
+			// alert('true')
+            document.getElementById("examine").disabled=true;
+            document.getElementById("unexamine").disabled=true;
+
+        } else {
+            // alert('false')
+            if (documentStatus==='1') { //当订单状态为审核状态
+                // alert('false')
+                document.getElementById('documentType').disabled=true;
+                document.getElementById('warehouseCode').disabled=true;
+                document.getElementById('documentStatus').disabled=true;
+                document.getElementById('manager').readOnly=true;
+                document.getElementById('supplier').readOnly=true;
+                $('#incomingDate').removeAttr('onclick');
+                document.getElementById('incomingDate').readOnly=true;
+                document.getElementById('remarks').readOnly=true;
+                document.getElementById('examine').disabled=true;
+                document.getElementById('btnSubmit').disabled=true;
+                document.getElementById('amInstorageDetailsDataGridAddRowBtn').style.display="none";
+                $('#amInstorageDetailsDataGrid_actions').remove()
+                $('td[aria-describedby="amInstorageDetailsDataGrid_actions"]').remove()
+                // $('.jqgfirstrow td:last-child').remove()
+                $('.jqgfirstrow td:eq(1)').remove()
+
+                sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=locationCode]'));
+                sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=locationName]'));
+                sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=consumablesCode]'));
+                sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=instorageCount]'));
+                sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=instoragePrice]'));
+                sq.setInputReadonly($('#amInstorageDetailsDataGrid input[name=instorageAmount]'));
+
+                sq.setInputReadonly($('#amInstorageDetailsDataGrid textarea[name=remarks]'));
+
+            }else {
+                document.getElementById("unexamine").disabled=true;
+			}
+
+        }
+    }
+</script>
+<script id="listselectTpl" type="text/template"><div>
+<#form:listselect id="{{d.id}}" title="{{d.title}}" name="{{d.name}}" value="{{d.value}}"
+	labelName="{{d.labelName}}" labelValue="{{d.labelValue}}" url="{{d.url}}"
+	class="{{d.cssClass}}" btnClass="btn-sm" allowClear="true"/>
+</div></script>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.warehioreport.dao.WarehIoReportDao">
+	
+	<!-- 查询数据 -->
+	<select id="findList" resultType="WarehIoReport">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="codeORname != null and codeORname != ''">
+				AND (c.consumables_code LIKE '%${codeORname}%' OR c.consumables_name LIKE '%${codeORname}%')
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+
+	<!-- 查询数据 -->
+	<select id="findSum" parameterType="WarehIoReport" resultType="WarehIoReport">
+		SELECT
+		sum(a.instorage_count) AS inCountSum,
+		sum(a.instorage_amount) AS inAtmSum,
+		sum(a.outstorage_count) AS outCountSum
+		FROM
+		${sqlMap.table.toSql()}
+		<where>
+		<if test="date_gte != null">
+		a.bill_date &gt;= #{date_gte}
+		</if>
+		<if test="date_lte != null">
+			AND a.bill_date &lt;= #{date_lte}
+		</if>
+		<if test="codeORname != null and codeORname != ''">
+			  AND (c.consumables_code LIKE '%${codeORname}%' OR c.consumables_name LIKE '%${codeORname}%')
+		</if>
+		</where>
+	</select>
+</mapper>

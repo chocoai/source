@@ -1,0 +1,214 @@
+<% layout('/layouts/default.html', {title: '耗材档案管理', libs: ['validate','fileupload']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${consumables.isNewRecord ? '新增耗材档案' : '编辑耗材档案'}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${consumables}" action="${ctx}/consumables/consumables/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">基本信息</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 耗材编号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+
+								<#form:hidden path="isNewRecord"/>
+								<#form:input path="consumablesCode"  maxlength="64" readonly="${!consumables.isNewRecord}" class="form-control required abc"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 耗材名称：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="consumablesName" maxlength="100" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 商品条码：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+                                <#form:input path="barCode"  readonly="true" maxlength="20" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 品牌商标：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="brandTrademark" maxlength="100" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 规格型号：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="specifications" maxlength="100" class="form-control"/>
+							</div>
+						</div>
+					</div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 计量单位：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:select path="measureUnit" dictType="sys_measure_unit" blankOption="true" class="form-control required"/>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+
+				<div class="row">
+
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required "></span> 库存下限：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="minStock" maxlength="20" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+					<div class="form-group">
+						<label class="control-label col-sm-4" title="">
+							<span class="required "></span> 库存上限：<i class="fa icon-question hide"></i></label>
+						<div class="col-sm-8">
+							<#form:input path="maxStock" maxlength="20" class="form-control"/>
+						</div>
+					</div>
+				</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> 状态：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+                                <#form:select path="status" dictType="sys_search_status" readonly="true" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required "></span> 创建时间：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+								<#form:input path="createDate" readonly="true" maxlength="20" class="form-control"
+								dataFormat="datetime" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required "></span> 更新者：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+                                <#form:input path="updateBy"  readonly="true" maxlength="20" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+				<div class="row">
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required hide"></span> 更新时间：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+								<#form:input path="createDate" readonly="true" maxlength="20" class="form-control"
+								dataFormat="datetime" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-4">
+                        <div class="form-group">
+                            <label class="control-label col-sm-4" title="">
+                                <span class="required ">*</span> 分类编号：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-8">
+
+                                <#form:treeselect id="category" title="${text('分类编号')}"
+                                path="categoryCode" labelPath="category.categoryName"
+                                url="${ctx}/category/category/treeData"
+                                class="required" allowClear="true"/>
+
+                            </div>
+                        </div>
+                    </div>
+				</div>
+                <div class="row">
+                    <div class="col-xs-8">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2" title="">
+                                <span class="required hide"></span> 备注：<i class="fa icon-question hide"></i></label>
+                            <div class="col-sm-10">
+                                <#form:textarea path="remarks" rows="4" maxlength="1000" class="form-control"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-8">
+                        <div class="form-group">
+                            <label class="control-label col-sm-2">图片上传：</label>
+                            <div class="col-sm-10">
+                                <#form:fileupload id="uploadImage" bizKey="${consumables.id}" bizType="consumables_image"
+                                uploadType="image" class="" readonly="false"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('consumables:consumables:edit')){ %>
+							<span class="btn btn-sm btn-primary" id="submitFrom"><i class="fa fa-check"></i> 保 存</span>
+							<button type="submit" class="btn btn-sm btn-primary" style="display: none;" id="btnSubmit"><i class="fa fa-check"></i> 保 存</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> 关 闭</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+
+$('#submitFrom').click(function(){
+	$.fn.webUpLoaderFun(function(code){
+		if(code === 200){
+			testform.action ="${ctx}/picture/picReview/save";
+			$('#btnSubmit').trigger('click')
+		}
+	})
+})
+</script>

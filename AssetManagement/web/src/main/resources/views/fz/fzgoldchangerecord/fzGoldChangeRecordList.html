@@ -1,0 +1,90 @@
+<% layout('/layouts/default.html', {title: '梵钻变更记录管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('梵钻变更记录管理')}
+			</div>
+			<div class="box-tools pull-right active">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('fzgoldchangerecord:fzGoldChangeRecord:edit')){ %>
+					<a href="${ctx}/fz/fzgoldchangerecord/fzGoldChangeRecord/form" class="btn btn-default btnTool" title="${text('新增梵钻变更记录')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzGoldChangeRecord}" action="${ctx}/fz/fzgoldchangerecord/fzGoldChangeRecord/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('数量')}：</label>
+					<div class="control-inline">
+						<#form:input path="number" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('梵钻类型')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="goldType" dictType="fz_gold_type" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('收支')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="inOrOut" dictType="fz_in_or_out" blankOption="true" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('状态')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('员工')}：</label>
+					<div class="control-inline">
+						<#form:input path="userName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('数量')}', name:'number', index:'a.number', width:150, align:"left", frozen:true},
+		{header:'${text('梵钻类型')}', name:'goldType', index:'a.gold_type', width:150, align:"center",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fz_gold_type')}, val, '${text('未知')}', true);
+            }},
+		{header:'${text('收支')}', name:'inOrOut', index:'a.in_or_out', width:150, align:"left", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fz_in_or_out')}, val, '${text('未知')}', true);
+            }},
+		{header:'${text('状态')}', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'${text('备注')}', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'${text('员工')}', name:'dingUser.name', index:'b.name', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('fzgoldchangerecord:fzGoldChangeRecord:edit')){ %>
+				actions.push('<a href="${ctx}/fz/fzgoldchangerecord/fzGoldChangeRecord/delete?recordCode='+row.recordCode+'" class="btnList" title="${text('删除梵钻变更记录')}" data-confirm="${text('确认要删除该梵钻变更记录吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

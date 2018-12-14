@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.consumables.dao.AmOutStorageDao">
+
+	<select id="findList" resultType="AmOutStorage">
+		SELECT ${sqlMap.column.toSql()},
+		b.detail_code AS "outStorageDetails.detailCode",
+		b.outstorage_code AS "outStorageDetails.outstorageCode.outstorageCode",
+		b.location_code AS "outStorageDetails.locationCode",
+		b.consumables_code AS "outStorageDetails.consumablesCode",
+		b.consumables_name AS "outStorageDetails.consumablesName",
+		b.specifications AS "outStorageDetails.specifications",
+		b.category_code AS "outStorageDetails.categoryCode",
+		b.measure_unit AS "outStorageDetails.measureUnit",
+		b.outstorage_count AS "outStorageDetails.outstorageCount",
+		b.outstorage_price AS "outStorageDetails.outstoragePrice",
+		b.outstorage_amount AS "outStorageDetails.outstorageAmount",
+		b.remarks AS "outStorageDetails.remarks"
+		FROM ${sqlMap.table.toSql()}
+		<if test="outstorageCode!= null and outstorageCode != ''"></if>
+		LEFT JOIN ${_prefix}am_outstorage_details b ON b.outstorage_code=a.outstorage_code
+		<where>
+			${sqlMap.where.toSql()}
+			<if test="param!= null and param != ''">
+				${param}
+			</if>
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+
+	<!-- 查询仓库名称-->
+	<select id="findWarehouseName" resultType="String">
+		SELECT a.warehouse_name
+			FROM js_am_warehouse a
+		WHERE a.warehouse_code = #{warehouseCode}
+	</select>
+	
+	<delete id="delStorage" >
+		DELETE FROM js_am_outstorage
+			WHERE outstorage_code = #{outStorageCode}
+	</delete>
+	<select id="getSection" resultType="AmPeriodState">
+		SELECT
+	a.begin_data,
+	a.end_data,
+	a.period_stutrs
+		FROM
+	js_am_period_state a
+		WHERE
+	a.data_period = #{dataPeriod}
+	</select>
+</mapper>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.trainning.dao.AmTrainningFeedbackDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="AmTrainningFeedback">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+<select id="findHasSubmitted" resultType="int">
+	select count(1) from js_am_trainning_feedback where trainning_code=#{arg0} and written_by=#{arg1}
+</select>
+	<delete id="deleteDb">
+	DELETE from js_am_trainning_feedback where pkey=#{arg0}
+	</delete>
+</mapper>

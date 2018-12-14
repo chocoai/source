@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.consumables.dao.AmOutStorageDetailsDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="AmOutStorageDetails">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="getDetailsByCategoryCode" resultType="AmOutStorageDetails">
+	SELECT
+	a.detail_code AS "detailCode",
+	a.outstorage_code AS "outstorageCode.outstorageCode",
+	a.location_code AS "locationCode",
+	a.consumables_code AS "consumablesCode",
+	a.consumables_name AS "consumablesName",
+	a.specifications AS "specifications",
+	a.category_code AS "categoryCode",
+	a.measure_unit AS "measureUnit",
+	a.outstorage_count AS "outstorageCount",
+	a.outstorage_price AS "outstoragePrice",
+	a.outstorage_amount AS "outstorageAmount",
+	b.location_code AS "amLocation.locationCode",
+	b.location_name AS "amLocation.locationName",
+	c.category_code AS "category.categoryCode",
+	c.category_name AS "category.categoryName"
+	FROM
+	js_am_outstorage_details a
+	LEFT JOIN js_am_location b ON b.location_code = a.location_code
+	LEFT JOIN js_am_category c ON c.category_code = a.category_code
+	WHERE
+	(
+	c.category_code =#{arg0}
+	OR c.parent_codes LIKE  #{arg1}
+	)
+	ORDER BY
+	a.location_code ASC
+</select>
+	<delete id="delStorage" >
+		DELETE FROM js_am_outstorage_details
+			WHERE outstorage_code = #{outStorageCode}
+	</delete>
+</mapper>
