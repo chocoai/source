@@ -1,0 +1,67 @@
+<% layout('/layouts/default.html', {title: '万店掌人脸分组管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('万店掌人脸分组管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('sv:ovopark:edit')){ %>
+					<a href="${ctx}/sv/ovopark/form" class="btn btn-default btnTool" title="${text('新增万店掌人脸分组')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				    <button type="button" id="btnSync" class="btn btn-default" title="${text('同步万店掌人脸分组')}"><i class="fa fa-plus"></i> ${text('同步')}</button>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${svOvoparkFaceGroup}" action="${ctx}/sv/ovopark/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('企业Id')}：</label>
+					<div class="control-inline">
+						<#form:input path="orgid" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('人脸分组名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="groupName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" id="searchBtn" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('Id')}', name:'id', index:'a.id', width:150, align:"left", frozen:true},
+		{header:'${text('人脸分组名称')}', name:'groupName', index:'a.group_name', width:150, align:"left"}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnSync').click(function () {
+    $.ajax({
+        url: '${ctx}/sv/ovopark/syncData',
+        type: 'GET',
+        //contentType: 'text/plain;charset=UTF-8',
+        dataType: 'json',
+        success:function(res){
+            layer.msg(res.message);
+            $('#searchBtn').trigger('click');
+        }
+    });
+})
+</script>

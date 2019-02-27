@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.screen.dao.ScreenConfigDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="ScreenConfig">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="getFirstPage" resultType="com.jeesite.modules.asset.screen.entity.FirstPageData">
+	SELECT
+	a.page_location pageLocation,
+	b.num_iid num_Iid,
+	b.detail_url detailUrl,
+	(CASE
+	WHEN c.interactive_name IS NULL OR c.interactive_name = ''
+	THEN
+	  	c.title
+	ELSE
+		c.interactive_name
+	END) goodsName,
+	(CASE
+	WHEN d.file_url IS NULL OR d.file_url = ''
+	THEN
+		c.pic_url
+	ELSE
+		d.file_url
+	END) picUrl
+	FROM
+		js_screen_config a
+	LEFT JOIN js_screen_config_detail b ON a.configure_code = b.configure_code
+	LEFT JOIN tb_product c ON c.num_iid = b.num_iid
+	LEFT JOIN js_am_file_upload d ON d.biz_key = b.num_iid
+	AND d.biz_type = 'tbProduct_image'
+	WHERE
+		a.configure_shop = '0'
+	AND a.configure_page = #{arg0}
+	AND a.configure_status = '0'
+	</select>
+
+	<select id="getGoods" resultType="com.jeesite.modules.asset.tianmao.entity.TbProduct">
+	SELECT
+		a.*, MIN(c.real_price) lowerPrice
+	FROM
+		tb_product a
+	LEFT JOIN js_product_series b ON a.proseries_code = b.proseries_code
+	LEFT JOIN tb_sku c ON a.num_iid = c.num_iid
+	WHERE
+		LOWER(b.series_name) LIKE concat('%',#{seriesName},'%')
+	AND a.nick = '优梵艺术旗舰店'
+	AND a.approve_status = 'onsale'
+	AND c.quantity > 0
+	AND c.real_price > 0
+	GROUP BY
+		a.num_iid
+	ORDER BY
+		MIN(c.real_price)
+		limit #{pageNo},#{pageSize}
+	</select>
+
+	<select id="getGoodsNum" resultType="Integer">
+	SELECT COUNT(1) FROM (
+	SELECT
+		a.*, MIN(c.real_price) lowerPrice
+	FROM
+		tb_product a
+	LEFT JOIN js_product_series b ON a.proseries_code = b.proseries_code
+	LEFT JOIN tb_sku c ON a.num_iid = c.num_iid
+	WHERE
+		LOWER(b.series_name) LIKE concat('%',#{arg0},'%')
+	AND a.nick = '优梵艺术旗舰店'
+	AND a.approve_status = 'onsale'
+	AND c.quantity > 0
+	AND c.real_price > 0
+	GROUP BY
+		a.num_iid
+		) tmp
+	</select>
+</mapper>

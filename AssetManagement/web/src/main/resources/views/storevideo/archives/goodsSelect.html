@@ -1,0 +1,124 @@
+<% layout('/layouts/default.html', {title: '同步淘宝商品列表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('同步淘宝商品列表管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${tbProduct}" action="${ctx}/archives/svArchives/goodsListData" method="post" class="form-inline"
+			data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+			<div class="form-group">
+				<label class="control-label">商品名称：</label>
+				<div class="control-inline">
+					<#form:input path="title" maxlength="128" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="control-label">天猫ID：</label>
+				<div class="control-inline">
+					<#form:input path="numIid" class="form-control width-120"/>
+				</div>
+			</div>
+			<div class="form-group">
+				<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+				<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+			</div>
+		</#form:form>
+		<div class="row">
+			<div class="col-xs-10 pr10">
+				<table id="dataGrid"></table>
+				<div id="dataGridPage"></div>
+			</div>
+			<div class="col-xs-2 pl0">
+				<div id="selectData" class="tags-input"></div>
+			</div>
+		</div>
+	</div>
+</div>
+</div>
+<% } %>
+<script>
+    var selectData = JSON.parse(js.decodeUrl('${selectData}')), selectNum = 0,//当前页数
+		dataGrid = $('#dataGrid').dataGrid({
+        searchForm: $("#searchForm"),
+        columnModel: [
+            {header:'商品名称', name:'title', index:'a.title', width:150, align:"left"},
+            {header:'商品主图', name:'picUrl', index:'a.pic_url', width:150, align:"center",formatter: function(val, obj, row, act){
+                    if(row.picUrl==null){
+                        return "";
+                    }
+                    else{ return  "<img src='"+row.picUrl+"' class=\"thumbnail\" onclick=\"getVal('"+row.picUrl+"')\" height=\"110\" width=\"110\"/>"}
+                }},
+            {header:'价格', name:'price', index:'a.price', width:150, align:"center"},
+            {header:'商品类目名称', name:'cid', index:'a.cid', width:150, align:"center"},
+            {header:'天猫ID', name:'numIid', index:'a.num_iid', width:150, align:"center"},
+            {header:'商品状态', name:'approveStatus', index:'a.approve_status', width:150, align:"center",formatter: function(val, obj, row, act){
+                    return js.getDictLabel(${@DictUtils.getDictListJson('tb_approveStatus')}, val, '', true)}
+            },
+
+            {header:'上架时间', name:'listTime', index:'a.list_time', width:150, align:"center"},
+            {header:'商品修改时间', name:'modified', index:'a.modified', width:150, align:"center"},
+            {header:'卖家昵称', name:'nick', index:'a.nick', width:150, align:"center"},
+            {header:'商品分类', name:'productCategory.categoryName', index:'b.category_name', width:150, align:"center"},
+            {header:'商品系列', name:'productSeries.seriesName', index:'c.series_name', width:150, align:"center"},
+            {header:'行数据', name:'rowData', hidden:true, formatter: function(val, obj, row, act){
+                    return JSON.stringify(row);
+                }},
+        ],
+            // 加载成功后执行事件
+            ajaxSuccess: function (data) {
+                $.each(selectData, function (key, value) {
+                    dataGrid.dataGrid('setSelectRow', key);
+                });
+                initSelectTag();
+            },
+            onSelectRow: function (rowid, status) {
+                selectData = {};
+                selectData[rowid] = JSON.parse(dataGrid.dataGrid('getRowData', rowid).rowData);
+                initSelectTag();
+            },
+            onSelectAll: function (rowids, status) {
+                for (var i = 0; i < rowids.length; i++) {
+                    if (status) {
+                        selectData[rowids[i]] = JSON.parse(dataGrid.dataGrid('getRowData', rowids[i]).rowData);
+                    } else {
+                        delete selectData[rowids[i]];
+                    }
+                }
+                initSelectTag();
+            },
+            ondblClickRow: function (rowid, rowData) {
+                js.layer.$('#' + window.name).closest('.layui-layer').find(".layui-layer-btn0").trigger("click");
+                initSelectTag();
+            }
+        });
+
+    function initSelectTag() {
+        selectNum = 0;
+        var html = [];
+        $.each(selectData, function (key, value) {
+            selectNum++;
+            html.push('<span class="tag" id="' + key + '_tags-input"><span>' + value.numIid + ' </span>'
+                + '<a href="#" onclick="removeSelectTag(\'' + key + '\');" title="取消选择">x</a></span>');
+        });
+        html.unshift('<div class="title">当前已选择<span id="selectNum">' + selectNum + '</span>项：</div>');
+        $('#selectData').empty().append(html.join(''));
+    }
+
+    function removeSelectTag(key) {
+        delete selectData[key];
+        dataGrid.dataGrid('resetSelection', key);
+        $('#selectNum').html(--selectNum);
+        $('#' + key + '_tags-input').remove();
+    }
+
+    function getSelectData() {
+        return selectData;
+    }
+
+</script>

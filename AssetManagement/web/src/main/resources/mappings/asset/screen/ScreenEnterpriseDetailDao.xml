@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.screen.dao.ScreenEnterpriseDetailDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="ScreenEnterpriseDetail">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="getConfigEnterprise" resultType="com.jeesite.modules.asset.screen.entity.CoverData">
+	SELECT
+	  b.enterprise_code,b.enterprise_name
+	FROM
+	  js_screen_config a
+	LEFT JOIN js_screen_enterprise_detail b ON a.configure_code=b.configure_code
+	WHERE
+	  a.configure_shop = '0'
+	AND a.configure_page = '2'
+	AND a.page_location = '4'
+	AND a.configure_status = '0'
+	ORDER BY b.detail_code
+	</select>
+</mapper>

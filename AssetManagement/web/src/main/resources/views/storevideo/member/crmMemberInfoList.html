@@ -1,0 +1,139 @@
+<% layout('/layouts/default.html', {title: '淘宝会员信息管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('淘宝会员信息管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('member:crmMemberInfo:edit')){ %>
+					<a href="${ctx}/member/crmMemberInfo/form" class="btn btn-default btnTool" title="${text('新增淘宝会员信息')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${crmMemberInfo}" action="${ctx}/member/crmMemberInfo/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('手机号码')}：</label>
+					<div class="control-inline">
+						<#form:input path="mobile" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('淘宝昵称')}：</label>
+					<div class="control-inline">
+						<#form:input path="taobaoNick" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('来源名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="sourceName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('姓名')}：</label>
+					<div class="control-inline">
+						<#form:input path="memberName" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('性别')}：</label>
+					<div class="control-inline">
+						<#form:input path="sex" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('出生月日')}：</label>
+					<div class="control-inline">
+						<#form:input path="birthday" maxlength="10" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('出生年月日')}：</label>
+					<div class="control-inline">
+						<#form:input path="birthDate" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('宝宝生日')}：</label>
+					<div class="control-inline">
+						<#form:input path="babyBirthday" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('省区码')}：</label>
+					<div class="control-inline">
+						<#form:input path="province" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('市区码')}：</label>
+					<div class="control-inline">
+						<#form:input path="city" maxlength="100" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('电子邮箱')}：</label>
+					<div class="control-inline">
+						<#form:input path="email" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('导购工号')}：</label>
+					<div class="control-inline">
+						<#form:input path="employeeNo" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('手机号码')}', name:'mobile', index:'a.mobile', width:150, align:"left", frozen:true
+			// , formatter: function(val, obj, row, act){
+			// return '<a href="${ctx}/member/crmMemberInfo/form?memberCode='+row.memberCode+'" class="btnList" data-title="${text('编辑淘宝会员信息')}">'+(val||row.id)+'</a>';
+			// }
+		},
+		{header:'${text('淘宝昵称')}', name:'taobaoNick', index:'a.taobao_nick', width:150, align:"left"},
+		{header:'${text('来源名称')}', name:'sourceName', index:'a.source_name', width:150, align:"left"},
+		{header:'${text('姓名')}', name:'memberName', index:'a.member_name', width:150, align:"left"},
+		{header:'${text('性别')}', name:'sex', index:'a.sex', width:150, align:"left", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_user_sex')}, val, '${text('未知')}', true);
+		}},
+		{header:'${text('出生月日')}', name:'birthday', index:'a.birthday', width:150, align:"left"},
+		{header:'${text('出生年月日')}', name:'birthDate', index:'a.birth_date', width:150, align:"center"},
+		{header:'${text('宝宝生日')}', name:'babyBirthday', index:'a.baby_birthday', width:150, align:"center"},
+		{header:'${text('省区码')}', name:'province', index:'a.province', width:150, align:"left"},
+		{header:'${text('市区码')}', name:'city', index:'a.city', width:150, align:"left"},
+		{header:'${text('电子邮箱')}', name:'email', index:'a.email', width:150, align:"left"},
+		{header:'${text('导购工号')}', name:'employeeNo', index:'a.employee_no', width:150, align:"left"},
+		{header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('member:crmMemberInfo:edit')){ %>
+		// 		actions.push('<a href="${ctx}/member/crmMemberInfo/form?memberCode='+row.memberCode+'" class="btnList" title="${text('编辑淘宝会员信息')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 		actions.push('<a href="${ctx}/member/crmMemberInfo/delete?memberCode='+row.memberCode+'" class="btnList" title="${text('删除淘宝会员信息')}" data-confirm="${text('确认要删除该淘宝会员信息吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.order.dao.OrderReportSalesOperateDao">
+	
+	<!-- 查询数据 -->
+	<select id="findList" resultType="OrderReportSalesOperate">
+		SELECT DISTINCT b.office_name AS storeName, b.user_name AS operationUserName, a.browser_name AS browserName, SUM(a.execute_time) AS responseTime
+		FROM (
+				SELECT a.user_code, a.user_name, e.office_name
+				FROM js_sys_user a
+				JOIN js_sys_employee e
+				ON e.emp_code = a.ref_code
+				AND a.user_type = 'employee'
+				LEFT JOIN js_sys_office o ON o.office_code = e.office_code
+				LEFT JOIN js_sys_company c ON c.company_code = e.company_code
+				LEFT JOIN js_sys_area ar ON ar.area_code = c.area_code
+				WHERE a.status != '1'
+				AND (o.office_code = 'A1000000'
+				OR o.parent_codes LIKE '%,A1000000,%')
+				<if test="storeName!= null and storeName != ''">
+					AND e.office_name LIKE CONCAT('%',#{storeName},'%')
+				</if>
+		) b
+		LEFT JOIN js_sys_log a
+			ON a.create_by = b.user_code
+		WHERE a.browser_name IN ('Chrome Mobile', 'Apple WebKit')
+			AND a.create_date &gt;= #{date_gte}
+			AND	a.create_date &lt;= #{date_lte}
+		GROUP BY b.office_name,b.user_name,a.browser_name
+		ORDER BY b.office_name DESC
+	</select>
+	
+</mapper>

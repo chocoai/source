@@ -1,0 +1,360 @@
+<% layout('/layouts/default.html', {title: '软装方案管理管理', libs: ['validate','dataGrid','fileupload']}){ %>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(svSoftCostume.isNewRecord ? '新增软装方案管理' : '编辑软装方案管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${svSoftCostume}" action="${ctx}/softcostume/svSoftCostume/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-1 col-sm-10">
+					<button type="button" class="btn btn-sm btn-primary btnSubmit" onclick="save(this)"><i class="fa fa-check"></i> ${text('保 存')}</button>
+					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit" style="display: none"><i class="fa fa-check"></i> ${text('保 存')}</button>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+			<div class="box-body">
+				<div class="form-unit form-unitHd" id="div1">
+					<span class="on">${text('基本信息')}</span>
+				</div>
+				<#form:hidden path="softCostumeCode"/>
+				<div class="form-unitTab">
+					<div class="item">
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('软装方案URL')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="softCostumeUrl" maxlength="1000" class="form-control"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('方案名称')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="schemeName" maxlength="255" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> ${text('排序号')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="dataSort" maxlength="11" class="form-control required digits"/>
+							</div>
+						</div>
+					</div>
+				</div>
+						<div class="row">
+							<div class="col-xs-6">
+								<div class="form-group">
+									<label class="control-label col-sm-4" title="">
+										<span class="required hide">*</span> 方案封面：<i class="fa icon-question hide"></i></label>
+									<div class="col-sm-8">
+										<#form:fileupload id="uploadImage" bizKey="${svSoftCostume.softCostumeCode}" bizType="svSoftCostume_image" maxUploadNum="1"
+										uploadType="image"/>
+									</div>
+								</div>
+							</div>
+						</div>
+
+			</div>
+				</div>
+			</div>
+		<div class="form-unit form-unitD">
+			<span class="on">${text('性别')}</span>
+			<span>${text('年龄')}</span>
+			<span>${text('系列')}</span>
+			<span>${text('风格')}</span>
+			<span>${text('商品')}</span>
+		</div>
+		<div class="form-unitTable">
+			<div class="item">
+				<div class="ml10 mr10">
+					<button type="button" class="btn btn-primary" id="btnSexGridSetting" title="${text('配置性别')}"><i class="fa icon-plus"></i> ${text('配置性别')}</button>
+				</div>
+				<div class="ml10 mr10">
+					<table id="svSoftSexGrid"></table>
+					<div id="dataGridPage"></div>
+				</div>
+			</div>
+			<div class="item" style="display: none">
+				<div class="ml10 mr10">
+					<button type="button" class="btn btn-primary" id="btnAgeGridSetting" title="${text('配置年龄')}"><i class="fa icon-plus"></i> ${text('配置年龄')}</button>
+				</div>
+				<div class="ml10 mr10">
+					<table id="svSoftAgeGrid"></table>
+				</div>
+			</div>
+			<div class="item" style="display: none">
+				<div class="ml10 mr10">
+					<button type="button" class="btn btn-primary" id="btnCategoryGridSetting" title="${text('配置商品分类')}"><i class="fa icon-plus"></i> ${text('配置商品分类')}</button>
+				</div>
+				<div class="ml10 mr10">
+					<table id="svSoftCategoryGrid"></table>
+				</div>
+			</div>
+			<div class="item" style="display: none">
+				<div class="ml10 mr10">
+					<button type="button" class="btn btn-primary" id="btnStyleGridSetting" title="${text('配置商品风格')}"><i class="fa icon-plus"></i> ${text('配置商品风格')}</button>
+				</div>
+				<div class="ml10 mr10">
+					<table id="svSoftStyleGrid"></table>
+				</div>
+			</div>
+			<div class="item" style="display: none">
+				<div class="ml10 mr10">
+					<button type="button" class="btn btn-primary" id="btnProductGridSetting" title="${text('配置商品')}"><i class="fa icon-plus"></i> ${text('配置商品')}</button>
+				</div>
+				<div class="ml10 mr10">
+					<table id="svSoftProductGrid"></table>
+				</div>
+			</div>
+		</div>
+		</#form:form>
+	</div>
+</div>
+<div class="hide">
+	<!--性别查询表单-->
+	<#form:form id="searchForm-sex" model="${svSoftRlatSex}" action="${ctx}/softcostume/svSoftCostume/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+	<#form:hidden path="softCostumeCode"/>
+	<#form:hidden path="dimensionId"/>
+	<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+</#form:form>
+<!--年龄查询表单-->
+<#form:form id="searchForm-age" model="${svSoftRlatAge}" action="${ctx}/softcostume/svSoftCostume/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+<#form:hidden path="softCostumeCode"/>
+<#form:hidden path="dimensionId"/>
+<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+</#form:form>
+<!--系列查询表单-->
+<#form:form id="searchForm-category" model="${svSoftRlatCategory}" action="${ctx}/softcostume/svSoftCostume/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+<#form:hidden path="softCostumeCode"/>
+<#form:hidden path="dimensionId"/>
+<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+</#form:form>
+<!--风格查询表单-->
+<#form:form id="searchForm-style" model="${svSoftRlatStyle}" action="${ctx}/softcostume/svSoftCostume/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+<#form:hidden path="softCostumeCode"/>
+<#form:hidden path="dimensionId"/>
+<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+</#form:form>
+<!--商品查询表单-->
+<#form:form id="searchForm-product" model="${svSoftRlatProduct}" action="${ctx}/softcostume/svSoftCostume/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+<#form:hidden path="softCostumeCode"/>
+<#form:hidden path="dimensionId"/>
+<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+</#form:form>
+
+<#form:listselect id="sexSelector" title="性别选择" url="${ctx}/sv/video/dictSelector?parentCode=1085483555141566464" allowClear="false" checkbox="true" itemCode="dictLabel" itemName="dictLabel"/>
+<#form:listselect id="ageSelector" title="年龄选择" url="${ctx}/sv/video/dictSelector?parentCode=1085483598019936256" allowClear="false" checkbox="true" itemCode="dictLabel" itemName="dictLabel"/>
+<#form:listselect id="categorySelector" title="商品类别选择" url="${ctx}/sv/video/categorySelector" allowClear="true" checkbox="true" itemCode="procategoryCode" itemName="categoryName"/>
+<#form:listselect id="styleSelector" title="商品风格选择" url="${ctx}/sv/video/styleSelector" allowClear="true" checkbox="true" itemCode="proseriesCode" itemName="seriesName"/>
+<#form:listselect id="productSelector" title="商品风格选择" url="${ctx}/sv/video/productSelector" allowClear="true" checkbox="true" itemCode="numIid" itemName="title"/>
+</div>
+<% } %>
+<script>
+    var tmpData = { sexData:[], ageData:[], categoryData:[], styleData:[], productData:[] };
+    var DATA = { svSoftCostume:{}, svSoftRlatList:[]};
+
+    var gridIdMap = {
+        sexSelector:{ gridId:"svSoftSexGrid", dimensionId:"${svSoftRlatSex.dimensionId}", data:"sexData", idField:"sex", valueField: "dictLabel", labelField:"dictLabel"},
+        ageSelector:{ gridId:"svSoftAgeGrid", dimensionId:"${svSoftRlatAge.dimensionId}",data:"ageData", idField:"age", valueField: "dictLabel", labelField:"dictLabel"},
+        categorySelector:{ gridId:"svSoftCategoryGrid", dimensionId:"${svSoftRlatCategory.dimensionId}",data:"categoryData", idField:"id", valueField: "id", labelField:"categoryName"},
+        styleSelector:{ gridId:"svSoftStyleGrid", dimensionId:"${svSoftRlatStyle.dimensionId}",data:"styleData", idField:"id", valueField: "id", labelField:"seriesName"},
+        productSelector:{ gridId:"svSoftProductGrid", dimensionId:"${svSoftRlatProduct.dimensionId}",data:"productData", idField:"id", valueField: "id", labelField:"title"}
+    };
+
+    //初始化js_am_order_detailDataGrid对象
+    $("#svSoftSexGrid").dataGrid({
+        searchForm: $("#searchForm-sex"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'性别', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            tmpData.sexData = data.list;
+        }
+    });
+    //初始化js_am_order_discountDataGrid对象
+    $("#svSoftAgeGrid").dataGrid({
+        searchForm: $("#searchForm-age"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'年龄', name:'dimensionLabel', width:150 }
+        ],
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            tmpData.ageData = data.list;
+        }
+    });
+    //初始化svSoftCategoryGrid对象
+    $("#svSoftCategoryGrid").dataGrid({
+
+        searchForm: $("#searchForm-category"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'系列名称', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            tmpData.categoryData = data.list;
+        }
+    });
+    //初始化svSoftStyleGrid对象
+    $("#svSoftStyleGrid").dataGrid({
+        searchForm: $("#searchForm-style"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'风格名称', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            tmpData.styleData = data.list;
+        }
+    });
+    //初始化svSoftStyleGrid对象
+    $("#svSoftProductGrid").dataGrid({
+        searchForm: $("#searchForm-product"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'商品名称', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+            tmpData.productData = data.list;
+        }
+    });
+
+    $('#btnSexGridSetting').click(function(){
+        $('#sexSelectorName').click();
+    });
+    $('#btnAgeGridSetting').click(function(){
+        $('#ageSelectorName').click();
+    });
+    $('#btnCategoryGridSetting').click(function(){
+        $('#categorySelectorName').click();
+    });
+    $('#btnStyleGridSetting').click(function(){
+        $('#styleSelectorName').click();
+    });
+    $('#btnProductGridSetting').click(function(){
+        $('#productSelectorName').click();
+    });
+
+
+    function listselectCallback(id, action, index, layero, selectData){
+        if(action==='cancel') return;
+        var i = -1, grid = gridIdMap[id];
+        var gridId = "#"+grid.gridId;
+        $(gridId).jqGrid("clearGridData");
+        tmpData[gridIdMap[id].data] = [];
+        $.each(selectData, function(key, value){
+            var newData = { softCostumeCode: '${svSoftCostume.softCostumeCode}', dimensionId: gridIdMap[id].dimensionId, dimensionValue: value[grid.valueField], dimensionLabel: value[grid.labelField]};
+            $(gridId).jqGrid("addRowData", i++, newData, "first");
+            tmpData[gridIdMap[id].data].push(newData);
+        });
+    }
+
+    $(function() {
+        slidtable();
+    })
+    var slidtable = function(){
+        $('.form-unitD span').click(function(e){
+            var _t = $(e.target)
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTable .item').hide()
+            $('.form-unitTable .item').eq(_t.index()).fadeIn()
+            $('.html_content',window.parent.document).css('overflow','scroll')
+            setTimeout(function(){
+                $('.html_content',window.parent.document).css('overflow','visible')
+            },10)
+        });
+    };
+    function save(t) {
+        $(t).attr('disabled','disabled')
+        $.fn.webUpLoaderFun(function(code){
+            if(code === 200){
+                DATA.svSoftCostume.softCostumeCode = $('#softCostumeCode').val();
+                DATA.svSoftCostume.softCostumeUrl = $('#softCostumeUrl').val();
+                DATA.svSoftCostume.schemeName = $('#schemeName').val();
+                DATA.svSoftCostume.dataSort = $('#dataSort').val();
+                var list = tmpData.sexData;
+                list = list.concat(tmpData.ageData);
+                list = list.concat(tmpData.productData);
+                list = list.concat(tmpData.styleData);
+                list = list.concat(tmpData.categoryData);
+                DATA.svSoftRlatList = list;
+                // 保存修改菜单信息
+                $.ajax({
+                    url: '${ctx}/softcostume/svSoftCostume/saveData',
+                    type: 'POST',
+                    data: JSON.stringify(DATA),
+                    contentType: 'application/json;charset=UTF-8',
+                    dataType: 'json',
+                    success:function(res){
+                        layer.close();
+                        if(res.code == '500'){
+                            layer.msg(res.msg)
+                        }
+                        else{
+                            layer.msg('保存成功')
+                            L.interfaceQuerys = []  // 清空数据
+                            $('#submit-searchBottom').trigger('click')  // 手动刷新菜单信息管理
+                            location.reload();
+                            // $('#btnSubmit').trigger('click')
+                        }
+                    }
+                })
+            }else{
+                $(t).attr('disabled','')
+            }
+        })
+    }
+    $("#inputForm").validate({
+        submitHandler: function(form){
+            js.ajaxSubmitForm($(form), function(data){
+                js.showMessage(data.message);
+                if(data.result == Global.TRUE){
+                    location.reload();
+                }
+            }, "json");
+        }
+    });
+</script>

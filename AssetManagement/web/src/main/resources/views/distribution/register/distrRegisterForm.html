@@ -1,0 +1,218 @@
+<% layout('/layouts/default.html', {title: '分销注册申请管理', libs: ['validate']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(distrRegister.isNewRecord ? '新增分销注册申请' : '编辑分销注册申请')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${distrRegister}" action="${ctx}/register/distrRegister/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-2 col-sm-10">
+					<% if (distrRegister.registerStatus == '0'){ %>
+					<a href="#" onclick="save(1)"  data-title="${text('审 核')}"><button type="submit" class="btn btn-sm btn-primary" ><i class="fa fa-check"></i> ${text('审 核')}</button></a>&nbsp;
+					<a href="#" onclick="save(2)"  data-title="${text('驳 回')}"><button type="submit" class="btn btn-sm btn-primary" ><i class="fa fa-check"></i> ${text('驳 回')}</button></a>&nbsp;
+					<% } %>
+					<% if (hasPermi('register:distrRegister:edit')){ %>
+					<a href="#" onclick="save(0)"  data-title="${text('保 存')}"><button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button></a>&nbsp;
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> ${text('申请单号')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+
+								<#form:hidden path="isNewRecord"/>
+								<#form:input path="registerCode" maxlength="64" readonly="${!distrRegister.isNewRecord}" class="form-control required abc"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> ${text('手机号')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="phone" maxlength="20" class="form-control required" readonly="true" />
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> ${text('姓名')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="fullName" maxlength="64" class="form-control required" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('省')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="province" maxlength="50" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('市')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="city" maxlength="50" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('区')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="region" maxlength="50" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+
+
+				</div>
+				<div class="row">
+					<div class="col-xs-8">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> ${text('资质说明')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="qualifications" rows="5" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('状态')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="statusLabel" class="form-control" readonly="true"/>
+								<#form:hidden path="registerStatus" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-8">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> ${text('凭证')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<img src="${distrRegister.voucherImg}">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('创建时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="createTime" dataFormat="datetime" readonly="true" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('审核人')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="auditBy" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('审核时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="auditTime" dataFormat="datetime" readonly="true" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('驳回人')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="rejectBy" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('驳回时间')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="rejectTime" dataFormat="datetime" readonly="true" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="row">
+					<div class="col-xs-8">
+						<div class="form-group">
+							<label class="control-label col-sm-2" title="">
+								<span class="required hide">*</span> ${text('驳回理由')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-10">
+								<#form:textarea path="rejectReason" rows="5" maxlength="2000" readonly="${distrRegister.isCreated}" class="form-control"/>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-footer">
+
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+
+function save(flag) {
+    var inputForm = document.getElementById("inputForm");
+    if (flag == '1') {
+        inputForm.action = '${ctx}/register/distrRegister/save?flag=1';
+    } else if (flag == '2') {
+        inputForm.action = '${ctx}/register/distrRegister/save?flag=2';
+    } else {
+        inputForm.action = '${ctx}/register/distrRegister/save';
+    }
+}
+</script>

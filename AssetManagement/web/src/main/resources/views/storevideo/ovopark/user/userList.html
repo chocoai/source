@@ -1,0 +1,145 @@
+<% layout('/layouts/default.html', {title: '万店掌用户管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('万店掌用户管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('sv:ovopark:user:edit')){ %>
+					<a href="${ctx}/sv/ovopark/user/form" class="btn btn-default btnTool" title="${text('新增万店掌用户')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+                    <button type="button" id="btnSync" class="btn btn-default" title="${text('同步万店掌用户')}"><i class="fa fa-plus"></i> ${text('同步')}</button>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${svOvoparkUser}" action="${ctx}/sv/ovopark/user/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('企业id')}：</label>
+					<div class="control-inline">
+						<#form:input path="orgId" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('门店id')}：</label>
+					<div class="control-inline">
+						<#form:input path="departNo" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('用户姓名')}：</label>
+					<div class="control-inline">
+						<#form:input path="userName" maxlength="128" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('用户类型')}：</label>
+					<div class="control-inline">
+						<#form:input path="memberType" maxlength="2" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('手机号码')}：</label>
+					<div class="control-inline">
+						<#form:input path="mobilePhone" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('性别')}：</label>
+					<div class="control-inline">
+						<#form:input path="gender" maxlength="2" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('图片地址')}：</label>
+					<div class="control-inline">
+						<#form:input path="thirdpicurl" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('是否验证重复手机号')}：</label>
+					<div class="control-inline">
+						<#form:input path="checkrepeat" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('状态')}：</label>
+					<div class="control-inline width-120">
+						<#form:select path="status" dictType="sys_search_status" blankOption="true" class="form-control"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('备注')}：</label>
+					<div class="control-inline">
+						<#form:input path="remarks" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" id="searchBtn" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('企业id')}', name:'orgId', index:'a.org_id', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/storevideo/ovopark/svOvoparkUser/form?userId='+row.userId+'" class="btnList" data-title="${text('编辑万店掌用户')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'${text('门店id')}', name:'departNo', index:'a.depart_no', width:150, align:"center"},
+		{header:'${text('用户姓名')}', name:'userName', index:'a.user_name', width:150, align:"left"},
+        {header:'${text('用户类型')}', name:'memberType', index:'a.member_type', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sv_user_type')}, val, '${text('未知')}', true);
+        }},
+        {header:'${text('手机号码')}', name:'mobilePhone', index:'a.mobile_phone', width:150, align:"left"},
+        {header:'${text('性别')}', name:'gender', index:'a.gender', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sv_sex')}, val, '${text('未知')}', true);
+        }},
+        {header:'${text('图片地址')}', name:'thirdpicurl', index:'a.thirdpicurl', width:150, align:"left"},
+        {header:'${text('是否验证重复手机号')}', name:'checkrepeat', index:'a.checkrepeat', width:150, align:"center", formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('sys_yes_no')}, val, '${text('未知')}', true);
+        }},
+		{header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'${text('状态')}', name:'status', index:'a.status', width:150, align:"center", formatter: function(val, obj, row, act){
+			return js.getDictLabel(${@DictUtils.getDictListJson('sys_search_status')}, val, '${text('未知')}', true);
+		}},
+		{header:'${text('备注')}', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('sv:ovopark:user:edit')){ %>
+				actions.push('<a href="${ctx}/sv/ovopark/user/form?userId='+row.userId+'" class="btnList" title="${text('编辑万店掌用户')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnSync').click(function () {
+    $.ajax({
+        url: '${ctx}/sv/ovopark/user/syncData',
+        type: 'GET',
+        //contentType: 'text/plain;charset=UTF-8',
+        dataType: 'json',
+        success:function(res){
+            if(res.message){
+                layer.msg(res.message);
+                $('#searchBtn').trigger('click');
+            } else {
+                layer.msg(res.msg);
+            }
+        }
+    });
+})
+</script>

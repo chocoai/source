@@ -1,0 +1,83 @@
+<% layout('/layouts/default.html', {title: '分销价修改日志管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('分销价修改日志管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('pricelog:distrPriceLog:edit')){ %>
+					<a href="${ctx}/pricelog/distrPriceLog/form" class="btn btn-default btnTool" title="${text('新增分销价修改日志')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${distrPriceLog}" action="${ctx}/pricelog/distrPriceLog/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('更新时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="time" readonly="true" maxlength="20" class="form-control Wdate-datetime"
+							dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm',isShowClear:false});"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('sku')}：</label>
+					<div class="control-inline">
+						<#form:input path="sku" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('sku_id')}：</label>
+					<div class="control-inline">
+						<#form:input path="skuId" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('商品名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="goodsName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('原价')}', name:'originalPrice', index:'a.original_price', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/pricelog/distrPriceLog/form?logCode='+row.logCode+'" class="btnList" data-title="${text('编辑分销价修改日志')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'${text('现价')}', name:'currentPrice', index:'a.current_price', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('更新时间')}', name:'time', index:'a.time', width:150, align:"center"},
+		{header:'${text('更新人')}', name:'updateBy', index:'a.update_by', width:150, align:"left"},
+		{header:'${text('sku')}', name:'sku', index:'a.sku', width:150, align:"left"},
+		{header:'${text('sku_id')}', name:'skuId', index:'a.sku_id', width:150, align:"left"},
+		{header:'${text('商品名称')}', name:'goodsName', index:'a.goods_name', width:150, align:"left"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('pricelog:distrPriceLog:edit')){ %>
+				actions.push('<a href="${ctx}/pricelog/distrPriceLog/form?logCode='+row.logCode+'" class="btnList" title="${text('编辑分销价修改日志')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

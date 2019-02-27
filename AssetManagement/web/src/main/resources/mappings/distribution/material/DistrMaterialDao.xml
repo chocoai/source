@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.distribution.material.dao.DistrMaterialDao">
+	
+	<!-- 查询数据 -->
+	<select id="findList" resultType="DistrMaterial">
+		SELECT ${sqlMap.column.toSql()}
+		<if test="apiFlag != null and apiFlag != ''">
+		,b.file_url bannerImg
+		</if>
+		FROM ${sqlMap.table.toSql()}
+		<if test="apiFlag != null and apiFlag != ''">
+		LEFT JOIN js_am_file_upload b
+		ON a.material_code = b.biz_key AND b.biz_type='distrMaterial_banner'
+		</if>
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select>
+
+
+	<select id="selectByNumIid" resultType="com.jeesite.modules.asset.tianmao.entity.TbProduct">
+		SELECT
+		a.*,MIN(b.distribution_price) lowerDistrPrice
+		FROM
+		tb_product a
+		LEFT JOIN tb_sku b ON a.num_iid = b.num_iid
+		<where>
+			a.num_iid in
+			<foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</where>
+		GROUP BY a.num_iid
+	</select>
+
+	<select id="selectSkuByNumIid" resultType="com.jeesite.modules.asset.tianmao.entity.TbSku">
+		SELECT
+		a.*
+		FROM
+		tb_sku a
+		<where>
+			a.num_iid in
+			<foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			AND a.quantity > 0
+		</where>
+	</select>
+
+
+	<select id="selectImgByNumIid" resultType="com.jeesite.modules.asset.tianmao.entity.TbItemImgs">
+		SELECT
+		a.*
+		FROM
+		tb_item_imgs a
+		<where>
+			a.item_id in
+			<foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</where>
+		ORDER BY a.position desc
+	</select>
+</mapper>

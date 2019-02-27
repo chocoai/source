@@ -1,0 +1,396 @@
+<% layout('/layouts/default.html', {title: '视频管理', libs: ['validate','dataGrid']}){ %>
+<style>
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+	.position {
+		position: relative;
+	}
+	.dot{
+		position: absolute;
+		right: 25px;
+		bottom: 2px;
+		color: #888;
+		font-size: 12px;
+	}
+</style>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+</style>
+<style>
+	#animation{
+		position: fixed;
+		top: 40%;
+		left: 40%;
+		width: 140px;
+		height: 100px;
+		padding-top: 8px;
+		background-color: #fff;
+		box-shadow: 0 0 4px #ccc;
+		display : none;
+		z-index: 200;
+	}
+	#animation .img{
+		width:100%;
+		display: flex;
+		justify-content: center;
+		align-content: center;
+		margin-top: 15px;
+	}
+	#animation img{
+		margin-bottom:2px;
+	}
+	#animation p{
+		color: #333333;
+		font-size:12px;
+		display: flex;
+		justify-content: center;
+		align-content: center;
+	}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(svVideo.isNewRecord ? '新增店铺视频' : '编辑店铺视频')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${svVideo}" action="${ctx}/sv/video/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-1 col-sm-10">
+                    <button type="button" class="btn btn-sm btn-primary" id="btnSave"><i class="fa fa-fa-check"></i> ${text('保 存')}</button>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+		<div class="box-body">
+			<div class="form-unit form-unitHd" id="div1">
+				<span class="on">${text('基本信息')}</span>
+			</div>
+			<div id="animation">
+				<div class="img"><img src="https://after-sales-photo.oss-cn-shanghai.aliyuncs.com/stores/after-ales-photo/data/b4fa5bb31a9f487c9e42b1315d5992a5"/></div>
+				<p>正在查询，请耐心等待</p>
+			</div>
+			<div class="form-unitTab">
+				<div class="item">
+					<#form:hidden path="videoCode"/>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('视频Url')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="videoId" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('视频名称')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="videoName" maxlength="255" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('排序')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="dataSort" maxlength="11" class="form-control required digits"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="form-unit form-unitD">
+				<span class="on">${text('性别')}</span>
+				<span>${text('年龄')}</span>
+				<span>${text('系列')}</span>
+				<span>${text('风格')}</span>
+				<span>${text('商品')}</span>
+			</div>
+			<div class="form-unitTable">
+				<div class="item">
+                    <div class="ml10 mr10">
+                        <button type="button" class="btn btn-primary" id="btnSexGridSetting" title="${text('配置性别')}"><i class="fa icon-plus"></i> ${text('配置性别')}</button>
+                    </div>
+					<div class="ml10 mr10">
+						<table id="svVideoSexGrid"></table>
+                        <div id="dataGridPage"></div>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+                    <div class="ml10 mr10">
+                        <button type="button" class="btn btn-primary" id="btnAgeGridSetting" title="${text('配置年龄')}"><i class="fa icon-plus"></i> ${text('配置年龄')}</button>
+                    </div>
+					<div class="ml10 mr10">
+						<table id="svVideoAgeGrid"></table>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+                    <div class="ml10 mr10">
+                        <button type="button" class="btn btn-primary" id="btnCategoryGridSetting" title="${text('配置商品分类')}"><i class="fa icon-plus"></i> ${text('配置商品分类')}</button>
+                    </div>
+					<div class="ml10 mr10">
+						<table id="svVideoCategoryGrid"></table>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+                    <div class="ml10 mr10">
+                        <button type="button" class="btn btn-primary" id="btnStyleGridSetting" title="${text('配置商品风格')}"><i class="fa icon-plus"></i> ${text('配置商品风格')}</button>
+                    </div>
+					<div class="ml10 mr10">
+						<table id="svVideoStyleGrid"></table>
+					</div>
+				</div>
+				<div class="item" style="display: none">
+                    <div class="ml10 mr10">
+                        <button type="button" class="btn btn-primary" id="btnProductGridSetting" title="${text('配置商品')}"><i class="fa icon-plus"></i> ${text('配置商品')}</button>
+                    </div>
+					<div class="ml10 mr10">
+						<table id="svVideoProductGrid"></table>
+					</div>
+				</div>
+			</div>
+			<div class="box-footer">
+
+			</div>
+		</#form:form>
+	</div>
+</div>
+<div class="hide">
+    <!--性别查询表单-->
+    <#form:form id="searchForm-sex" model="${svVideoRlatSex}" action="${ctx}/sv/video/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+        <#form:hidden path="videoCode"/>
+        <#form:hidden path="dimensionId"/>
+        <button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+    </#form:form>
+    <!--年龄查询表单-->
+    <#form:form id="searchForm-age" model="${svVideoRlatAge}" action="${ctx}/sv/video/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+    <#form:hidden path="videoCode"/>
+    <#form:hidden path="dimensionId"/>
+    <button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+    </#form:form>
+    <!--系列查询表单-->
+    <#form:form id="searchForm-category" model="${svVideoRlatCategory}" action="${ctx}/sv/video/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+    <#form:hidden path="videoCode"/>
+    <#form:hidden path="dimensionId"/>
+    <button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+    </#form:form>
+    <!--风格查询表单-->
+    <#form:form id="searchForm-style" model="${svVideoRlatStyle}" action="${ctx}/sv/video/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+    <#form:hidden path="videoCode"/>
+    <#form:hidden path="dimensionId"/>
+    <button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+    </#form:form>
+    <!--商品查询表单-->
+    <#form:form id="searchForm-product" model="${svVideoRlatProduct}" action="${ctx}/sv/video/listDictData" method="post" class="form-inline hide" data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+    <#form:hidden path="videoCode"/>
+    <#form:hidden path="dimensionId"/>
+    <button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+    </#form:form>
+
+    <#form:listselect id="sexSelector" title="性别选择" url="${ctx}/sv/video/dictSelector?parentCode=1085483555141566464" allowClear="false" checkbox="true" itemCode="dictLabel" itemName="dictLabel"/>
+    <#form:listselect id="ageSelector" title="年龄选择" url="${ctx}/sv/video/dictSelector?parentCode=1085483598019936256" allowClear="false" checkbox="true" itemCode="dictLabel" itemName="dictLabel"/>
+    <#form:listselect id="categorySelector" title="商品类别选择" url="${ctx}/sv/video/categorySelector" allowClear="true" checkbox="true" itemCode="procategoryCode" itemName="categoryName"/>
+    <#form:listselect id="styleSelector" title="商品风格选择" url="${ctx}/sv/video/styleSelector" allowClear="true" checkbox="true" itemCode="proseriesCode" itemName="seriesName"/>
+    <#form:listselect id="productSelector" title="商品风格选择" url="${ctx}/sv/video/productSelector" allowClear="true" checkbox="true" itemCode="numIid" itemName="title"/>
+</div>
+<% } %>
+<script>
+    var tmpData = { sexData:[], ageData:[], categoryData:[], styleData:[], productData:[] };
+    var DATA = { svVideo:{}, svVideoRlatList:[]};
+
+    var gridIdMap = {
+        sexSelector:{ gridId:"svVideoSexGrid", dimensionId:"${svVideoRlatSex.dimensionId}", data:"sexData", idField:"sex", valueField: "dictLabel", labelField:"dictLabel"},
+        ageSelector:{ gridId:"svVideoAgeGrid", dimensionId:"${svVideoRlatAge.dimensionId}",data:"ageData", idField:"age", valueField: "dictLabel", labelField:"dictLabel"},
+        categorySelector:{ gridId:"svVideoCategoryGrid", dimensionId:"${svVideoRlatCategory.dimensionId}",data:"categoryData", idField:"id", valueField: "id", labelField:"categoryName"},
+        styleSelector:{ gridId:"svVideoStyleGrid", dimensionId:"${svVideoRlatStyle.dimensionId}",data:"styleData", idField:"id", valueField: "id", labelField:"seriesName"},
+        productSelector:{ gridId:"svVideoProductGrid", dimensionId:"${svVideoRlatProduct.dimensionId}",data:"productData", idField:"id", valueField: "id", labelField:"title"}
+    };
+
+    //初始化js_am_order_detailDataGrid对象
+    $("#svVideoSexGrid").dataGrid({
+        searchForm: $("#searchForm-sex"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'性别', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            tmpData.sexData = data.list;
+        }
+    });
+    //初始化js_am_order_discountDataGrid对象
+    $("#svVideoAgeGrid").dataGrid({
+        searchForm: $("#searchForm-age"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'年龄', name:'dimensionLabel', width:150 }
+        ],
+
+        // 编辑表格参数
+        editGrid: false,				// 是否是编辑表格
+        editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+        editGridAddRowBtn: $('#svVideoAgeGridAddRowBtn'),	// 子表增行按钮
+        editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+        // 编辑表格的提交数据参数
+        editGridInputFormListName: 'amOrderDiscountList', // 提交的数据列表名
+        editGridInputFormListAttrs: 'status,detailCode,documentCode.documentCode,discount,discountPrice,', // 提交数据列表的属性字段
+
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            tmpData.ageData = data.list;
+        }
+    });
+    //初始化svVideoCategoryGrid对象
+    $("#svVideoCategoryGrid").dataGrid({
+
+        searchForm: $("#searchForm-category"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'系列名称', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            tmpData.categoryData = data.list;
+        }
+    });
+    //初始化svVideoStyleGrid对象
+    $("#svVideoStyleGrid").dataGrid({
+        searchForm: $("#searchForm-style"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'风格名称', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+            console.log(data);
+            tmpData.styleData = data.list;
+        }
+    });
+    //初始化svVideoStyleGrid对象
+    $("#svVideoProductGrid").dataGrid({
+        searchForm: $("#searchForm-product"),
+        autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+        // 设置数据表格列
+        columnModel: [
+            {header:'商品名称', name:'dimensionLabel', width:150 }
+        ],
+        // 加载成功后执行事件
+        ajaxSuccess: function(data){
+
+            tmpData.productData = data.list;
+        }
+    });
+
+    $('#btnSexGridSetting').click(function(){
+        $('#sexSelectorName').click();
+    });
+    $('#btnAgeGridSetting').click(function(){
+        $('#ageSelectorName').click();
+    });
+    $('#btnCategoryGridSetting').click(function(){
+        $('#categorySelectorName').click();
+    });
+    $('#btnStyleGridSetting').click(function(){
+        $('#styleSelectorName').click();
+    });
+    $('#btnProductGridSetting').click(function(){
+        $('#productSelectorName').click();
+    });
+
+    $("#btnSave").click(function () {
+        DATA.svVideo.videoCode = $('#videoCode').val();
+        DATA.svVideo.videoId = $('#videoId').val();
+        DATA.svVideo.videoName = $('#videoName').val();
+        DATA.svVideo.dataSort = $('#dataSort').val();
+        var list = tmpData.sexData;
+        list = list.concat(tmpData.ageData);
+        list = list.concat(tmpData.productData);
+        list = list.concat(tmpData.styleData);
+        list = list.concat(tmpData.categoryData);
+        DATA.svVideoRlatList = list;
+        // 保存修改菜单信息
+        $.ajax({
+            url: '${ctx}/sv/video/saveData',
+            type: 'POST',
+            data: JSON.stringify(DATA),
+            contentType: 'application/json;charset=UTF-8',
+            dataType: 'json',
+            success:function(res){
+                if(res.code == '500'){
+                    layer.msg(res.msg)
+                }
+                else{
+                    layer.msg('保存成功')
+                    L.interfaceQuerys = []  // 清空数据
+                    $('#submit-searchBottom').trigger('click')  // 手动刷新菜单信息管理
+                    console.log(res)
+                }
+
+            }
+        })
+    });
+
+    function listselectCallback(id, action, index, layero, selectData){
+        if(action==='cancel') return;
+        var i = -1, grid = gridIdMap[id];
+        var gridId = "#"+grid.gridId;
+        $(gridId).jqGrid("clearGridData");
+        tmpData[gridIdMap[id].data] = [];
+        $.each(selectData, function(key, value){
+            var newData = { videoCode: '${svVideo.videoCode}', dimensionId: gridIdMap[id].dimensionId, dimensionValue: value[grid.valueField], dimensionLabel: value[grid.labelField]};
+            $(gridId).jqGrid("addRowData", i++, newData, "first");
+            tmpData[gridIdMap[id].data].push(newData);
+        });
+        console.log(tmpData);
+    }
+
+    $(function() {
+        slidtable();
+    })
+    var slidtable = function(){
+        $('.form-unitD span').click(function(e){
+            var _t = $(e.target)
+            _t.addClass('on').siblings('span').removeClass('on')
+            $('.form-unitTable .item').hide()
+            $('.form-unitTable .item').eq(_t.index()).fadeIn()
+            $('.html_content',window.parent.document).css('overflow','scroll')
+            setTimeout(function(){
+                $('.html_content',window.parent.document).css('overflow','visible')
+            },10)
+        });
+    };
+</script>

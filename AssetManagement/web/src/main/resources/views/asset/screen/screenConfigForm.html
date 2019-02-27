@@ -1,0 +1,466 @@
+<% layout('/layouts/default.html', {title: '屏幕配置管理', libs: ['validate','dataGrid']}){ %>
+<style>
+	.form-unitD span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitD span.on {
+		color: #6379bb;
+	}
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(screenConfig.isNewRecord ? '新增屏幕配置' : '编辑屏幕配置')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${screenConfig}" action="${ctx}/screen/screenConfig/save" method="post" class="form-horizontal">
+		<div class="box-header">
+			<div class="row">
+				<div class="col-sm-offset-2 col-sm-10">
+					<% if (hasPermi('screen:screenConfig:edit')){ %>
+					<a href="#" onclick="save(0)"  data-title="${text('保 存')}">
+						<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button></a>&nbsp;
+					<% } %>
+					<% if (screenConfig.configureStatus == '1'){ %>
+					<a href="#" onclick="save(1)"  data-title="${text('商品发布')}">
+						<button type="submit" class="btn btn-sm btn-primary" id="btnRelease"><i class="fa fa-check"></i> ${text('商品发布')}</button></a>&nbsp;
+					<% } else { %>
+					<a href="#" onclick="save(2)"  data-title="${text('商品撤销')}">
+						<button type="submit" class="btn btn-sm btn-primary" id="btnRevoke"><i class="fa fa-check"></i> ${text('商品撤销')}</button></a>&nbsp;
+					<% } %>
+					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				</div>
+			</div>
+		</div>
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> ${text('配置项编码')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+
+								<#form:hidden path="isNewRecord" id="isNewRecord"/>
+								<#form:input path="configureCode" maxlength="64" readonly="true" class="form-control required abc"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('状态')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="configureStatus" dictType="screen_config_status" blankOption="true" class="form-control" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('配置店铺')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="configureShop" dictType="screen_config_shop" blankOption="true" class="form-control" />
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('配置页面')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="configurePage" dictType="screen_config_page" id="configurePage" blankOption="true" class="form-control" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('页面位置')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:select path="pageLocation" dictType="screen_page_location" id="pageLocation" blankOption="true" class="form-control" />
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="form-unit form-unitD">
+					<span id="goodsSpan" class="on">${text('屏幕配置-商品')}</span>
+					<span id="enterpriseSpan">${text('屏幕配置-企业')}</span>
+				</div>
+				<div class="form-unitTable">
+					<div class="item">
+						<div class="ml10 mr10" id="screenConfigDetailDiv">
+							<a href="#" id="screenConfigDetailDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+							<table id="screenConfigDetailDataGrid"></table>
+						</div>
+					</div>
+					<div class="item" style="display: none" id="screenEnterpriseDetailDiv">
+						<div class="ml10 mr10">
+							<a href="#" id="screenEnterpriseDetailDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>
+							<table id="screenEnterpriseDetailDataGrid"></table>
+						</div>
+					</div>
+				</div>
+			<div class="box-footer">
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+//初始化js_screen_config_detailDataGrid对象
+$("#screenConfigDetailDataGrid").dataGrid({
+
+	data: ${toJson(screenConfig.screenConfigDetailList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+        {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                var actions = [];
+                if (val == 'new'){
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#screenConfigDetailDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }else{
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#screenConfigDetailDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }
+                return actions.join('');
+            }, editoptions: {defaultValue: 'new'}},
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'${text('配置项编码')}', name:'configureCode.configureCode', editable:true, hidden:true},
+        {header:'${text('商品id')}', name:'numIid', width:50, editable:true, edittype:'text', editoptions:{'maxlength':'255', 'class':'form-control'}},
+		{header:'${text('商品url')}', name:'detailUrl', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'255', 'class':'form-control'}},
+		{header:'${text('商品名称')}', name:'goodsName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'128', 'class':'form-control'}},
+        // {header:'${text('系列编码')}', name:'proseriesCode',hidden:true width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+		// {header:'${text('系列名')}', name:'seriesName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'64', 'class':'form-control'}},
+
+	],
+	
+	// 编辑表格参数
+	editGrid: true,				// 是否是编辑表格
+	editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#screenConfigDetailDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'screenConfigDetailList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,detailCode,configureCode.configureCode,numIid,detailUrl,goodsName,proseriesCode,seriesName,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+
+$("#screenEnterpriseDetailDataGrid").dataGrid({
+
+    data: ${toJson(screenConfig.screenEnterpriseDetailList)},
+    datatype: "local", // 设置本地数据
+    autoGridHeight: function(){return 'auto'}, // 设置自动高度
+
+    // 设置数据表格列
+    columnModel: [
+        {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+                var actions = [];
+                if (val == 'new'){
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#screenEnterpriseDetailDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }else{
+                    actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#screenEnterpriseDetailDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                }
+                return actions.join('');
+            }, editoptions: {defaultValue: 'new'}},
+        {header:'状态', name:'status', editable:true, hidden:true},
+        {header:'主键', name:'detailCode', editable:true, hidden:true},
+        {header:'${text('配置项编码')}', name:'configureCode.configureCode', editable:true, hidden:true},
+        {header:'${text('企业编码')}', name:'enterpriseCode', width:50, editable:true, edittype:'text', editoptions:{'maxlength':'255', 'class':'form-control'}},
+        {header:'${text('企业名称')}', name:'enterpriseName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'255', 'class':'form-control'}},
+
+    ],
+
+    // 编辑表格参数
+    editGrid: true,				// 是否是编辑表格
+    editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+    editGridAddRowBtn: $('#screenEnterpriseDetailDataGridAddRowBtn'),	// 子表增行按钮
+    editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+
+    // 编辑表格的提交数据参数
+    editGridInputFormListName: 'screenEnterpriseDetailList', // 提交的数据列表名
+    editGridInputFormListAttrs: 'status,detailCode,configureCode.configureCode,enterpriseCode,enterpriseName,', // 提交数据列表的属性字段
+
+    // 加载成功后执行事件
+    ajaxSuccess: function(data){
+
+    }
+});
+
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			var isNewRecord = $('#isNewRecord').val();
+			if(data.result == Global.TRUE){
+                if (isNewRecord == 'true') {
+                    js.closeCurrentTabPage(function(contentWindow){
+                        contentWindow.page();
+                    });
+                } else {
+                    location.reload();
+                }
+			}
+		}, "json");
+    }
+});
+$(function() {
+    var configurePage = $("#configurePage").val();
+    if (configurePage == '1') {
+        setTimeout(function () {
+            $("#select2-pageLocation-container").html("特别推荐")
+        }, 30)
+        $("#pageLocation").attr("disabled", true);
+    }
+    setInputReadonly($('#screenConfigDetailDataGrid input[name=goodsName]'))
+    setInputReadonly($('#screenConfigDetailDataGrid input[name=numIid]'))
+    setInputReadonly($('#screenEnterpriseDetailDataGrid input[name=enterpriseCode]'))
+    // setInputReadonly($('#screenEnterpriseDetailDataGrid input[name=enterpriseName]'))
+    $('#screenConfigDetailDataGrid').on('DOMNodeInserted', function() {
+        setInputReadonly($('#screenConfigDetailDataGrid input[name=numIid]'));
+    });
+    $('#screenConfigDetailDataGrid').on('DOMNodeInserted', function() {
+        setInputReadonly($('#screenConfigDetailDataGrid input[name=goodsName]'));
+    });
+    $('#screenEnterpriseDetailDataGrid').on('DOMNodeInserted', function() {
+        setInputReadonly($('#screenEnterpriseDetailDataGrid input[name=enterpriseCode]'));
+    });
+    // $('#screenEnterpriseDetailDataGrid').on('DOMNodeInserted', function() {
+    //     setInputReadonly($('#screenEnterpriseDetailDataGrid input[name=enterpriseName]'));
+    // });
+})
+
+var setInputReadonly = function(node) {
+    $(node).each(function(index, item){
+        $(item).attr('readonly', 'true');
+    });
+}
+
+// 点击商品页签商品名
+$('#screenConfigDetailDataGrid').on('click', function(e) { // e是事件event
+    var targetName = $(e.target).attr('name');                                   //得到列的name
+    var targetId   = $(e.target).attr('id');                                       //得到列的ID
+    if(targetId.indexOf('_') > -1) {
+        var targetArr  = targetId.split('_');
+        var rowId      = targetArr[0];
+    } else {
+        var rowId      = targetId;
+    }
+    if (targetName.indexOf("detailUrl") > -1) {
+        var colName = ['title', 'detailUrl', 'numIid'];
+        var url = "${ctx}/screen/screenConfig/goodsList";
+        var callback = function (val, paramName) {
+            if (paramName == 'title') {
+                $('#' + rowId + '_goodsName').val(val);
+            } else if (paramName == 'detailUrl') {
+                $('#' + rowId + '_detailUrl').val(val);
+            } else if (paramName == 'numIid') {
+                $('#' + rowId + '_numIid').val(val);
+            }
+        }
+        clickToOpenWindow(url, colName, rowId, callback, '商品资料');
+    }
+});
+
+// 点击企业页签企业名
+$('#screenEnterpriseDetailDataGrid').on('click', function(e) { // e是事件event
+    var targetName = $(e.target).attr('name');                                   //得到列的name
+    var targetId   = $(e.target).attr('id');                                       //得到列的ID
+    if(targetId.indexOf('_') > -1) {
+        var targetArr  = targetId.split('_');
+        var rowId      = targetArr[0];
+    } else {
+        var rowId      = targetId;
+    }
+    if (targetName.indexOf("enterpriseName") > -1) {
+        var colName = ['enterpriseCode', 'enterpriseName'];
+        var url = "${ctx}/screen/screenEnterprise/enterpriseSelect";
+        var callback = function (val, paramName) {
+            if (paramName == 'enterpriseCode') {
+                $('#' + rowId + '_enterpriseCode').val(val);
+            } else if (paramName == 'enterpriseName') {
+                $('#' + rowId + '_enterpriseName').val(val);
+            }
+        }
+        clickToOpenWindow(url, colName, rowId, callback, '企业列表');
+    }
+});
+
+var clickToOpenWindow = function(url, colName, trId, callback, title){
+    if ($("#documentsCodeButton").hasClass("disabled")){
+        return true;
+    }
+    var selectData = {},
+        boxWidth = $(top.window).width() - 100,
+        boxHeight = $(top.window).height() - 100;
+    boxWidth = boxWidth < 350 ? 350 : boxWidth;
+    boxHeight = boxHeight < 250 ? 250 : boxHeight;
+    if(typeof listselectGetSelectData == 'function'){
+        selectData = listselectGetSelectData('sku'); // 如果你需要打开其他的列表，你得自己定义一个code，目前的话是打开耗材的列表
+    }
+    var options = {
+        type: 2, // 弹窗类型，2是iframe，content必须是url，一个正常显示的页面
+        maxmin: true,
+        shadeClose: true,
+        title: title,
+        area: [boxWidth+'px', boxHeight+'px'],
+        content: url,
+        contentFormData: {
+            checkbox: 'false',
+            selectData: js.encodeUrl(JSON.stringify(selectData))
+        },
+        success: function(layero, index){
+            if ($(js.layer.window).width() < boxWidth
+                || $(js.layer.window).height() < boxHeight){
+                js.layer.full(index);
+            }
+        },
+        btn: ['<i class="fa fa-check"></i> 确定'],
+        btn1: function(index, layero){
+            var win = js.layer.iframeWindow(index);
+            selectData = win.getSelectData();
+            if(typeof listselectCheck == 'function'){
+                if (!listselectCheck('sku', selectData)){
+                    return false;
+                }
+            }
+            // 点击确定，获取用户选择数据
+            if(typeof listselectSetSelectData == 'function'){
+                listselectSetSelectData('sku', selectData);
+            }
+
+            try { $('#sku,#goodsName').valid(); }catch(e){}
+
+            /** 传值到目标表单 START */
+            var colCount = selectData.length; // 行数
+
+            for (var index in selectData) { // selectData 是弹窗后选中的值
+                var subItem = selectData[index]; //
+                for(var subIndex in subItem) {
+
+                    for(var colIndex in colName) { // 要替换的值的input name属性
+
+                        if(subIndex == colName[colIndex]) { // 将列名称数组遍历，填充值, subIndex是选中数据的属性
+                            var selector = '#' + trId + '_' + colName[colIndex];
+                            var val = subItem[subIndex];
+                            if(callback) { // 如果有callback，执行callback去处理
+                                callback(val, subIndex);
+                            } else { // 如果没有，直接用selector的定位去赋值
+                                $(selector).val(val);
+                            }
+                        }
+
+                    }
+                }
+            }
+            /** END */
+
+        }
+    };
+    options.btn.push('<i class="fa fa-close"></i> 关闭');
+    options['btn'+options.btn.length] = function(index, layero){
+        if(typeof listselectCallback == 'function'){
+            listselectCallback('sku', 'cancel', index, layero);
+        }
+    };
+    js.layer.open(options);
+};
+function save(flag) {
+    var inputForm = document.getElementById("inputForm");
+    if (flag == '2') {
+        inputForm.action = '${ctx}/screen/screenConfig/save?flag=1';
+    } else if (flag == '1') {
+        inputForm.action = '${ctx}/screen/screenConfig/save?flag=0';
+    } else if (flag == '0') {
+        inputForm.action = '${ctx}/screen/screenConfig/save';
+    }
+}
+$("#pageLocation").change(function(e){
+	var pageLocation = $("#pageLocation").val();
+	var configurePage = $("#configurePage").val();
+	if(configurePage != '2'){
+        if(pageLocation == '4'){
+            js.alert('该选项不可选中')
+            $("#pageLocation").val('');
+		}
+	} else {
+        if(pageLocation != '4' && pageLocation != ''){
+            js.alert('该选项不可选中')
+            $("#pageLocation").val('');
+        }
+	}
+})
+$('#configurePage').change(function(e){
+    var configurePage = $("#configurePage").val();
+    if (configurePage == '1') {
+        setTimeout(function(){
+            $("#select2-pageLocation-container").html("特别推荐")
+        },30)
+        $("#pageLocation").attr("disabled",true);
+    } else if (configurePage == '2') {
+        // 等于零售家的时候 页面位置可编辑 数据初始化
+        $("#pageLocation").attr("disabled",false);
+        $("#select2-pageLocation-container").html("")
+        $("#pageLocation").val('');
+        $('#goodsSpan').hide();
+        $('#enterpriseSpan').show();
+        $('#enterpriseSpan').trigger('click');
+	} else {
+        setTimeout(function(){
+            $("#select2-pageLocation-container").html(null)
+        },30)
+        $('#pageLocation').val('')
+        $("#pageLocation").attr("disabled",false);
+	}
+
+    if (configurePage != '2' ) {
+        $('#goodsSpan').show();
+        $('#enterpriseSpan').hide();
+        $('#goodsSpan').trigger('click');
+    }
+})
+
+$(function() {
+    slidtable();
+    var configurePage = $("#configurePage").val();
+    if (configurePage == '2') {
+        $('#enterpriseSpan').trigger('click');
+        $('#goodsSpan').hide();
+	} else {
+        $('#goodsSpan').trigger('click');
+        $('#enterpriseSpan').hide();
+	}
+})
+var slidtable = function(){
+    $('.form-unitD span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTable .item').hide()
+        $('.form-unitTable .item').eq(_t.index()).fadeIn()
+        $('.html_content',window.parent.document).css('overflow','scroll')
+        setTimeout(function(){
+            $('.html_content',window.parent.document).css('overflow','visible')
+        },1)
+    });
+};
+</script>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jeesite.modules.asset.screen.dao.ScreenProductDao">
+	
+	<!-- 查询数据
+	<select id="findList" resultType="ScreenProduct">
+		SELECT ${sqlMap.column.toSql()}
+		FROM ${sqlMap.table.toSql()}
+		<where>
+			${sqlMap.where.toSql()}
+		</where>
+		ORDER BY ${sqlMap.order.toSql()}
+	</select> -->
+	<select id="getProduct" resultType="com.jeesite.modules.asset.screen.entity.ProductData">
+	  SELECT a.product_code productCode,a.product_name productName,a.enterprise_code enterpriseCode
+	  FROM js_screen_product a
+		<where>
+			a.enterprise_code in
+			<foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</where>
+		ORDER BY a.product_code
+	</select>
+
+	<select id="getProductList" resultType="com.jeesite.modules.asset.screen.entity.ProductData">
+		SELECT a.product_code productCode,a.product_name productName,a.enterprise_code enterpriseCode
+		FROM js_screen_product a
+		WHERE
+			a.enterprise_code = #{enterpriseCode}
+		ORDER BY a.product_code
+		LIMIT #{pageNo},#{pageSize}
+	</select>
+</mapper>

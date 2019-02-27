@@ -1,0 +1,123 @@
+<% layout('/layouts/default.html', {title: '产品推送基础档案管理', libs: ['validate']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(svArchives.isNewRecord ? '新增产品推送基础档案' : '编辑产品推送基础档案')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${svArchives}" action="${ctx}/archives/svArchives/save" method="post" class="form-horizontal">
+			<div class="box-body">
+				<div class="form-unit">${text('基本信息')}</div>
+				<#form:hidden path="archivesCode"/>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required ">*</span> ${text('天猫id')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:listselect path="numIid" id="tbProduct" title="商品资料" labelPath="tbProduct.numIid" itemCode="numIid" itemName="numIid" class="form-control required"
+								url="${ctx}/archives/svArchives/goodsList" allowClear="true" class="form-control required"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('商品名称')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="goodsName" id="goodsName" maxlength="255" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('商品类目名称')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="cid" maxlength="32" id="cid" class="form-control digits" readonly="true"/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="row">
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('商品分类')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="procategoryName" id="procategoryName" maxlength="64" class="form-control" readonly="true"/>
+								<#form:hidden path="procategoryCode" id="procategoryCode" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+					<div class="col-xs-6">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> ${text('商品系列')}：<i class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="proseries" id="proseries" maxlength="64" class="form-control" readonly="true"/>
+								<#form:hidden path="proseriesCode" id="proseriesCode" maxlength="64" class="form-control" readonly="true"/>
+							</div>
+						</div>
+					</div>
+
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('archives:svArchives:edit')){ %>
+							<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+function listselectCallback(id, action, index, layero, selectData) {
+    if (id == "tbProduct") {
+        $.each(selectData, function(key, value){
+            $('#goodsName').val(value.title);
+            $('#cid').val(value.cid);
+            if (value.productCategory) {
+                $('#procategoryName').val(value.productCategory.categoryName);
+                $('#procategoryCode').val(value.procategoryCode);
+			} else {
+                $('#procategoryName').val(null);
+                $('#procategoryCode').val(null);
+			}
+            if (value.productSeries) {
+                $('#proseries').val(value.productSeries.seriesName);
+                $('#proseriesCode').val(value.proseriesCode);
+            } else {
+                $('#proseries').val(null);
+                $('#proseriesCode').val(null);
+			}
+
+        });
+    }
+}
+</script>

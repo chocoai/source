@@ -1,0 +1,93 @@
+<% layout('/layouts/default.html', {title: '摄像头管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('摄像头管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('camera:svCamera:edit')){ %>
+					<a href="${ctx}/camera/svCamera/form" class="btn btn-default btnTool" title="${text('新增摄像头')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${svCamera}" action="${ctx}/camera/svCamera/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('摄像头设备ID')}：</label>
+					<div class="control-inline">
+						<#form:input path="deviceId" maxlength="50" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('摄像头设备名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="deviceName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('摄像头设备MAC')}：</label>
+					<div class="control-inline">
+						<#form:input path="deviceMac" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('排序')}：</label>
+					<div class="control-inline">
+						<#form:input path="sort" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('位置')}：</label>
+					<div class="control-inline">
+						<#form:input path="position" maxlength="500" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('备注')}：</label>
+					<div class="control-inline">
+						<#form:input path="remarks" maxlength="1000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('摄像头设备ID')}', name:'deviceId', index:'a.device_id', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+			return '<a href="${ctx}/camera/svCamera/form?cameraCode='+row.cameraCode+'" class="btnList" data-title="${text('编辑摄像头')}">'+(val||row.id)+'</a>';
+		}},
+		{header:'${text('摄像头设备名称')}', name:'deviceName', index:'a.device_name', width:150, align:"left"},
+		{header:'${text('摄像头设备MAC')}', name:'deviceMac', index:'a.device_mac', width:150, align:"left"},
+		{header:'${text('排序')}', name:'sort', index:'a.sort', width:150, align:"center"},
+		{header:'${text('位置')}', name:'position', index:'a.position', width:150, align:"left"},
+		{header:'${text('备注')}', name:'remarks', index:'a.remarks', width:150, align:"left"},
+		{header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"},
+		{header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+			var actions = [];
+			<% if(hasPermi('camera:svCamera:edit')){ %>
+				actions.push('<a href="${ctx}/camera/svCamera/form?cameraCode='+row.cameraCode+'" class="btnList" title="${text('编辑摄像头')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+				actions.push('<a href="${ctx}/camera/svCamera/delete?cameraCode='+row.cameraCode+'" class="btnList" title="${text('删除摄像头')}" data-confirm="${text('确认要删除该摄像头吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+			<% } %>
+			return actions.join('');
+		}}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

@@ -1,0 +1,82 @@
+<% layout('/layouts/default.html', {title: '电视客户端日志管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('电视客户端日志管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('storevideo:svTvClientLog:edit')){ %>
+					<a href="${ctx}/sv/tvclientlog/form" class="btn btn-default btnTool" title="${text('新增电视客户端日志')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${svTvClientLog}" action="${ctx}/sv/tvclientlog/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('IP')}：</label>
+					<div class="control-inline">
+						<#form:input path="ip" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('mac')}：</label>
+					<div class="control-inline">
+						<#form:input path="mac" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('在线状态')}：</label>
+					<div class="control-inline">
+						<#form:input path="online" maxlength="1" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('日志时间')}：</label>
+					<div class="control-inline">
+						<#form:input path="logDate" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('日志类型')}：</label>
+					<div class="control-inline">
+						<#form:input path="logType" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('内容')}：</label>
+					<div class="control-inline">
+						<#form:input path="logMessage" maxlength="2000" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+		{header:'${text('IP')}', name:'ip', index:'a.ip', width:100, align:"left", frozen:true},
+		//{header:'${text('mac')}', name:'mac', index:'a.mac', width:100, align:"left"},
+		//{header:'${text('在线状态')}', name:'online', index:'a.online', width:150, align:"left"},
+		{header:'${text('日志时间')}', name:'logDate', index:'a.log_date', width:100, align:"center"},
+		{header:'${text('日志类型')}', name:'logType', index:'a.log_type', width:60, align:"left"},
+		{header:'${text('内容')}', name:'logMessage', index:'a.log_message', width:400, align:"left"}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

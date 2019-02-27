@@ -1,0 +1,357 @@
+<% layout('/layouts/default.html', {title: '分销订单管理', libs: ['validate','dataGrid']}){ %>
+<style>
+	.form-unitHd span {
+		margin-right: 20px;
+		color: #999a9b;
+		cursor: pointer;
+	}
+
+	.form-unitHd span.on {
+		color: #6379bb;
+	}
+
+</style>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header with-border">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text(distrOrder.isNewRecord ? '新增分销订单' : '编辑分销订单')}
+			</div>
+			<div class="box-tools pull-right">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+			</div>
+		</div>
+		<#form:form id="inputForm" model="${distrOrder}" action="${ctx}/order/distrOrder/save" method="post" class="form-horizontal">
+		<div class="box-body">
+			<div class="form-unit form-unitHd">
+				<span class="on">${text('基本信息')}</span>
+				<span>${text('操作信息')}</span>
+			</div>
+			<div class="form-unitTab">
+				<div class="item">
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('单号')}：<i class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+
+									<#form:hidden path="isNewRecord"/>
+									<#form:input path="documentCode" maxlength="64"
+									readonly="true" class="form-control required abc"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('订单状态')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="documentStatus" readonly="true"
+									class="form-control" />
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('支付方式')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="payType" maxlength="50" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('商品总额')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="totalPrice" readonly="true" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required ">*</span> ${text('客户姓名')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="customerName" maxlength="100" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('移动电话')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="mobilePhone" maxlength="20" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('配送方式')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="distribution" maxlength="50" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('合计应收')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="totalFee" readonly="true" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('省')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="province" maxlength="50" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('市')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="city" maxlength="50" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('区')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="region" maxlength="50" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('物流费')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="logisticsFee" readonly="true" class="form-control number"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-6">
+							<div class="form-group">
+								<label class="control-label col-sm-2" title="">
+									<span class="required ">*</span> ${text('详细地址')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-10">
+									<#form:input path="detailedAddress" readonly="true" maxlength="1000" class="form-control required"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-3">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('客户来源')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="customerSource" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-12">
+							<div class="form-group">
+								<label class="control-label col-sm-1" title="">
+									<span class="required hide">*</span> ${text('备注')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:textarea path="remarks" rows="4" readonly="true" maxlength="1000" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="item" style="display: none;">
+					<div class="row">
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('创建人')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="createBy" maxlength="64" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('确认人')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="confirmBy" maxlength="64" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('提交人')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="submitBy" maxlength="64" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row">
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('创建时间')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="createTime" maxlength="100" dataFormat="datetime" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('确认时间')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="confirmDate" maxlength="100" dataFormat="datetime" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+						<div class="col-xs-4">
+							<div class="form-group">
+								<label class="control-label col-sm-4" title="">
+									<span class="required hide">*</span> ${text('提交时间')}：<i
+										class="fa icon-question hide"></i></label>
+								<div class="col-sm-8">
+									<#form:input path="submitDate" dataFormat="datetime" maxlength="100" readonly="true" class="form-control"/>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<h4 class="form-unit">${text('分销订单明细')}</h4>
+				<div class="ml10 mr10">
+					<table id="distrOrderDetailDataGrid"></table>
+					<% if (hasPermi('order:distrOrder:edit')){ %>
+						<!--<a href="#" id="distrOrderDetailDataGridAddRowBtn" class="btn btn-primary btn-sm mt10 mb10"><i class="fa fa-plus"></i> ${text('增行')}</a>-->
+					<% } %>
+				</div>
+			</div>
+			<div class="box-footer">
+				<div class="row">
+					<div class="col-sm-offset-2 col-sm-10">
+						<% if (hasPermi('order:distrOrder:edit')){ %>
+							<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
+						<% } %>
+						<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+					</div>
+				</div>
+			</div>
+		</#form:form>
+	</div>
+</div>
+<% } %>
+<script>
+//初始化分销订单明细DataGrid对象
+$("#distrOrderDetailDataGrid").dataGrid({
+
+	data: ${toJson(distrOrder.distrOrderDetailList)},
+	datatype: "local", // 设置本地数据
+	autoGridHeight: function(){return 'auto'}, // 设置自动高度
+	
+	// 设置数据表格列
+	columnModel: [
+		{header:'状态', name:'status', editable:true, hidden:true},
+		{header:'主键', name:'detailCode', editable:true, hidden:true},
+		{header:'${text('单据编号')}', name:'documentCode.documentCode', editable:true, hidden:true},
+		{header:'${text('商品名称')}', name:'goodsName', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'1000', 'class':'form-control'}},
+		{header:'${text('规格')}', name:'spec', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'500', 'class':'form-control'}},
+		{header:'${text('sku')}', name:'sku', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'1000', 'class':'form-control'}},
+		{header:'${text('数量')}', name:'quantity', width:150, editable:true, edittype:'text', editoptions:{'maxlength':'11', 'class':'form-control digits'}},
+		{header:'${text('单价')}', name:'price', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control number'}},
+		{header:'${text('金额')}', name:'amount', width:150, editable:true, edittype:'text', editoptions:{'class':'form-control number'}},
+		// {header:'${text('操作')}', name:'actions', width:80, sortable:false, fixed:true, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	if (val == 'new'){
+		// 		actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#distrOrderDetailDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\')});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	}else{
+		// 		actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#distrOrderDetailDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'})});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	}
+		// 	return actions.join('');
+		// }, editoptions: {defaultValue: 'new'}}
+	],
+	
+	// 编辑表格参数
+	editGrid: false,				// 是否是编辑表格
+	editGridInitRowNum: 0,		// 编辑表格的初始化新增行数
+	editGridAddRowBtn: $('#distrOrderDetailDataGridAddRowBtn'),	// 子表增行按钮
+	editGridAddRowInitData: {detailCode: '', status: Global.STATUS_NORMAL},	// 新增行的时候初始化的数据
+	
+	// 编辑表格的提交数据参数
+	editGridInputFormListName: 'distrOrderDetailList', // 提交的数据列表名
+	editGridInputFormListAttrs: 'status,detailCode,documentCode.documentCode,goodsName,spec,sku,skuId,quantity,price,amount,', // 提交数据列表的属性字段
+	
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
+<script>
+$("#inputForm").validate({
+	submitHandler: function(form){
+		js.ajaxSubmitForm($(form), function(data){
+			js.showMessage(data.message);
+			if(data.result == Global.TRUE){
+				js.closeCurrentTabPage(function(contentWindow){
+					contentWindow.page();
+				});
+			}
+		}, "json");
+    }
+});
+
+$(function() {
+    slidtab();
+})
+// tab切换
+var slidtab = function(){
+    $('.form-unitHd span').click(function(e){
+        var _t = $(e.target)
+        _t.addClass('on').siblings('span').removeClass('on')
+        $('.form-unitTab .item').hide()
+        $('.form-unitTab .item').eq(_t.index()).fadeIn()
+    });
+};
+</script>

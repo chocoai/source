@@ -1,0 +1,92 @@
+<% layout('/layouts/default.html', {title: '梵赞兑换订单表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('梵赞兑换子订单')}
+			</div>
+			<div class="box-tools pull-right">
+				<!--<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>-->
+				<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				<% if(hasPermi('order:fzNeigouOrder:edit')){ %>
+					<!--<a href="${ctx}/order/fzNeigouOrder/form" class="btn btn-default btnTool" title="${text('新增梵赞兑换订单表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzNeigouOrder}" action="${ctx}/order/fzNeigouOrder/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group" style="display: none">
+					<label class="control-label">${text('订单号')}：</label>
+					<div class="control-inline">
+						<#form:input path="orderId" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group" style="display: none">
+					<label class="control-label">${text('')}：</label>
+					<div class="control-inline">
+						<#form:input path="query" class="form-control width-120"/>
+					</div>
+				</div>
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">${text('支付状态')}：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="payStatus" maxlength="1" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">${text('订单状态')}：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="orderStatus" maxlength="1" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group" style="display: none">-->
+					<!--<label class="control-label">${text('')}：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="query" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<label class="control-label">${text('用户名')}：</label>-->
+					<!--<div class="control-inline">-->
+						<!--<#form:input path="userName" maxlength="255" class="form-control width-120"/>-->
+					<!--</div>-->
+				<!--</div>-->
+				<!--<div class="form-group">-->
+					<!--<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>-->
+					<!--<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>-->
+
+				<!--</div>-->
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'${text('订单号')}', name:'orderId', index:'a.order_id', width:150, align:"center",formatter: function(val, obj, row, act){
+                return '<a href="${ctx}/order/fzNeigouOrderItem/list?orderId='+row.orderId+'" class="btnList" data-title="${text('查看商品详情')}">'+(val||row.id)+'</a>';
+            }},
+		{header:'${text('支付状态 ')}', name:'payStatus', index:'a.pay_status', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fz_neigou_order_payStatus')}, val, '${text('未知')}', true);
+		}},
+		{header:'${text('订单状态 ')}', name:'orderStatus', index:'a.order_status', width:150, align:"left",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fz_neigou_order_status')}, val, '${text('未知')}', true);
+            }},
+        {header:'${text('快递公司')}', name:'logiName', index:'a.logi_name', width:150, align:"left"},
+        {header:'${text('快递号')}', name:'logiNo', index:'a.logi_no', width:150, align:"left"},
+		{header:'${text('发货状态')}', name:'shipStatus', index:'a.ship_status', width:150, align:"left",formatter: function(val, obj, row, act){
+                return js.getDictLabel(${@DictUtils.getDictListJson('fz_neigou_order_ship_status')}, val, '${text('未知')}', true);
+            }},
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>

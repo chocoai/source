@@ -1,0 +1,73 @@
+<% layout('/layouts/default.html', {title: '万店掌设备管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('万店掌设备管理')}
+			</div>
+			<div class="box-tools pull-right">
+				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('sv:ovopark:device:edit')){ %>
+					<a href="${ctx}/sv/ovopark/device/form" class="btn btn-default btnTool" title="${text('新增万店掌设备')}"><i class="fa fa-plus"></i> ${text('新增')}</a>
+                    <button type="button" id="btnSync" class="btn btn-default" title="${text('同步万店掌设备')}"><i class="fa fa-plus"></i> ${text('同步')}</button>
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${svOvoparkDevice}" action="${ctx}/sv/ovopark/device/listData" method="post" class="form-inline hide"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('设备mac')}：</label>
+					<div class="control-inline">
+						<#form:input path="deviceMac" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('设备名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="deviceName" maxlength="255" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" id="searchBtn" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'${text('设备Id')}', name:'deviceId', index:'a.device_id', width:150, align:"left", frozen:true},
+		{header:'${text('设备mac')}', name:'deviceMac', index:'a.device_mac', width:150, align:"left"},
+		{header:'${text('设备名称')}', name:'deviceName', index:'a.device_name', width:150, align:"left"},
+		{header:'${text('创建时间')}', name:'createDate', index:'a.create_date', width:150, align:"center"}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+$('#btnSync').click(function () {
+    $.ajax({
+        url: '${ctx}/sv/ovopark/device/syncData',
+        type: 'GET',
+        //contentType: 'text/plain;charset=UTF-8',
+        dataType: 'json',
+        success:function(res){
+            if(res.message){
+                layer.msg(res.message);
+                $('#searchBtn').trigger('click');
+            } else {
+                layer.msg(res.msg);
+            }
+        }
+    });
+})
+</script>

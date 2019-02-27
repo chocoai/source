@@ -1,0 +1,86 @@
+<% layout('/layouts/default.html', {title: '梵赞内购订单商品明细表管理', libs: ['dataGrid']}){ %>
+<div class="main-content">
+	<div class="box box-main">
+		<div class="box-header">
+			<div class="box-title">
+				<i class="fa fa-list-alt"></i> ${text('梵赞内购订单商品明细')}
+			</div>
+			<div class="box-tools pull-right">
+				<!--<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>-->
+				<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
+				<% if(hasPermi('order:fzNeigouOrderItem:edit')){ %>
+					<!--<a href="${ctx}/order/fzNeigouOrderItem/form" class="btn btn-default btnTool" title="${text('新增梵赞内购订单商品明细表')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
+				<% } %>
+			</div>
+		</div>
+		<div class="box-body">
+			<#form:form id="searchForm" model="${fzNeigouOrderItem}" action="${ctx}/order/fzNeigouOrderItem/listData" method="post" class="form-inline"
+					data-page-no="${parameter.pageNo}" data-page-size="${parameter.pageSize}" data-order-by="${parameter.orderBy}">
+				<div class="form-group">
+					<label class="control-label">${text('货品名称')}：</label>
+					<div class="control-inline">
+						<#form:input path="title" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('购买数量')}：</label>
+					<div class="control-inline">
+						<#form:input path="nums" maxlength="11" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<label class="control-label">${text('货品bn')}：</label>
+					<div class="control-inline">
+						<#form:input path="productBn" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group" style="display: none">
+					<label class="control-label">${text('订单id')}：</label>
+					<div class="control-inline">
+						<#form:input path="orderId" maxlength="64" class="form-control width-120"/>
+					</div>
+				</div>
+				<div class="form-group">
+					<button type="submit" class="btn btn-primary btn-sm">${text('查询')}</button>
+					<button type="reset" class="btn btn-default btn-sm">${text('重置')}</button>
+				</div>
+			</#form:form>
+			<table id="dataGrid"></table>
+			<div id="dataGridPage"></div>
+		</div>
+	</div>
+</div>
+<% } %>
+<script>
+// 初始化DataGrid对象
+$('#dataGrid').dataGrid({
+	searchForm: $("#searchForm"),
+	columnModel: [
+        {header:'${text('货品名称')}', name:'title', index:'a.title', width:150, align:"left"},
+		// {header:'${text('货品名称')}', name:'title', index:'a.title', width:150, align:"left", frozen:true, formatter: function(val, obj, row, act){
+		// 	return '<a href="${ctx}/order/fzNeigouOrderItem/form?itemId='+row.itemId+'" class="btnList" data-title="${text('编辑梵赞内购订单商品明细表')}">'+(val||row.id)+'</a>';
+		// }},
+		{header:'${text('购买数量')}', name:'nums', index:'a.nums', width:150, align:"center"},
+		{header:'${text('货品单价')}', name:'price', index:'a.price', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('货品总价')}', name:'amount', index:'a.amount', width:150, align:"right", formatter: function(val, obj, row, act){
+			return js.formatNumber(val, 2, false, ''); // 数值类型格式化 (原始数值, 小数位数, 是否千分位, 默认值，金额情况下设置0.00);
+		}},
+		{header:'${text('货品bn')}', name:'productBn', index:'a.product_bn', width:150, align:"left"},
+		// {header:'${text('订单id')}', name:'orderId', index:'a.order_id', width:150, align:"left"},
+		// {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
+		// 	var actions = [];
+		// 	<% if(hasPermi('order:fzNeigouOrderItem:edit')){ %>
+		// 		actions.push('<a href="${ctx}/order/fzNeigouOrderItem/form?itemId='+row.itemId+'" class="btnList" title="${text('编辑梵赞内购订单商品明细表')}"><i class="fa fa-pencil"></i></a>&nbsp;');
+		// 		actions.push('<a href="${ctx}/order/fzNeigouOrderItem/delete?itemId='+row.itemId+'" class="btnList" title="${text('删除梵赞内购订单商品明细表')}" data-confirm="${text('确认要删除该梵赞内购订单商品明细表吗？')}"><i class="fa fa-trash-o"></i></a>&nbsp;');
+		// 	<% } %>
+		// 	return actions.join('');
+		// }}
+	],
+	// 加载成功后执行事件
+	ajaxSuccess: function(data){
+		
+	}
+});
+</script>
