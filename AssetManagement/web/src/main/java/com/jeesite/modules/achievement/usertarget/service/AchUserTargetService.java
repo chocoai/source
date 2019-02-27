@@ -89,8 +89,8 @@ public class AchUserTargetService extends CrudService<AchUserTargetDao, AchUserT
         achUserTarget.setTargetLevel("3");  //新增时默认是个人
 		try{
 			super.save(achUserTarget);
+			logger.debug("保存绩效卡:",achUserTarget.getCardCode());
 			achCardScoreService.updateTargerScore(achUserTarget.getCardCode());
-
 		}
 		catch (Exception ex){
 			ex.printStackTrace();

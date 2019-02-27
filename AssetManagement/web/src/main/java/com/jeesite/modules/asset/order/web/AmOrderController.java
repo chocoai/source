@@ -460,7 +460,7 @@ public class AmOrderController extends BaseController {
 	 *
 	 * @param uploadId
 	 */
-	@RequiresPermissions("order:amOrder:edit")
+	@RequiresPermissions("order:amOrder:down")
 	@RequestMapping(value = "uploadFile")
 	@ResponseBody
 	public String uploadFile(String uploadId, HttpServletRequest request) {
@@ -563,7 +563,7 @@ public class AmOrderController extends BaseController {
 	@RequiresPermissions("order:amOrder:deliver")
 	@RequestMapping(value = "submitToK3")
 	@ResponseBody
-	public String submitToK3( AmOrder amOrder) {
+	public String submitToK3( AmOrder amOrder) throws Exception{
 		if (amOrder.getMobilePhone().length() != 11) {
 			return renderResult(Global.FALSE, "请输入正确的移动电话");
 		}
@@ -689,6 +689,7 @@ public class AmOrderController extends BaseController {
 			amOrder.setProvince(province);
 			amOrder.setCity(city);
 			amOrder.setRegion(region);
+			amOrderService.updateWriteoff(amOrder);
 			amOrderService.saveData(amOrder);
 			return renderResult(Global.TRUE, "提交优梵成功");
 		} else {

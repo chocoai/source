@@ -3,16 +3,13 @@ package com.jeesite.modules.asset.util.service;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.jeesite.common.lang.DateUtils;
 import com.jeesite.common.web.http.HttpClientUtils;
 import com.jeesite.modules.asset.ding.entity.ActionCard;
 import com.jeesite.modules.asset.ding.entity.DingMessage;
 import com.jeesite.modules.asset.util.RedisHelp;
-import com.jeesite.modules.asset.util.result.ReturnDate;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
@@ -274,7 +271,7 @@ public class HttpHelper {
     public static Map<String,String> imageMessage(String filepath, String touser, String agendId) throws Exception {
        // String sendaddress="https://oapi.dingtalk.com/message/send?access_token=";
         String msgtype="image";
-        String token=RedisHelp.redisHelp.getAcessToken();
+        String token=RedisHelp.redisHelp.getDingDingAcessToken();
         String url="https://oapi.dingtalk.com/media/upload?access_token="+token+"&type="+msgtype;
         JSONObject jsonResult=null;
         String info="";
@@ -289,7 +286,7 @@ public class HttpHelper {
                 JSONObject jsonObject1=new JSONObject();
                 jsonObject1.put("media_id",mediaId);
                 jsonObject.put(msgtype,jsonObject1);
-                token=RedisHelp.redisHelp.getAcessToken();
+                token=RedisHelp.redisHelp.getDingDingAcessToken();
                 String sendurl=SEND_ADDRESS+token;
                 info= HttpClientUtils.ajaxPostJson(sendurl,jsonObject.toString(),"UTF-8");
                 net.sf.json.JSONObject jsonObject2= net.sf.json.JSONObject.fromObject(info);
@@ -317,7 +314,7 @@ public class HttpHelper {
             //"##### 测试啦啦啦\n* 图片\n![alt 啊](https://after-sales-photo.oss-cn-shanghai.aliyuncs.com/stores/after-ales-photo/data/20187306498305m.jpg)"
             jsonObject1.put("text",text);
             jsonObject.put(msgtype,jsonObject1);
-            String token=RedisHelp.redisHelp.getAcessToken();
+            String token=RedisHelp.redisHelp.getDingDingAcessToken();
             String sendurl=SEND_ADDRESS+token;
             info= HttpClientUtils.ajaxPostJson(sendurl,jsonObject.toString(),"UTF-8");
             net.sf.json.JSONObject jsonObject2= net.sf.json.JSONObject.fromObject(info);
@@ -344,7 +341,7 @@ public class HttpHelper {
         actionCard.setMarkdown(text);
         dingMessage.setAction_card(actionCard);
         net.sf.json.JSONObject jsonObject= net.sf.json.JSONObject.fromObject(dingMessage);
-        String token=RedisHelp.redisHelp.getAcessToken();
+        String token=RedisHelp.redisHelp.getDingDingAcessToken();
         String sendurl=SEND_ADDRESS+token;
         info= HttpClientUtils.ajaxPostJson(sendurl,jsonObject.toString(),"UTF-8");
         net.sf.json.JSONObject jsonObject2= net.sf.json.JSONObject.fromObject(info);

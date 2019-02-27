@@ -1,8 +1,7 @@
-package com.jeesite.modules.asset.ding; 
+package com.jeesite.modules.asset.ding;
 
 import com.jeesite.common.web.http.HttpClientUtils;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
-import com.jeesite.modules.asset.ding.entity.DingDepartment;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.asset.ding.entity.DingUserDepartment;
 import com.jeesite.modules.asset.ding.service.DingDepartmentService;
@@ -10,26 +9,25 @@ import com.jeesite.modules.asset.ding.service.DingUserDepartmentService;
 import com.jeesite.modules.asset.ding.service.DingUserService;
 import com.jeesite.modules.asset.record.entity.RecordLog;
 import com.jeesite.modules.asset.scheduledtask.K3Config;
-import com.jeesite.modules.asset.util.ParamentUntil;
 import com.jeesite.modules.asset.util.RedisHelp;
 import com.jeesite.modules.asset.util.service.AmUtilService;
 import com.jeesite.modules.fz.appreciation.returnData.LeaderboardData;
 import com.jeesite.modules.fz.appreciation.service.FzAppreciationRecordService;
 import com.jeesite.modules.fz.appreciation.service.FzLeaderboardsService;
+import com.jeesite.modules.fz.neigou.service.FzNeigouRefundService;
 import com.jeesite.modules.fz.utils.common.Variable;
 import com.jeesite.modules.util.redis.RedisUtil;
 import net.sf.json.JSONObject;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.text.ParseException;
-import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -41,15 +39,13 @@ public class FzTask {
 
     private static FzTask fzTask;
     @Autowired
-    private RedisUtil<String,String> redisUtil;
-    @Autowired
     private DingUserService dingUserService;
     @Autowired
     private AmUtilService amUtilService;
     @Autowired
     private AmqpTemplate template;
     @Resource
-    private RedisTemplate<String, List> redisTemplate;
+    private RedisUtil<String, List> redisList;
     @Autowired
     private DingDepartmentService dingDepartmentService;
     @Autowired
@@ -58,6 +54,8 @@ public class FzTask {
     private FzLeaderboardsService fzLeaderboardsService;
     @Autowired
     private FzAppreciationRecordService fzAppreciationRecordService;
+    @Autowired
+    private FzNeigouRefundService fzNeigouRefundService;
     @Value("${sendMsg}")
     private String sendMsg;
     @Value("${loginQueueP}")
@@ -88,6 +86,8 @@ public class FzTask {
     private String fzNeigouLoginLogP;
     @Value("${fzNeigouOrderLogP}")
     private String fzNeigouOrderLogP;
+    @Value("${fzExpendRecordP}")
+    private String fzExpendRecordP;
     // 发送消息标识
     public static String sendMsgFlag;
     // 登录记录生产者
@@ -111,6 +111,7 @@ public class FzTask {
     public static String fzAppreciationQueueC;
     public static String fzNeigouLoginLogsP;
     public static String fzNeigouOrderLogsP;
+    public static String fzExpendRecordsP;
     @PostConstruct
     public void init() {
         fzTask = this;
@@ -131,6 +132,7 @@ public class FzTask {
         fzAppreciationQueueC = this.fzAppreciationC;
         fzNeigouLoginLogsP = this.fzNeigouLoginLogP;
         fzNeigouOrderLogsP = this.fzNeigouOrderLogP;
+        fzExpendRecordsP = this.fzExpendRecordP;
     }
 
     /**
@@ -176,7 +178,7 @@ public class FzTask {
         JSONObject jsonObject=new JSONObject();
         RecordLog recordLog=new RecordLog();
         recordLog.setCreateTime(new Date());
-        String accessToken= RedisHelp.redisHelp.getAcessToken();
+        String accessToken= RedisHelp.redisHelp.getDingDingAcessToken();
         jsonObject.put("touser",touser);
         jsonObject.put("agentid",AGENT_ID);
         jsonObject.put("msgtype",MSG_TYPE);
@@ -211,75 +213,83 @@ public class FzTask {
      * 部门人员定时任务
      */
     public static void departmentUser() {
-        // 查出所有部门
         List<DepartmentData> departmentList = fzTask.dingDepartmentService.getDepartment();
-        //保存部门层级关系
-        for(DepartmentData dept:departmentList){
-            String departmentId = dept.getDepartmentId();
-            String parentCodes = dept.getParentCodes();
-            String key = "dingdept";
-            int level = dept.getTreeLevel();
-            DingDepartment bean = new DingDepartment();
-            bean.setDepartmentId(departmentId);
-            List<DingDepartment> deptlist = fzTask.dingDepartmentService.findList(bean);
-            if(level==1){
-                //二级部门
-                key+="_"+departmentId;
-            }else if(level>1){
-                //三级以上部门
-                //0,65019260,1,
-                String deptTemp =parentCodes.substring(parentCodes.indexOf(",")+1,parentCodes.lastIndexOf(",")-2);
-                String[] deptTemps=deptTemp.split(",");
-                for(int i=deptTemps.length-1;i>=0;i--){
-                    key+="_"+deptTemps[i];
-                }
-                key+="_"+departmentId;
-            }
-            if(!"dingdept".equals(key))fzTask.redisTemplate.opsForValue().set(key, deptlist);
-        }
-        fzTask.redisTemplate.opsForValue().set("dingDepartment" + Variable.dataBase + Variable.RANDOMID, departmentList);
-        // 查出所员工(包括在职和离职的，用于后续查询自己的赞赏记录中)
+        fzTask.redisList.set("dingDepartment" + Variable.dataBase + Variable.RANDOMID, departmentList);
         List<DingUser> dingUserList = fzTask.dingUserService.findList(new DingUser());
-        //查询员工部门所有层级
-        for(DingUser user:dingUserList){
-            List<DingDepartment> deptlist = fzTask.dingDepartmentService.getDingDepartmentByUser(user.getUserid());
-            List<List<DepartmentData>> list = new ArrayList<List<DepartmentData>>();
-
-            for(DingDepartment dept:deptlist){
-                DepartmentData deptData = new DepartmentData();
-                BeanUtils.copyProperties(dept,deptData);
-                List<DepartmentData> parentDept = new ArrayList<DepartmentData>();
-                if(deptData.getTreeLevel()==1){
-                    //一级部门
-                    parentDept.add(deptData);
-                }else if(deptData.getTreeLevel()>1){
-                    String parentCodes = dept.getParentCodes();
-                    String deptTemp =parentCodes.substring(parentCodes.indexOf(",")+1,parentCodes.lastIndexOf(",")-2);
-                    String[] deptTemps=deptTemp.split(",");
-                    //for(int i=0;i>deptTemps.length;i++){
-                    for(int i=deptTemps.length-1;i>=0;i--){
-                        DingDepartment bean = new DingDepartment();
-                        bean.setDepartmentId(deptTemps[i]);
-                        List<DingDepartment> childlist = fzTask.dingDepartmentService.findList(bean);
-                        if(ParamentUntil.isBackList(childlist)){
-                            DepartmentData childDeptData = new DepartmentData();
-                            BeanUtils.copyProperties(childlist.get(0),childDeptData);
-                            parentDept.add(childDeptData);
-                        }
-                    }
-                    parentDept.add(deptData);
-                }
-                list.add(parentDept);
-            }
-            if(list.size()>0)user.setParentDeptlist(list);
-        }
-        fzTask.redisTemplate.opsForValue().set("dingUser" + Variable.dataBase + Variable.RANDOMID, dingUserList);
-        // 查出所有部门id和员工id
+        fzTask.redisList.set("dingUser" + Variable.dataBase + Variable.RANDOMID, dingUserList);
         List<DingUserDepartment> dingUserDepartmentList = fzTask.dingUserDepartmentService.selectByLeft();
-//		List<DingUserDepartment> dingUserDepartmentList = dingUserDepartmentService.findList(new DingUserDepartment());
-        fzTask.redisTemplate.opsForValue().set("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID, dingUserDepartmentList);
-        fzTask.redisUtil.set(1,"dingDepartment" + Variable.dataBase + Variable.RANDOMID,"test");
+        fzTask.redisList.set("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID, dingUserDepartmentList);
     }
+//    public static void departmentUser() {
+//        // 查出所有部门
+//        List<DepartmentData> departmentList = fzTask.dingDepartmentService.getDepartment();
+//        //保存部门层级关系
+//        for(DepartmentData dept:departmentList){
+//            String departmentId = dept.getDepartmentId();
+//            String parentCodes = dept.getParentCodes();
+//            String key = "dingdept";
+//            int level = dept.getTreeLevel();
+//            DingDepartment bean = new DingDepartment();
+//            bean.setDepartmentId(departmentId);
+//            List<DingDepartment> deptlist = fzTask.dingDepartmentService.findList(bean);
+//            if(level==1){
+//                //二级部门
+//                key+="_"+departmentId;
+//            }else if(level>1){
+//                //三级以上部门
+//                //0,65019260,1,
+//                String deptTemp =parentCodes.substring(parentCodes.indexOf(",")+1,parentCodes.lastIndexOf(",")-2);
+//                String[] deptTemps=deptTemp.split(",");
+//                for(int i=deptTemps.length-1;i>=0;i--){
+//                    key+="_"+deptTemps[i];
+//                }
+//                key+="_"+departmentId;
+//            }
+//            if(!"dingdept".equals(key))fzTask.redisList.set(key, deptlist);
+//        }
+//        fzTask.redisList.set("dingDepartment" + Variable.dataBase + Variable.RANDOMID, departmentList);
+//        // 查出所员工(包括在职和离职的，用于后续查询自己的赞赏记录中)
+//        List<DingUser> dingUserList = fzTask.dingUserService.findList(new DingUser());
+//        //查询员工部门所有层级
+//        for(DingUser user:dingUserList){
+//            List<DingDepartment> deptlist = fzTask.dingDepartmentService.getDingDepartmentByUser(user.getUserid());
+//            List<List<DepartmentData>> list = new ArrayList<List<DepartmentData>>();
+//
+//            for(DingDepartment dept:deptlist){
+//                DepartmentData deptData = new DepartmentData();
+//                BeanUtils.copyProperties(dept,deptData);
+//                List<DepartmentData> parentDept = new ArrayList<DepartmentData>();
+//                if(deptData.getTreeLevel()==1){
+//                    //一级部门
+//                    parentDept.add(deptData);
+//                }else if(deptData.getTreeLevel()>1){
+//                    String parentCodes = dept.getParentCodes();
+//                    String deptTemp =parentCodes.substring(parentCodes.indexOf(",")+1,parentCodes.lastIndexOf(",")-2);
+//                    String[] deptTemps=deptTemp.split(",");
+//                    //for(int i=0;i>deptTemps.length;i++){
+//                    for(int i=deptTemps.length-1;i>=0;i--){
+//                        DingDepartment bean = new DingDepartment();
+//                        bean.setDepartmentId(deptTemps[i]);
+//                        List<DingDepartment> childlist = fzTask.dingDepartmentService.findList(bean);
+//                        if(ParamentUntil.isBackList(childlist)){
+//                            DepartmentData childDeptData = new DepartmentData();
+//                            BeanUtils.copyProperties(childlist.get(0),childDeptData);
+//                            parentDept.add(childDeptData);
+//                        }
+//                    }
+//                    parentDept.add(deptData);
+//                }
+//                list.add(parentDept);
+//            }
+//            if(list.size()>0)user.setParentDeptlist(list);
+//        }
+//        fzTask.redisList.set("dingUser" + Variable.dataBase + Variable.RANDOMID, dingUserList);
+//        // 查出所有部门id和员工id
+//        List<DingUserDepartment> dingUserDepartmentList = fzTask.dingUserDepartmentService.selectByLeft();
+////		List<DingUserDepartment> dingUserDepartmentList = dingUserDepartmentService.findList(new DingUserDepartment());
+//        fzTask.redisList.set("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID, dingUserDepartmentList);
+//        fzTask.redisUtil.set(1,"dingDepartment" + Variable.dataBase + Variable.RANDOMID,"test");
+//    }
 
     /**
      * 梵赞排行榜定时任务
@@ -289,7 +299,19 @@ public class FzTask {
         fzTask.fzLeaderboardsService.insertTemp();
         for (int i = 1; i < 5; i++) {
             List<LeaderboardData> leaderYearList = fzTask.fzLeaderboardsService.getLeaderboardList(i);
-            fzTask.redisTemplate.opsForValue().set("rankingList" + Variable.dataBase + i, leaderYearList);
+            fzTask.redisList.set("rankingList" + Variable.dataBase + i, leaderYearList);
         }
+    }
+
+    /**
+     * 每天凌晨 更新梵赞内购订单数据
+     */
+    public static void updateOrderIno() {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DATE,calendar.get(Calendar.DATE)-1);
+        long start_time = calendar.getTime().getTime();
+        long end_time = new Date().getTime();
+        //根据现在时间,更新内购订单的一天前的数据
+        fzTask.fzNeigouRefundService.updateOrderIno(start_time,end_time);
     }
 }

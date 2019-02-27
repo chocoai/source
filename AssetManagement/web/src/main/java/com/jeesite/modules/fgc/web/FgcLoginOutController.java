@@ -9,7 +9,7 @@ import com.jeesite.modules.asset.wechat.util.FgcLogUtil;
 import com.jeesite.modules.fgc.entity.FgcUser;
 import com.jeesite.modules.fgc.service.FgcUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -22,14 +22,14 @@ public class FgcLoginOutController extends BaseController {
     @Autowired
     private FgcUserService fgcUserService;
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtil<String, String> redisString;
     @RequestMapping(value = "logOut")
     @ResponseBody
     public ReturnInfo logOut(String token) throws Exception {
         if(!ParamentUntil.isBackString(token)){
             return ReturnDate.error(10002, "参数错误，token为空");
         }
-        String openId=redisTemplate.opsForValue().get("uvanfactory_user_"+token);
+        String openId= redisString.get("uvanfactory_user_"+token);
         if (!ParamentUntil.isBackString(openId)){
             return ReturnDate.error(10002, "缓存找不到openId");
         }
@@ -45,12 +45,12 @@ public class FgcLoginOutController extends BaseController {
 //		String sysuser = DesUtils.decode(fgcUser.getSysLoginCode(),secretKey);
         fgcUserService.save(fgcUser);
         //删除缓存
-        String dataJson = redisTemplate.opsForValue().get("uvanfactory_user_" + openId);
+        String dataJson = redisString.get("uvanfactory_user_" + openId);
         if (dataJson != null && dataJson.length() > 0) {
             JSONObject json1 = JSONObject.parseObject(dataJson);
-            redisTemplate.delete("uvanfactory_user_" + json1.get("token"));
+            redisString.delete("uvanfactory_user_" + json1.get("token"));
         }
-        redisTemplate.delete("uvanfactory_user_" + openId);
+        redisString.delete("uvanfactory_user_" + openId);
 
         FgcLogUtil.insertLog(openId,fgcUser.getSysLoginCode(),"","/fgc/wechatLogin","微信注销","注销成功");
         return ReturnDate.success( "注销成功");

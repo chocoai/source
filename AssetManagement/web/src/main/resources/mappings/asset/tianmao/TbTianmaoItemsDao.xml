@@ -11,5 +11,15 @@
 		</where>
 		ORDER BY ${sqlMap.order.toSql()}
 	</select> -->
-	
+	<select id="getTianmaoItems" resultType="TbTianmaoItems">
+		SELECT a.*
+		FROM
+		tb_tianmao_items a
+		<where>
+			a.id IN
+			<foreach collection="list" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+		</where>
+	</select>
 </mapper>

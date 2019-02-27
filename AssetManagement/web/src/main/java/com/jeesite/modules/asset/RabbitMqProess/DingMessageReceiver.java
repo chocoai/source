@@ -12,7 +12,6 @@ import com.jeesite.modules.asset.record.service.RecordLogService;
 import com.jeesite.modules.asset.util.RedisHelp;
 import com.jeesite.modules.asset.util.service.AmUtilService;
 import com.jeesite.modules.fz.fzgoldchangerecord.entity.FzGoldChangeRecord;
-import com.jeesite.modules.sys.utils.ConfigUtils;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.amqp.core.ExchangeTypes;
 import org.springframework.amqp.rabbit.annotation.*;
@@ -79,7 +78,7 @@ public class DingMessageReceiver {
             actionCard.setMarkdown(message);
             dingMessage.setAction_card(actionCard);
             net.sf.json.JSONObject jsonObject = net.sf.json.JSONObject.fromObject(dingMessage);
-            String accessToken = RedisHelp.redisHelp.getAcessToken();
+            String accessToken = RedisHelp.redisHelp.getDingDingAcessToken();
             String url = SEND_ADDRESS + accessToken;
             String info = HttpClientUtils.ajaxPostJson(url, jsonObject.toString(), "UTF-8");
             recordLog.setTitle("梵赞消息推送");

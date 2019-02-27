@@ -117,4 +117,14 @@ public class AmFileUploadService extends CrudService<AmFileUploadDao, AmFileUplo
 	public List<AmFileUpload> getImage(List<String> appreciation) {
 		return amFileUploadDao.getImage(appreciation);
 	}
+
+	/**
+	 * 根据bizkey 和biztype获取图片
+	 * @param bizKeyList
+	 * @param bizType
+	 * @return
+	 */
+	public List<AmFileUpload> getImgs(List<String> bizKeyList, String bizType) {
+		return amFileUploadDao.getImgs(bizKeyList, bizType);
+	}
 }

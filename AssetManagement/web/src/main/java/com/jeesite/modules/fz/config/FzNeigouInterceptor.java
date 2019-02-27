@@ -1,8 +1,7 @@
 package com.jeesite.modules.fz.config;
 
 import com.alibaba.fastjson.JSON;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -23,9 +22,9 @@ import java.util.concurrent.TimeUnit;
 @EnableWebMvc
 public class FzNeigouInterceptor implements HandlerInterceptor {
     @Resource
-    private RedisTemplate<String, Integer> redisTemplate;
+    private RedisUtil<String, Integer> redisInteger;
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisUtil<String, String> redisString;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -46,7 +45,7 @@ public class FzNeigouInterceptor implements HandlerInterceptor {
                 if ("true".equals(uvanToken)) {
                     String uvan_neigou_token = null;
                     try {
-                        uvan_neigou_token = stringRedisTemplate.opsForValue().get("uvan_neigou_token");
+                        uvan_neigou_token = redisString.get("uvan_neigou_token");
                     } catch (NullPointerException e) {
 
                     }
@@ -69,13 +68,13 @@ public class FzNeigouInterceptor implements HandlerInterceptor {
                 return true;
             }
             int limit = accessLimit.limit();
-            int sec = accessLimit.sec();
+            long sec = accessLimit.sec();
             if(uvantoken != null){
-                Integer maxLimit = redisTemplate.opsForValue().get(uvan_token);
+                Integer maxLimit = redisInteger.get(uvan_token);
                 if (maxLimit == null) {
-                    redisTemplate.opsForValue().set(uvan_token, 1, sec, TimeUnit.SECONDS);  //set时一定要加过期时间
+                    redisInteger.set(uvan_token, 1, sec, TimeUnit.SECONDS);  //set时一定要加过期时间
                 } else if (maxLimit < limit) {
-                    redisTemplate.opsForValue().set(uvan_token, maxLimit + 1, sec, TimeUnit.SECONDS);
+                    redisInteger.set(uvan_token, maxLimit + 1, sec, TimeUnit.SECONDS);
                 } else {
                     map.put("code", 11001);
                     map.put("msg", "请求频繁");

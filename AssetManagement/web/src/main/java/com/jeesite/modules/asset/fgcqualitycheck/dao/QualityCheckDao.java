@@ -21,4 +21,12 @@ public interface QualityCheckDao extends CrudDao<QualityCheck> {
     QualityCheck getData(String billNo);
     List<SyncQcBillToK3> findSaveK3QcBill();
     List<SyncQcBillToK3> findAudioK3QcBill();
+
+    /**
+     * 根据质检单号删除
+     * @param billNoList
+     */
+    void deleteDb(List<String> billNoList);
+
+    List<QualityCheck> selectByFid(List<String> billNoList);
 }

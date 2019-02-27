@@ -36,4 +36,11 @@ public class Group {
     public void updateGoldMonth () {
         FzTask.updateGoldNumberEndOfMonth();
     }
+
+    /**
+     * 每天凌晨 定时更新梵赞内购订单数据
+     */
+    public void updateOrderIno(){
+        FzTask.updateOrderIno();
+    }
 }

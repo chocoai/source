@@ -1,19 +1,13 @@
 package com.jeesite.modules.asset.ding.entity;
 
-import com.jeesite.common.collect.ListUtils;
-import com.jeesite.modules.asset.util.RedisHelp;
 import com.jeesite.modules.fz.utils.common.Variable;
 import com.jeesite.modules.util.redis.RedisUtil;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 /**
@@ -23,14 +17,14 @@ import java.util.stream.Collectors;
 public class DepartmentUtil {
 
     @Resource
-    private RedisTemplate<String, List> redisTemplate;
+    private RedisUtil<String, List> redisList;
 
     public static DepartmentUtil department;
 
     @PostConstruct
     public void init() {
         department = this;
-        department.redisTemplate = this.redisTemplate;
+        department.redisList = this.redisList;
     }
     /**
      * 获取部门
@@ -102,11 +96,11 @@ public class DepartmentUtil {
 
    @SuppressWarnings("unchecked")
    public static AccessDepartMent access () {
-       List<DingUserDepartment> dingUserDepartmentList = department.redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+       List<DingUserDepartment> dingUserDepartmentList = department.redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
        // 获取缓存中所有部门
-       List<DepartmentData> departmentList = department.redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+       List<DepartmentData> departmentList = department.redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
        // 获取所有用户
-       List<DingUser> dingUserList = department.redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+       List<DingUser> dingUserList = department.redisList.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
        AccessDepartMent accessDepartMent = new AccessDepartMent();
        accessDepartMent.setDingUserList(dingUserList);
        accessDepartMent.setDingUserDepartmentList(dingUserDepartmentList);
@@ -115,13 +109,13 @@ public class DepartmentUtil {
    }
 
    public static List<String> getLeaderFromDepartmentIds(List<String> deptIds){
-       List<DepartmentData> departmentList = department.redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+       List<DepartmentData> departmentList = department.redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
        return departmentList.stream().filter(a->deptIds.contains(a.getDepartmentId())).map(a->a.getManagerUser()).collect(Collectors.toList());
    }
 
     public static void getChildDepartmentIds(String deptId, List<DepartmentData> departmentList, List<String> deptIds){
         if(departmentList == null)
-            departmentList = department.redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+            departmentList = department.redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
         if(departmentList != null){
             List<String> children =  departmentList.stream().filter(a-> a.getParentId().equals(deptId)).map(a->a.getDepartmentId()).collect(Collectors.toList());
             if(children.size() > 0){

@@ -13,7 +13,7 @@ import com.jeesite.modules.asset.ding.entity.*;
 import com.jeesite.modules.fz.utils.common.Variable;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -41,8 +41,6 @@ public class FzLoginReportController extends BaseController {
 
 	@Autowired
 	private FzLoginReportService fzLoginReportService;
-	@Resource
-	private RedisTemplate<String, List> redisTemplate;
 	
 	/**
 	 * 获取数据
@@ -110,11 +108,11 @@ public class FzLoginReportController extends BaseController {
 	@ResponseBody
 	public void export(FzLoginReport fzLoginReport, HttpServletResponse response) {
 		List<FzLoginReport> reportList = fzLoginReportService.findList(fzLoginReport);
-//		List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+//		List<DingUserDepartment> dingUserDepartmentList = redisTemplate.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
 //		// 获取缓存中所有部门
-//		List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+//		List<DepartmentData> departmentList = redisTemplate.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 //		// 获取所有用户
-//		List<DingUser> dingUserList = redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+//		List<DingUser> dingUserList = redisTemplate.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
 		AccessDepartMent accessDepartMent = DepartmentUtil.access();
 		for (FzLoginReport report : reportList) {
 			DingUser dingUser = accessDepartMent.getDingUserList().stream().filter(s ->s.getUserid().equals(report.getUserId())).findFirst().get();

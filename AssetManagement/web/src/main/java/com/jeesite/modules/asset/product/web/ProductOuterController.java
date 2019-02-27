@@ -1,5 +1,6 @@
 package com.jeesite.modules.asset.product.web;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.web.BaseController;
@@ -11,9 +12,12 @@ import com.jeesite.modules.asset.product.service.ProductCategoryService;
 import com.jeesite.modules.asset.product.service.ProductSeriesService;
 import com.jeesite.modules.asset.tianmao.entity.TbProduct;
 import com.jeesite.modules.asset.tianmao.entity.TbSku;
+import com.jeesite.modules.asset.tianmao.service.TbTianmaoItemsService;
 import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
 import com.jeesite.modules.asset.util.service.AmUtilService;
+import com.jeesite.modules.util.StringUtils;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -41,6 +45,8 @@ public class ProductOuterController extends BaseController {
     private String categoryBizType="productCategory_image";
     //商品系列图片BizType
     private String seriesBizType="productSeries_image";
+    @Autowired
+    private TbTianmaoItemsService tbTianmaoItemsService;
 
 
     /**
@@ -81,6 +87,7 @@ public class ProductOuterController extends BaseController {
                                 JSONObject jsonObject1=null;
                                 for(int k=0;k<tbProducts.size();k++){
                                     tbProduct=tbProducts.get(k);
+
                                     List<TbSku> tbSkuList = productCategoryDao.findSkuList(tbProduct.getNumIid());
                                     if( tbSkuList!=null&&tbSkuList.size()>0 ){
                                         jsonObject1=new JSONObject();
@@ -89,12 +96,18 @@ public class ProductOuterController extends BaseController {
                                         jsonObject1.put("title",tbProduct.getTitle());
                                         jsonObject1.put("approveStatus", tbProduct.getApproveStatus());
                                         jsonObject1.put("nick", tbProduct.getNick());
-
+                                        // 分销系统商品主图用 查出来的图片是一样的 所以取第一个就可以了
+                                        String distrPicUrl =  tbTianmaoItemsService.getLastImg(tbProduct.getNumIid());
+                                        jsonObject1.put("distrPicUrl", distrPicUrl);
+                                        jsonObject1.put("lowerDistrPrice", tbProduct.getLowerDistrPrice());
                                         //此行代码测试库用
 //                                     jsonObject1.put("lowestPrice", tbProduct.getPrice());
                                         //获取商品对应的多个SKU中真实售价最低值
                                         Double prices[]=new Double[tbSkuList.size()];
                                         for(int m=0;m<tbSkuList.size();m++){
+                                            if (StringUtils.isEmpty(tbSkuList.get(m).getSkuUrl())) {
+                                                tbSkuList.get(m).setSkuUrl(distrPicUrl);
+                                            }
                                             prices[m]=Double.valueOf(tbSkuList.get(m).getRealPrice());
                                         }
                                         Arrays.sort(prices);
@@ -129,7 +142,7 @@ public class ProductOuterController extends BaseController {
      * 商品获取接口增加一个效验条件，商品分类状态=已审核（注意层级关系，必须一二级商品分类状态=已审核）
      * 同时还要考虑商品系列也要==已审核；而且前端商品分类中显示的分类和系列也要==已审核，未审核状态不显示分类和系列
      */
-    @RequiresPermissions("sale:saleReception:view")
+    @RequiresPermissions(value = {"sale:saleReception:view", "distribution:api"}, logical = Logical.OR)
     @PostMapping(value = "product")
     @ResponseBody
     public ReturnInfo product() {
@@ -240,7 +253,7 @@ public class ProductOuterController extends BaseController {
      * 后台返回 商品资料中商品的商品分类/商品系列为该分类的商品，数据包括：商品id ,商品主图，商品名称，商品最低价；
      * @return
      */
-    @RequiresPermissions("sale:saleReception:view")
+    @RequiresPermissions(value = {"tianmao:tbProduct:view", "distribution:api"}, logical = Logical.OR)
     @PostMapping(value = "secondProduct")
     @ResponseBody
     public ReturnInfo secondProduct(@RequestParam(name = "id", required = false) String id ,@RequestParam(name = "pageNo", required = false) int pageNo,HttpServletRequest request, HttpServletResponse response) {
@@ -285,10 +298,16 @@ public class ProductOuterController extends BaseController {
                             jsonObject1.put("title", tbProduct.getTitle());
                             jsonObject1.put("approveStatus", tbProduct.getApproveStatus());
                             jsonObject1.put("nick",tbProduct.getNick());
+                            jsonObject1.put("lowerDistrPrice", tbProduct.getLowerDistrPrice());
+                            String distrPicUrl =  tbTianmaoItemsService.getLastImg(tbProduct.getNumIid());
+                            jsonObject1.put("distrPicUrl", distrPicUrl);
                             //此行代码测试库用
 //                            jsonObject1.put("lowestPrice", tbProduct.getPrice());
                             Double prices[] = new Double[tbSkuList.size()];
                             for (int j = 0; j < tbSkuList.size(); j++) {
+                                if (StringUtils.isEmpty(tbSkuList.get(j).getSkuUrl())) {
+                                    tbSkuList.get(j).setSkuUrl(distrPicUrl);
+                                }
                                 prices[j] = Double.valueOf(tbSkuList.get(j).getRealPrice());
                             }
                             Arrays.sort(prices);
@@ -324,10 +343,17 @@ public class ProductOuterController extends BaseController {
                             jsonObject1.put("title", tbProduct.getTitle());
                             jsonObject1.put("approveStatus", tbProduct.getApproveStatus());
                             jsonObject1.put("nick",tbProduct.getNick());
+                            // 分销系统商品主图用 查出来的图片是一样的 所以取第一个就可以了
+                            String distrPicUrl =  tbTianmaoItemsService.getLastImg(tbProduct.getNumIid());
+                            jsonObject1.put("distrPicUrl", distrPicUrl);
+                            jsonObject1.put("lowerDistrPrice", tbProduct.getLowerDistrPrice());
                             //此行代码测试库用
 //                            jsonObject1.put("lowestPrice", tbProduct.getPrice());
                             Double prices[] = new Double[tbSkuList.size()];
                             for (int j = 0; j < tbSkuList.size(); j++) {
+                                if (StringUtils.isEmpty(tbSkuList.get(j).getSkuUrl())) {
+                                    tbSkuList.get(j).setSkuUrl(distrPicUrl);
+                                }
                                 prices[j] = Double.valueOf(tbSkuList.get(j).getRealPrice());
                             }
                             Arrays.sort(prices);

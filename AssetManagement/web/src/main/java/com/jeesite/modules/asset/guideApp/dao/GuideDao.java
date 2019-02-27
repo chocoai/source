@@ -12,6 +12,6 @@ import java.util.List;
 @MyBatisDao
 public interface GuideDao extends CrudDao<GuideOrder> {
     User getLoginCode(String loginCode);    // 根据登录帐号获取用户信息
-    List<GuideGoods> getDetail(String documentCode);  // 根据订单号获取商品信息
+    List<GuideGoods> getDetail(List<String> orderList);  // 根据订单号获取商品信息
     String selectShop(@Param("userCode") String userCode);     // 根据用户账号获取部门里的tree_names
 }

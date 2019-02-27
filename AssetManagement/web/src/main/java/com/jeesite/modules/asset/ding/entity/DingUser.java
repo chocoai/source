@@ -48,7 +48,7 @@ import javax.validation.Valid;
         @Column(name="hired_date", attrName="hiredDate", label="入职时间"),
         @Column(name="jobnumber", attrName="jobnumber", label="员工工号"),
         @Column(name="extattr", attrName="extattr", label="扩展属性，可以设置多种属性"),
-        //@Column(name="roleid", attrName="roleid", label="角色id", comment="角色id（ISV不可见）"),
+        @Column(name="roleid", attrName="roleid", label="角色id", comment="角色id（ISV不可见）"),
         @Column(name="state_code", attrName="stateCode", label="手机号码区号"),
         @Column(name="is_senior", attrName="isSenior", label="是否是高管"),
         @Column(name="convertible_gold", attrName="convertibleGold", label="可兑换梵钻"),
@@ -66,6 +66,7 @@ import javax.validation.Valid;
         @Column(name="used_point", attrName="usedPoint", label="已消费的总梵砖数量",queryType=QueryType.EQ),
         @Column(name="freeze_point", attrName="freezePoint", label="当前锁定梵砖",queryType=QueryType.EQ),
         @Column(name="job_level", attrName="jobLevel", label="职级",queryType=QueryType.EQ),
+        @Column(name="customized", attrName="customized", label="定制",queryType=QueryType.EQ),
 },/* joinTable = {
 		@JoinTable(type=JoinTable.Type.LEFT_JOIN, entity=DingUserDepartment.class, alias="b",
 		on="b.user_id = a.userid", attrName="deptUser",
@@ -117,7 +118,7 @@ public class DingUser extends DataEntity<DingUser> {
     private Date hiredDate;		// 入职时间
     private String jobnumber;		// 员工工号
     private String extattr;		// 扩展属性，可以设置多种属性
-    //private String roleid;		// 角色id（ISV不可见）
+    private String roleid;		// 角色id（ISV不可见）
     private String stateCode;		// 手机号码区号
     private String isSenior;		// 是否是高管
     private List<DingDepartment> dingDepartmentList = ListUtils.newArrayList();		// 子表列表
@@ -145,13 +146,22 @@ public class DingUser extends DataEntity<DingUser> {
 
     private Double usedPoint; //已消费的总梵砖数量
     private Double	freezePoint;	//当前锁定积分数
-    private String directSuperior;
-    private String departmentHeader;
+    private String directSuperior;      //直属上级
+    private String departmentHeader;    //部门长（上上级）
     private DingUser dingUser1;
     private DingUser dingUser2;
     private String jobLevel;
+    private boolean customized;
     private List<List<DepartmentData>> parentDeptlist = ListUtils.newArrayList();//用户部门层级明细
 
+
+    public boolean isCustomized() {
+        return customized;
+    }
+
+    public void setCustomized(boolean customized) {
+        this.customized = customized;
+    }
 
     public String getJobLevel() {
         return jobLevel;
@@ -555,14 +565,14 @@ public class DingUser extends DataEntity<DingUser> {
         this.extattr = extattr;
     }
 
-/*	@Length(min=0, max=225, message="角色id长度不能超过 225 个字符")
+	@Length(min=0, max=225, message="角色id长度不能超过 225 个字符")
 	public String getRoleid() {
 		return roleid;
 	}
 
 	public void setRoleid(String roleid) {
 		this.roleid = roleid;
-	}*/
+	}
 
     @Length(min=0, max=100, message="手机号码区号长度不能超过 100 个字符")
     public String getStateCode() {

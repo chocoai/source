@@ -11,9 +11,12 @@ import com.jeesite.common.collect.ListUtils;
 import com.jeesite.modules.asset.order.entity.Shopping;
 import com.jeesite.modules.asset.order.service.AmOrderLogService;
 import com.jeesite.modules.asset.tianmao.entity.TbSku;
+import com.jeesite.modules.asset.tianmao.service.TbTianmaoItemsService;
 import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
 import com.jeesite.modules.sys.utils.UserUtils;
+import com.jeesite.modules.util.StringUtils;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -27,9 +30,7 @@ import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.asset.order.entity.AmOrderShopping;
 import com.jeesite.modules.asset.order.service.AmOrderShoppingService;
 
-import java.util.Date;
-import java.util.List;
-import java.util.NoSuchElementException;
+import java.util.*;
 
 /**
  * 导购购物车Controller
@@ -105,6 +106,8 @@ public class AmOrderShoppingController extends BaseController {
 		return renderResult(Global.TRUE, text("删除导购购物车成功！"));
 	}
 
+	@Autowired
+	private TbTianmaoItemsService tbTianmaoItemsService;
 	/**
 	 * 添加到购物车
 	 * @param numIid
@@ -112,10 +115,10 @@ public class AmOrderShoppingController extends BaseController {
 	 * @param count
 	 * @return
 	 */
-	@RequiresPermissions("order:amOrder:edit")
+	@RequiresPermissions(value = {"order:amOrder:edit", "distribution:api"}, logical = Logical.OR)
 	@ResponseBody
 	@RequestMapping(value = "addShopping", method = RequestMethod.GET)
-	public ReturnInfo addShopping (String numIid, String skuId, int count,String flag, HttpServletRequest request) {
+	public ReturnInfo addShopping (String numIid, String skuId, int count, String flag, String apiFlag, HttpServletRequest request) {
 		try {
 			// 当前登录用户编码
 			String userCode = UserUtils.getUser().getUserCode();
@@ -169,14 +172,32 @@ public class AmOrderShoppingController extends BaseController {
 					amOrderShopping.setOuterId(shopping.getOuterCode());
 					// 商品skuid
 					amOrderShopping.setSkuId(skuId);
-					// 商品价格
-					amOrderShopping.setPrice(shopping.getPrice());
+
+					// 如果有分销系统接口权限 主图取sku图片 价格取分销价
+					if ("1".equals(apiFlag)) {
+
+						// 分销价
+						amOrderShopping.setPrice(shopping.getDistributionPrice().toString());
+					} else {
+						// 商品价格
+						amOrderShopping.setPrice(shopping.getPrice());
+//						// 商品主图
+//						amOrderShopping.setPicUrl(shopping.getPic());
+					}
+					// sku图片
+					// 如果sku图片不为空就取sku图片
+					if (StringUtils.isNotEmpty(shopping.getSkuUrl())) {
+						amOrderShopping.setPicUrl(shopping.getSkuUrl());
+					} else {
+						// 如果为空取商品详情图最后一张作为主图
+						String img = tbTianmaoItemsService.getLastImg(numIid);
+						amOrderShopping.setPicUrl(img);
+					}
+
 					// 件数
 					amOrderShopping.setNum(count);
 					// 状态
 					amOrderShopping.setGoodsStatus("0");
-					// 商品主图
-					amOrderShopping.setPicUrl(shopping.getPic());
 					// 库存数
 					amOrderShopping.setQuantity(shopping.getQuantity());
 					// 店铺
@@ -197,7 +218,7 @@ public class AmOrderShoppingController extends BaseController {
 	/**
 	 * 移除购物车
 	 */
-	@RequiresPermissions("order:amOrder:edit")
+	@RequiresPermissions(value = {"order:amOrder:edit", "distribution:api"}, logical = Logical.OR)
 	@ResponseBody
 	@RequestMapping(value = "removeShopping", method = RequestMethod.POST)
 	public ReturnInfo removeShopping (@RequestBody String skuIds, HttpServletRequest request) {
@@ -223,9 +244,9 @@ public class AmOrderShoppingController extends BaseController {
 	 * 查询导购购物车符合条件的商品
 	 */
 	@ResponseBody
-	@RequiresPermissions("order:amOrder:view")
+	@RequiresPermissions(value = {"order:amOrder:edit", "distribution:api"}, logical = Logical.OR)
 	@RequestMapping(value = "queryShopping", method = RequestMethod.GET)
-	public ReturnInfo queryShopping(HttpServletRequest request) {
+	public ReturnInfo queryShopping(HttpServletRequest request, String apiFlag) {
 		try {
 			// 当前登录用户编码
 			String userCode = UserUtils.getUser().getUserCode();
@@ -248,15 +269,15 @@ public class AmOrderShoppingController extends BaseController {
 			List<String> skuIdList = ListUtils.newArrayList();
 			for (AmOrderShopping orderShopping : orderShoppingList) {
 				TbSku tbSku = null;
-				try {
-					// 根据购物车中skuId获取商品资料中查出的商品sku
-					tbSku = tbSkuList.stream().filter(s -> String.valueOf(s.getSkuId()).equals(orderShopping.getSkuId())).findFirst().get();
-				} catch (NoSuchElementException e) {
 
+				// 根据购物车中skuId获取商品资料中查出的商品sku
+				Optional<TbSku> optionalTbSku = tbSkuList.stream().filter(s -> String.valueOf(s.getSkuId()).equals(orderShopping.getSkuId())).findFirst();
+				if (optionalTbSku.isPresent()) {
+					tbSku = optionalTbSku.get();
 				}
 				// 如果能获取到说明skuId没有变 取库存数和真实售价
 				if (tbSku != null) {
-					getShoppingList(shoppingList, orderShopping, tbSku, "0");
+					getShoppingList(shoppingList, orderShopping, tbSku, apiFlag);
 				} else {
 
 					// 如果获取不到说明购物车中的skuId变化了 那么库存数更新为0 把商品状态改为无效
@@ -299,11 +320,13 @@ public class AmOrderShoppingController extends BaseController {
 		shopping.setCount(orderShopping.getNum());
 		// 商品skuId
 		shopping.setSkuid(orderShopping.getSkuId());
-		// 如果是0代表商品资料存在此SkuId 那么取商品资料中的真实售价库存数
-		if ("0".equals(flag)) {
+		// 如果是1代表是分销商 取表中数据即可
+		if ("1".equals(flag)) {
+			shopping.setPrice(orderShopping.getPrice());
+		} else {
 			shopping.setPrice(tbSku.getRealPrice());
-			shopping.setQuantity(tbSku.getQuantity().intValue());
 		}
+		shopping.setQuantity(tbSku.getQuantity().intValue());
 //		else {
 //			// 如果是1代表商品资料不存在此SkuId 那么库存数更新为0 用于前端判断是否显示
 //			shopping.setPrice(orderShopping.getPrice());

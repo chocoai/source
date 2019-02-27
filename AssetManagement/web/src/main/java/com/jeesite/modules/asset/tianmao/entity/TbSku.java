@@ -3,12 +3,16 @@
  */
 package com.jeesite.modules.asset.tianmao.entity;
 
+import com.jeesite.common.utils.excel.annotation.ExcelField;
+import com.jeesite.common.utils.excel.annotation.ExcelFields;
 import org.hibernate.validator.constraints.Length;
 
 import com.jeesite.common.entity.DataEntity;
 import com.jeesite.common.mybatis.annotation.Column;
 import com.jeesite.common.mybatis.annotation.Table;
 import com.jeesite.common.mybatis.mapper.query.QueryType;
+
+import javax.validation.Valid;
 
 /**
  * 商品-SKU管理Entity
@@ -29,11 +33,17 @@ import com.jeesite.common.mybatis.mapper.query.QueryType;
 		@Column(name = "barcode", attrName = "barcode", label = "商品级别的条形码"),
 		@Column(name = "k3_name", attrName = "k3Name", label = "k3物料名称"),
 		@Column(name = "real_price", attrName = "realPrice", label = "真实价格"),
-		@Column(name = "pre_sale", attrName = "preSale", label = "预售时间")
+		@Column(name = "pre_sale", attrName = "preSale", label = "预售时间"),
+		@Column(name = "sku_url", attrName = "skuUrl", label = "sku图片"),
+		@Column(name = "distribution_price", attrName = "distributionPrice", label = "分销价")
 	}, orderBy="a.title ASC"
 )
 public class TbSku extends DataEntity<TbSku> {
-	
+	@Valid
+	@ExcelFields({
+			@ExcelField(title="sku", attrName="outerId", align=ExcelField.Align.CENTER, type = ExcelField.Type.IMPORT,sort=10),
+			@ExcelField(title="分销价", attrName="distributionPrice", align=ExcelField.Align.CENTER, type = ExcelField.Type.IMPORT, sort=15),
+	})
 	private static final long serialVersionUID = 1L;
 	private Long skuId;		// sku_id
 	private Long numIid;		// sku所属商品id
@@ -52,6 +62,42 @@ public class TbSku extends DataEntity<TbSku> {
 	private String picUrl;
 	private String shop;		// 店铺(卖家昵称)
 	private String preSale;		// 预售时间
+	private String skuUrl;
+	private Double distributionPrice;	// 分销价
+	private Double hidePrice;		// 页面上隐藏的分销价 用于判断是否修改过
+	private String distrPicUrl;	// 根据商品id取最后一张图片作为主图
+
+	public Double getHidePrice() {
+		return hidePrice;
+	}
+
+	public void setHidePrice(Double hidePrice) {
+		this.hidePrice = hidePrice;
+	}
+
+	public String getDistrPicUrl() {
+		return distrPicUrl;
+	}
+
+	public void setDistrPicUrl(String distrPicUrl) {
+		this.distrPicUrl = distrPicUrl;
+	}
+
+	public String getSkuUrl() {
+		return skuUrl;
+	}
+
+	public void setSkuUrl(String skuUrl) {
+		this.skuUrl = skuUrl;
+	}
+
+	public Double getDistributionPrice() {
+		return distributionPrice;
+	}
+
+	public void setDistributionPrice(Double distributionPrice) {
+		this.distributionPrice = distributionPrice;
+	}
 
 	public String getPreSale() {
 		return preSale;

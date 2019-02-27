@@ -49,6 +49,15 @@ public class AmOrderDetail extends DataEntity<AmOrderDetail> {
 	private Long virtualQuantity; // 虚拟的数量
 	private String expectedDelivery;	// 预计交期
 	private String purchaseCycle;		// 采购周期
+	private String skuUrl;		// sku图片
+
+	public String getSkuUrl() {
+		return skuUrl;
+	}
+
+	public void setSkuUrl(String skuUrl) {
+		this.skuUrl = skuUrl;
+	}
 
 	public String getExpectedDelivery() {
 		return expectedDelivery;

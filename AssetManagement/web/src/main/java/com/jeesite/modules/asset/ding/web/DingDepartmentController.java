@@ -8,6 +8,7 @@ import com.jeesite.common.collect.MapUtils;
 import com.jeesite.common.config.Global;
 import com.jeesite.common.idgen.IdGen;
 import com.jeesite.common.lang.StringUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.asset.ding.data.Node;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
@@ -25,7 +26,7 @@ import com.jeesite.modules.fz.utils.common.Variable;
 import com.jeesite.modules.sys.utils.UserUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -51,7 +52,7 @@ public class DingDepartmentController extends BaseController {
 	@Autowired
 	private DingUserService dingUserService;
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 
 	@Autowired
 	private DingUserDepartmentService dingUserDepartmentService;
@@ -491,14 +492,14 @@ public ReturnInfo updateDepartmentUserCount() {
 //		}
 //		// 查出所有部门
 //		List<DepartmentData> departmentList = dingDepartmentService.getDepartment();
-//		redisTemplate.opsForValue().set("dingDepartment" + Variable.dataBase + Variable.RANDOMID, departmentList);
+//		redisTemplate.set("dingDepartment" + Variable.dataBase + Variable.RANDOMID, departmentList);
 //		// 查出所员工(包括在职和离职的，用于后续查询自己的赞赏记录中)
 //		List<DingUser> dingUserList = dingUserService.findList(new DingUser());
-//		redisTemplate.opsForValue().set("dingUser" + Variable.dataBase + Variable.RANDOMID, dingUserList);
+//		redisTemplate.set("dingUser" + Variable.dataBase + Variable.RANDOMID, dingUserList);
 //		// 查出所有部门id和员工id
 //		List<DingUserDepartment> dingUserDepartmentList = dingUserDepartmentService.selectByLeft();
 ////		List<DingUserDepartment> dingUserDepartmentList = dingUserDepartmentService.findList(new DingUserDepartment());
-//		redisTemplate.opsForValue().set("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID, dingUserDepartmentList);
+//		redisTemplate.set("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID, dingUserDepartmentList);
 //	}
 
 	/**
@@ -520,11 +521,11 @@ public ReturnInfo updateDepartmentUserCount() {
 			parentid = departmentId;
 		}
 		// 获取缓存中所有部门
-		List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取部门用户中间表的数据
-		List<DingUserDepartment> dingUserDepartmentList1 = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUserDepartment> dingUserDepartmentList1 = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取所有用户
-		List<DingUser> dingUserList1 = redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUser> dingUserList1 = redisList.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
 		// 根据部门编码获取所有下级部门
 		List<DepartmentData> departList = ListUtils.newArrayList();
 		List<DingUser> deptManagerList = ListUtils.newArrayList();

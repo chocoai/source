@@ -4,9 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.jeesite.common.lang.StringUtils;
 import com.jeesite.modules.asset.ding.service.DingUserService;
 import com.jeesite.modules.fgc.service.FgcUserService;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
@@ -33,9 +32,9 @@ public class FzAllUrlInterceptor implements HandlerInterceptor {
     @Autowired
     private DingUserService dingUserService;
     @Resource
-    private RedisTemplate<String, Integer> redisTemplate;
+    private RedisUtil<String, Integer> redisInteger;
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisUtil<String, String> redisString;
 
 
     /**
@@ -59,7 +58,9 @@ public class FzAllUrlInterceptor implements HandlerInterceptor {
                 if ("true".equals(isFilet)) {
                     String userId = null;
                     try {
-                        userId = stringRedisTemplate.opsForValue().get("dingding_user_" + token);
+                        //userId = redisString.get("dingding_user_" + token);
+                        userId = redisString.get("dingusertoken_" + token);
+                        if(userId == null) userId = redisString.get("dingding_user_" + token);
                     } catch (NullPointerException e) {
 
                     }
@@ -85,14 +86,14 @@ public class FzAllUrlInterceptor implements HandlerInterceptor {
                 return true;
             }
             int limit = accessLimit.limit();
-            int sec = accessLimit.sec();
+            long sec = accessLimit.sec();
 //            String key = getIp2(request) + request.getRequestURI();
             if(token != null){
-                Integer maxLimit = redisTemplate.opsForValue().get(token);
+                Integer maxLimit = redisInteger.get(token);
                 if (maxLimit == null) {
-                    redisTemplate.opsForValue().set(token, 1, sec, TimeUnit.SECONDS);  //set时一定要加过期时间
+                    redisInteger.set(token, 1, sec, TimeUnit.SECONDS);  //set时一定要加过期时间
                 } else if (maxLimit < limit) {
-                    redisTemplate.opsForValue().set(token, maxLimit + 1, sec, TimeUnit.SECONDS);
+                    redisInteger.set(token, maxLimit + 1, sec, TimeUnit.SECONDS);
                 } else {
                     map.put("code", 11001);
                     map.put("msg", "请求频繁");

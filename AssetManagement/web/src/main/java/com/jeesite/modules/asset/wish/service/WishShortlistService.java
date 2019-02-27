@@ -6,13 +6,14 @@ package com.jeesite.modules.asset.wish.service;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.service.ServiceException;
 import com.jeesite.common.utils.excel.ExcelImport;
 import com.jeesite.common.validator.ValidatorUtils;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.fz.utils.common.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,7 +42,7 @@ public class WishShortlistService extends CrudService<WishShortlistDao, WishShor
 	@Autowired
 	private WishShortlistDao wishShortlistDao;
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 	/**
 	 * 获取单条数据
 	 * @param wishShortlist
@@ -133,7 +134,7 @@ public class WishShortlistService extends CrudService<WishShortlistDao, WishShor
 		try(ExcelImport ei = new ExcelImport(file, 2, 0)){
 			List<WishShortlist> list = ei.getDataList(WishShortlist.class);
 			// 获取所有用户
-			List<DingUser> dingUserList = redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+			List<DingUser> dingUserList = redisList.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
 			for (WishShortlist wishShortlist : list) {
 				try{
 					try{

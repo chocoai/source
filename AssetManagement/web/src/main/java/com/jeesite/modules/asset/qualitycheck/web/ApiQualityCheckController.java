@@ -1,8 +1,6 @@
 package com.jeesite.modules.asset.qualitycheck.web;
 
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.jeesite.common.entity.Page;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.asset.fgcimage.entity.FgcImg;
@@ -16,7 +14,7 @@ import com.jeesite.modules.fgc.entity.FgcUser;
 import com.jeesite.modules.fgc.service.FgcUserService;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,7 +36,7 @@ public class ApiQualityCheckController extends BaseController {
     private FgcQualityCheckService fgcQualityCheckService;
 
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtil<String, String> redisString;
 
     @Autowired
     private FgcUserService fgcUserService;
@@ -75,7 +73,7 @@ public class ApiQualityCheckController extends BaseController {
     @RequestMapping(value = "listData")
     @ResponseBody
     public Object listData(FgcQualityCheck fgcQualityCheck, HttpServletRequest request, HttpServletResponse response, String token) {
-        String openId = redisTemplate.opsForValue().get("uvanfactory_user_" + token);
+        String openId = redisString.get("uvanfactory_user_" + token);
 //        String openId = "obaI65Fwh5oFiRmbBdI7kLY0i1Zw";
         if (openId == null || "".equals(openId)) {
             return ReturnDate.error(10000, "请检查登录信息");
@@ -227,7 +225,7 @@ public class ApiQualityCheckController extends BaseController {
         String billno = jsonObject.getString("billno");
 
         // 操作人
-        String openId = redisTemplate.opsForValue().get("uvanfactory_user_" + jsonObject.getString("token"));
+        String openId = redisString.get("uvanfactory_user_" + jsonObject.getString("token"));
         FgcUser fgcUser = fgcUserService.getFgcUserByOpenId(openId);
         String userName = fgcUser.getUserName();
         List<FgcImg> fgcImgList = new ArrayList<>();

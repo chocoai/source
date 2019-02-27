@@ -2,9 +2,6 @@ package com.jeesite.modules.fz.appreciation.web;
 
 import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.entity.Page;
-import com.jeesite.modules.asset.ding.FzTask;
-import com.jeesite.modules.asset.ding.ReadFile;
-import com.jeesite.modules.asset.scheduledtask.K3Config;
 import com.jeesite.modules.asset.util.ParamentUntil;
 import com.jeesite.modules.asset.util.TimeUtils;
 import com.jeesite.modules.asset.util.result.ReturnDate;
@@ -19,8 +16,7 @@ import com.jeesite.modules.fz.config.IsFileter;
 import com.jeesite.modules.fz.utils.common.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,7 +36,7 @@ public class FzLeaderboardContoller {
     @Autowired
     private FzAppreciationRecordService fzAppreciationRecordService;
     @Resource
-    private RedisTemplate<String, List<LeaderboardData>> redisTemplate;
+    private RedisUtil<String, List<LeaderboardData>> redisLeaderboardDataList;
     @Value("${file.baseDir}")
     String baseDir;
 
@@ -221,9 +217,9 @@ public class FzLeaderboardContoller {
         }
         List<LeaderboardData> leaderboardDataList = ListUtils.newArrayList();
         if ("".equals(type) || type == null) {
-            leaderboardDataList = redisTemplate.opsForValue().get("rankingList" + Variable.dataBase + flag);
+            leaderboardDataList = redisLeaderboardDataList.get("rankingList" + Variable.dataBase + flag);
         } else {
-            leaderboardDataList = redisTemplate.opsForValue().get("rankingList" + Variable.dataBase + "type" + flag);
+            leaderboardDataList = redisLeaderboardDataList.get("rankingList" + Variable.dataBase + "type" + flag);
         }
 
 
@@ -343,11 +339,11 @@ public class FzLeaderboardContoller {
 //            List<LeaderboardData> leaderboardDataList1 = getRecord(fzAppreciationRecords, "1");
 //            if (leaderboardDataList != null && leaderboardDataList.size() >0) {
 //                //储存所有的梵赞排行榜数据
-//                redisTemplate.opsForValue().set("rankingList" + Variable.dataBase + i, leaderboardDataList);
+//                redisLeaderboardDataList.set("rankingList" + Variable.dataBase + i, leaderboardDataList);
 //                //根据类型例如月季度年这些分别存储
-//                redisTemplate.opsForValue().set("rankingList" + Variable.dataBase + "type" + i, leaderboardDataList1);
+//                redisLeaderboardDataList.set("rankingList" + Variable.dataBase + "type" + i, leaderboardDataList1);
 //            } else {
-//                redisTemplate.opsForValue().set("rankingList"+ Variable.dataBase + i, null);
+//                redisLeaderboardDataList.set("rankingList"+ Variable.dataBase + i, null);
 //            }
 //        }
 //
@@ -365,7 +361,7 @@ public class FzLeaderboardContoller {
         // 根据榜取到数据
         if ("".equals(type) || type == null) {
             // 标签类型为空时
-            leaderboardDataList = redisTemplate.opsForValue().get("rankingList" + Variable.dataBase + flag);
+            leaderboardDataList = redisLeaderboardDataList.get("rankingList" + Variable.dataBase + flag);
         } else {
             // 标签类型不为空
             Date startTime = getStartTime(flag);
@@ -483,7 +479,7 @@ public class FzLeaderboardContoller {
 //        fzLeaderboardsService.insertTemp();
 //        for (int i = 1; i < 5; i++) {
 //            List<LeaderboardData> leaderYearList = fzLeaderboardsService.getLeaderboardList(i);
-//            redisTemplate.opsForValue().set("rankingList" + Variable.dataBase + i, leaderYearList);
+//            redisLeaderboardDataList.set("rankingList" + Variable.dataBase + i, leaderYearList);
 //        }
 //    }
 }

@@ -63,4 +63,23 @@ public interface TbSkuDao extends CrudDao<TbSku> {
 	 * @param skuList
 	 */
 	void updateQuantity(List<TbSku> skuList);
+
+	/**
+	 * 根据skuId更新分销价
+	 * @param tbSkuList
+	 */
+	void updateDistributionPrice(List<TbSku> tbSkuList);
+
+	/**
+	 * 根据sku查询sku
+	 * @param skuIdList
+	 * @return
+	 */
+	List<TbSku> selectBySkuIdList(List<String> skuIdList);
+
+	/**
+	 * 根据sku更新分销价
+	 * @param tbSkuList
+	 */
+	void updateDistributionPriceBySku(List<TbSku> tbSkuList);
 }

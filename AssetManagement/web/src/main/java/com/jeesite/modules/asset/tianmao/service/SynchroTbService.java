@@ -33,6 +33,8 @@ public class SynchroTbService {
     @Autowired
     private TbSkuDao tbSkuDao;
 
+    @Autowired
+    private TbItemImgsDao tbItemImgsDao;
 
 
     @Transactional(readOnly = false)
@@ -63,6 +65,7 @@ public class SynchroTbService {
             }
             a = itemDao.insert(item);
             b = itemDao.insertProdect(tbProduct);
+            updateSku(tbSkus, skuList);
 //            itemDao.deleteSku(Long.valueOf(item.getId()));
 //            if(tbSkus!=null && tbSkus.size()>0){
 //                tbSkuDao.insertSkuList(tbSkus);
@@ -71,6 +74,8 @@ public class SynchroTbService {
 ////                }
 //            }
         }
+        itemDao.deleteImg(Long.valueOf(tbProduct.getNumIid()));
+        tbItemImgsDao.insertBatch(itemImgs);
         LOGGER.info("天猫商品数据同步结果："+a+"条记录");
         if(a>0&&b>0){
             map.put("flag", "success");

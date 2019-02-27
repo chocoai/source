@@ -6,6 +6,7 @@ package com.jeesite.modules.asset.file.dao;
 import com.jeesite.common.dao.CrudDao;
 import com.jeesite.common.mybatis.annotation.MyBatisDao;
 import com.jeesite.modules.asset.file.entity.AmFileUpload;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
 import java.util.List;
@@ -23,4 +24,12 @@ public interface AmFileUploadDao extends CrudDao<AmFileUpload> {
 	int updatePicRemark(String id,String picStatus,String picRemarks);
 
 	List<AmFileUpload> getImage(List<String> appreciation);
+
+	/**
+	 * 根据bizType和bizKey获取图片
+	 * @param bizKeyList
+	 * @param bizType
+	 * @return
+	 */
+	List<AmFileUpload> getImgs(@Param("bizKeyList") List<String> bizKeyList, @Param("bizType") String bizType);
 }

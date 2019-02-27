@@ -6,21 +6,27 @@ package com.jeesite.modules.fz.order.web;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.jeesite.common.lang.DateUtils;
+import com.jeesite.common.mybatis.mapper.query.QueryType;
+import com.jeesite.common.utils.excel.ExcelExport;
+import com.jeesite.modules.fz.neigou.service.FzNeigouRefundService;
+import com.jeesite.modules.util.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import com.jeesite.common.config.Global;
 import com.jeesite.common.entity.Page;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.fz.order.entity.FzNeigouOrder;
 import com.jeesite.modules.fz.order.service.FzNeigouOrderService;
+
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 梵赞兑换订单表Controller
@@ -33,7 +39,8 @@ public class FzNeigouOrderController extends BaseController {
 
 	@Autowired
 	private FzNeigouOrderService fzNeigouOrderService;
-	
+	@Autowired
+	private FzNeigouRefundService fzNeigouRefundService;
 	/**
 	 * 获取数据
 	 */
@@ -49,7 +56,11 @@ public class FzNeigouOrderController extends BaseController {
 	@RequestMapping(value = {"list", ""})
 	public String list(FzNeigouOrder fzNeigouOrder, Model model) {
 		model.addAttribute("fzNeigouOrder", fzNeigouOrder);
-		return "fz/order/fzNeigouOrderList";
+		if (StringUtils.isNotEmpty(fzNeigouOrder.getQuery())) {
+			return "fz/order/fzNeigouSonOrderList";
+		} else {
+			return "fz/order/fzNeigouOrderList";
+		}
 	}
 	
 	/**
@@ -94,5 +105,37 @@ public class FzNeigouOrderController extends BaseController {
 		fzNeigouOrderService.delete(fzNeigouOrder);
 		return renderResult(Global.TRUE, text("删除梵赞兑换订单表成功！"));
 	}
-	
+
+	/**
+	 * 手动更新梵赞内购订单数据,更新一天内的数据
+	 */
+	@RequestMapping(value = "updateOrderIno")
+	@ResponseBody
+	public String updateOrderIno(){
+		try {
+			Calendar calendar =Calendar.getInstance();
+			calendar.set(Calendar.DATE,calendar.get(Calendar.DATE)-100);
+			//更新一天内的数据
+			fzNeigouRefundService.updateOrderIno(calendar.getTime().getTime()/1000,new Date().getTime()/1000);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return renderResult(Global.TRUE, text("订单数据更新失败！"));
+		}
+		return renderResult(Global.TRUE, text("订单数据更新成功！"));
+	}
+
+
+	/**
+	 * 导出数据
+	 */
+	@RequiresPermissions("order:fzNeigouOrder:export")
+	@RequestMapping(value = "exportData")
+	public void exportData(FzNeigouOrder fzNeigouOrder, Boolean isAll, HttpServletResponse response) {
+		fzNeigouOrder.getSqlMap().getWhere().and("p_id", QueryType.EQ, "0");
+		List<FzNeigouOrder> list = fzNeigouOrderService.findList(fzNeigouOrder);
+		String fileName = "订单数据" + DateUtils.getDate("yyyyMMddHHmmss") + ".xlsx";
+		try(ExcelExport ee = new ExcelExport("订单数据", FzNeigouOrder.class)){
+			ee.setDataList(list).write(response, fileName);
+		}
+	}
 }

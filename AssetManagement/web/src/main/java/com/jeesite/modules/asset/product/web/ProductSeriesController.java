@@ -6,6 +6,8 @@ package com.jeesite.modules.asset.product.web;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 
 import com.jeesite.modules.asset.tianmao.entity.TbProduct;
@@ -345,5 +347,41 @@ public class ProductSeriesController extends BaseController {
 		productSeriesService.fixTreeData();
 		return renderResult(Global.TRUE, "数据修复成功");
 	}
-
+    /**
+     * 查询列表数据
+     */
+    @RequiresPermissions("product:productCategory:view")
+    @RequestMapping(value = "listTreeData")
+    @ResponseBody
+    public List<ProductSeries> listTreeData(ProductSeries productSeries) {
+        Predicate<? super ProductSeries> predicate = a -> a.getParentCode().equals(ProductSeries.ROOT_CODE);
+        if (StringUtils.isBlank(productSeries.getParentCode())) {
+            productSeries.setParentCode(ProductSeries.ROOT_CODE);
+        } else predicate = a -> a.getParentCode().equals(productSeries.getParentCode());
+        if (StringUtils.isNotBlank(productSeries.getProseriesStatus())) {
+            productSeries.setParentCode(null);
+        }
+        if (StringUtils.isNotBlank(productSeries.getSeriesName())) {
+            productSeries.setParentCode(null);
+        }
+        if (StringUtils.isNotBlank(productSeries.getStatus())) {
+            productSeries.setParentCode(null);
+        }
+        if (StringUtils.isNotBlank(productSeries.getRemarks())) {
+            productSeries.setParentCode(null);
+        }
+        List<ProductSeries> list = productSeriesService.findList(new ProductSeries());
+        List<ProductSeries> result = list.stream().filter(predicate).collect(Collectors.toList());
+        buildTree(list, result);
+        return result;
+    }
+    private void buildTree(List<ProductSeries> list, List<ProductSeries> result){
+        result.forEach(a->{
+            List<ProductSeries> children = list.stream().filter(b->b.getParentCode().equals(a.getProseriesCode())).collect(Collectors.toList());
+            buildTree(list, children);
+            a.setChildList(children);
+            String imgPath = amUtilService.getImgPathAli(a.getProseriesCode(), bizType);
+            a.setImgPath(imgPath);
+        });
+    }
 }

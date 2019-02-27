@@ -7,6 +7,9 @@
 			</div>
 			<div class="box-tools pull-right">
 				<a href="#" class="btn btn-default" id="btnSearch" title="${text('查询')}"><i class="fa fa-filter"></i> ${text('查询')}</a>
+				<% if(hasPermi('fgcqualitycheck:qualityCheck:delete')){ %>
+				<a href="javascript:void(0)" id="asDelBtn" class="btn btn-sm btn-primary btnList" title="${text('删除质检单')}"> ${text('删除')}</a>
+				<% } %>
 				<!--<% if(hasPermi('fgcqualitycheck:qualityCheck:edit')){ %>-->
 				<!--<a href="${ctx}/fgcqualitycheck/qualityCheck/form" class="btn btn-default btnTool" title="${text('新增质检单')}"><i class="fa fa-plus"></i> ${text('新增')}</a>-->
 				<!--<% } %>-->
@@ -115,6 +118,9 @@
             {header:'修改时间', name:'modifyTime', index:'a.modify_time', width:150, align:"center"},
             // {header:'修改用户Id', name:'modifierId', index:'a.modifier_id', width:150, align:"left"},
             {header:'修改用户', name:'modifierName', index:'a.modifier_name', width:150, align:"left"},
+            {header:'行数据', name:'rowData', hidden:true, formatter: function(val, obj, row, act){
+                    return JSON.stringify(row);
+                }}
             // {header:'${text('操作')}', name:'actions', width:120, sortable:false, title:false, formatter: function(val, obj, row, act){
             // 	var actions = [];
             // 	<% if(hasPermi('fgcqualitycheck:qualityCheck:edit')){ %>
@@ -127,9 +133,44 @@
         shrinkToFit: false,
         autoScroll: true,
         autowidth: true,
+		showCheckbox:true,
         // 加载成功后执行事件
         ajaxSuccess: function(data){
 
         }
+    });
+
+    $('#asDelBtn').click( function(e){
+
+        // 获取所有被选中订单
+        var orderArr = $('#dataGrid :checkbox:checked'),
+            temp = []   // 当前被选中的订单
+        if(orderArr.length>0){
+            for(var i = 0; i<orderArr.length; i++){
+                var a = $(orderArr[i]).attr('name').replace(/jqg_dataGrid_/g,'')
+                temp.push(a)
+            }
+            var str = temp.join(',')
+            layer.confirm('确定删除吗？', {
+                btn: ['确定', '取消'] //可以无限个按钮
+            }, function (index, layero) {
+                $.ajax({
+                    async: false,
+                    url: '${ctx}/fgcqualitycheck/qualityCheck/deleteDb?fid=' + str,
+                    success: function (result) {
+                        var obj = JSON.parse(result);
+                        if (obj.result == 'true') {
+                            js.showMessage(obj.message)
+                            window.location.reload()
+                        } else {
+                            js.showMessage(obj.message)
+                        }
+                    }
+                })
+
+            }, function(index){
+                //按钮【按钮二】的回调
+            });
+		}
     });
 </script>

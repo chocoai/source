@@ -32,8 +32,8 @@ public class GuideService  extends CrudService<GuideDao, GuideOrder> {
     public User getLoginCode(String loginCode) {
         return guideDao.getLoginCode(loginCode);
     }
-    public List<GuideGoods> getDetail(String documentCode) {
-        return guideDao.getDetail(documentCode);
+    public List<GuideGoods> getDetail(List<String> orderList) {
+        return guideDao.getDetail(orderList);
     }
 
     @Override
@@ -52,11 +52,20 @@ public class GuideService  extends CrudService<GuideDao, GuideOrder> {
     }
 
     /**
-     * 根据用户账号获取部门里的tree_names
+     * 根据用户号获取门店名
      * @param userCode
      * @return
      */
-    public String selectShop(String userCode) {
-        return guideDao.selectShop(userCode);
+    public String selectShop(String userCode){
+        // 根据用户账号获取当前用户的treeNames
+        String treeNames = guideDao.selectShop(userCode);
+        String shop = null;
+        if (treeNames != null) {
+            if (treeNames.contains("/")) {
+                String[] officeNames = treeNames.split("/");
+                shop = officeNames[1];
+            }
+        }
+        return shop;
     }
 }

@@ -10,6 +10,7 @@ import com.jeesite.common.config.Global;
 import com.jeesite.common.entity.Page;
 import com.jeesite.common.lang.DateUtils;
 import com.jeesite.common.lang.StringUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.utils.excel.ExcelExport;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.asset.ding.FzTask;
@@ -19,20 +20,15 @@ import com.jeesite.modules.asset.ding.service.DingRoleService;
 import com.jeesite.modules.asset.ding.service.DingUserService;
 import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
-import com.jeesite.modules.fz.appreciation.service.FzAppreciationRecordService;
-import com.jeesite.modules.fz.config.AccessLimit;
 import com.jeesite.modules.fz.config.IsFileter;
 import com.jeesite.modules.fz.config.Uvantoken;
-import com.jeesite.modules.fz.fzlogin.service.FzLoginService;
 import com.jeesite.modules.fz.neigou.service.FzNeigouRefundService;
 import com.jeesite.modules.fz.order.entity.FzNeigouFzgoldLog;
-import com.jeesite.modules.fz.order.service.FzNeigouOrderService;
 import com.jeesite.modules.fz.utils.common.Variable;
 import net.sf.json.JSONObject;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -43,10 +39,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static java.math.BigDecimal.ROUND_HALF_UP;
 
@@ -220,6 +213,7 @@ public class DingUserController extends BaseController {
     @ResponseBody
     public String save(@Validated DingUser dingUser) {
         dingUserService.save(dingUser);
+        dingUserService.updateCustomized(dingUser.getUserid());
         return renderResult(Global.TRUE, text("保存人员管理成功！"));
     }
 
@@ -409,6 +403,9 @@ public class DingUserController extends BaseController {
     @ResponseBody
     public ReturnInfo getUserByUserId(String userId) {
         DingUser dingUser = dingUserService.get(userId);
+        if (dingUser.getUsedPoint() == null) {
+            dingUser.setUsedPoint(0D);
+        }
         List<String> list = departmentService.getDepartmentNameByUser(dingUser.getUserid());
         dingUser.setDepartmentNames(StringUtils.join(list, " "));
         return ReturnDate.success(dingUser);
@@ -435,7 +432,7 @@ public class DingUserController extends BaseController {
     }
 
     @Resource
-    private RedisTemplate<String, List> redisTemplate;
+    private RedisUtil<String, List> redisList;
 
     @RequiresPermissions("ding:dingUser:view")
     @RequestMapping(value = "exportData")
@@ -444,9 +441,9 @@ public class DingUserController extends BaseController {
         List<DingUser> list = dingUserService.findList(dingUser);
         List<ExportUserData> exportList = ListUtils.newArrayList();
 
-        List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+        List<DingUserDepartment> dingUserDepartmentList = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
         // 获取缓存中所有部门
-        List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+        List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
         for (DingUser dingUser1 : list) {
             ExportUserData exportUserData = new ExportUserData();
             exportUserData.setName(dingUser1.getName());
@@ -681,7 +678,5 @@ public class DingUserController extends BaseController {
             return ReturnDate.error(-100, "服务器忙", e.getMessage());
         }
     }
-
-
 
 }

@@ -21,7 +21,9 @@
 			b.outer_id outerCode,
 			b.properties property,
 			b.quantity quantity,
-			b.real_price price
+			b.real_price price,
+			b.sku_url skuUrl,
+			b.distribution_price distributionPrice
 		FROM
 		tb_product a
 		LEFT JOIN tb_sku b ON a.num_iid = b.num_iid

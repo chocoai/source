@@ -29,7 +29,6 @@ import com.jeesite.common.mybatis.mapper.query.QueryType;
 		@Column(name="end_time", attrName="endTime", label="结束时间"),
 		@Column(name="activity_remarks", attrName="activityRemarks", label="活动备注"),
 		@Column(name="activity_introduce", attrName="activityIntroduce", label="活动介绍"),
-		@Column(name="banner_image", attrName="bannerImage", label="列表banner"),
 		@Column(name="create_time", attrName="createTime", label="创建时间"),
 		@Column(name="create_by", attrName="createBy", label="创建人"),
 		@Column(name="update_by", attrName="updateBy", label="更新人"),

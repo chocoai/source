@@ -112,6 +112,10 @@ body{
 	margin-bottom: 1.3px;
 	font-weight: 600;
 }
+.card1 .content .cnName img{
+    width:55px;
+    float: right;
+}
 .card1 .content .enName{
 	font-size: 24.2px;
 	height: 34.39px;
@@ -242,11 +246,15 @@ body{
     transform: scale(-1);
 }
 .card3 .content .cnName{
-	font-size:17.5px;
+	font-size:16px;
 	font-weight: 600;
 }
+.card3 .content .cnName img{
+    width:36px;
+    float: right;
+}
 .card3 .content .enName{
-	font-size:17.5px;
+	font-size:16px;
 	/* height: 34.39px; */
     line-height: 1.2;
 }
@@ -463,6 +471,12 @@ body{
 	height: 14.95px;
 	line-height: 1;
     font-weight: 600;
+}
+.card2 .bottom .bottom-img{
+    width: 70px;
+    position: absolute;
+    right: 18.72px;
+    top: 20.88px;
 }
 .card2 .bottom .content1 .enName{
 	font-size:14.25px;

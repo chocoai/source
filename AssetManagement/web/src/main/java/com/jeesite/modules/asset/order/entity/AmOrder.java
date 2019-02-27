@@ -65,6 +65,7 @@ import com.jeesite.common.mybatis.mapper.query.QueryType;
 		@Column(name="privileges_total", attrName="privilegesTotal", label="特权金总额"),
 		@Column(name="check_by", attrName="checkBy", label="查货人"),
 		@Column(name="check_date", attrName="checkDate", label="查货时间"),
+		@Column(name="coupon_code", attrName="couponCode", label="优惠码"),
 	}, orderBy="str_to_date(a.create_time,'%Y-%m-%d %H:%i:%s') DESC"
 )
 public class AmOrder extends DataEntity<AmOrder> {
@@ -123,6 +124,15 @@ public class AmOrder extends DataEntity<AmOrder> {
 	private String treasure;		// 导购宝付款
 	private String checkBy;			// 查货人
 	private Date checkDate;			// 查货时间
+	private String couponCode;		// 优惠码
+
+	public String getCouponCode() {
+		return couponCode;
+	}
+
+	public void setCouponCode(String couponCode) {
+		this.couponCode = couponCode;
+	}
 
 	public String getCheckBy() {
 		return checkBy;

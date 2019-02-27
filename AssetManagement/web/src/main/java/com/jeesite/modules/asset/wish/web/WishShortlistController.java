@@ -13,6 +13,7 @@ import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.lang.DateUtils;
 import com.jeesite.common.lang.NumberUtils;
 import com.jeesite.common.lang.StringUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.utils.excel.ExcelExport;
 import com.jeesite.common.utils.excel.annotation.ExcelField;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
@@ -30,7 +31,7 @@ import com.jeesite.modules.fz.utils.common.Variable;
 import com.jeesite.modules.sys.utils.ConfigUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -61,7 +62,7 @@ public class WishShortlistController extends BaseController {
 	private WishShortlistService wishShortlistService;
 
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 
 	public static Map<String, Integer> map = new HashMap<>();
 
@@ -460,7 +461,7 @@ public class WishShortlistController extends BaseController {
                 }
 			}
 			// 获取缓存中所有部门
-			List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+			List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 			String departmentId = jsonObject.get("departmentId").toString();
 			String [] departmentIds = departmentId.split(",");
 			// 投票者所有部门

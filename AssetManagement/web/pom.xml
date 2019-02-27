@@ -37,6 +37,12 @@
 			<artifactId>spring-boot-starter-amqp</artifactId>
 		</dependency>
 
+		<!-- websocket -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+
 		<!-- Spring Boot -->
 		<dependency>
 			<groupId>com.aliyun</groupId>
@@ -70,6 +76,14 @@
 			<artifactId>open-sdk-java-2.0.2.jar</artifactId>
 			<scope>system</scope>
 			<systemPath>${project.basedir}/lib/open-sdk-java-2.0.2.jar</systemPath>
+			<version>1.0</version>
+		</dependency>
+		<!--有赞云sdk-->
+		<dependency>
+			<groupId>com.ovopark.open</groupId>
+			<artifactId>ovopark-open-sdk-1.2.5.jar</artifactId>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/lib/ovopark-open-sdk-1.2.5.jar</systemPath>
 			<version>1.0</version>
 		</dependency>
 		<!--淘宝外部skd-->

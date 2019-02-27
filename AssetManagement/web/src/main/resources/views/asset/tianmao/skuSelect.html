@@ -128,7 +128,9 @@ dataGrid = $('#dataGrid').dataGrid({
             selectNum ++;
             html.push('<span class="tag" id="'+key+'_tags-input"><span>'+value.outerId+' </span>'
                 + '<a href="#" onclick="removeSelectTag(\''+key+'\');" title="取消选择">x</a></span>');
-            if(arrzzz.indexOf(value.outerId)==-1) arrzzz.push(value.outerId);
+            if(arrzzz.indexOf(JSON.stringify(value))==-1) {
+                arrzzz.push(JSON.stringify(value));
+			}
         });
         html.unshift('<div class="title">当前已选择<span id="selectNum">'+selectNum+'</span>项：</div>');
         $('#selectData').empty().append(html.join(''));

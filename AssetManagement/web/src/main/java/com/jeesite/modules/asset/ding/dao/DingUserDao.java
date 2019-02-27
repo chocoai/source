@@ -8,6 +8,8 @@ import com.jeesite.common.mybatis.annotation.MyBatisDao;
 import com.jeesite.modules.asset.ding.entity.DingDepartment;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.asset.ding.entity.SyncUser;
+import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 import org.springframework.data.repository.query.Param;
@@ -104,4 +106,16 @@ public interface DingUserDao extends CrudDao<DingUser> {
 
     void updateBatch(List<DingUser> dingUserList);
 
+    //从数据库删除加盟商数据
+    @Delete("delete from js_ding_user where (extattr is null or extattr = '')")
+    void deleteAllianceUser();
+
+    //批量插入用户
+    void insertAllUsers(List<DingUser> dingUsers);
+    //批量更新用户
+    void updateAllUsers(List<DingUser> list);
+    void deleteBatch(List<String> list);
+
+    @Update("UPDATE js_ding_user SET customized=true WHERE userid=#{arg0}")
+    void updateCustomized(String userId);
 }

@@ -68,12 +68,19 @@ DingFavorMessage {
             actionCard.setSingle_url(fzAddress);
             dingMessage.setTouser(fzAppreciationRecord.getPraiserId());
             //标题
-            actionCard.setTitle("您在" + DateUtils.formatDate(new Date(), "HH:mm:ss") + "获得了" + dingUser1.getName() + "的赞赏");
-            actionCard.setMarkdown("您获得了" + dingUser1.getName() + "的赞赏，得到了" + fzAppreciationRecord.getCoinNumber() + "个赞币");
+
+            if ("1".equals(fzAppreciationRecord.getAnonymous())) {
+                actionCard.setTitle("您在" + DateUtils.formatDate(new Date(), "HH:mm:ss") + "获得了匿名用戶的赞赏");
+                actionCard.setMarkdown("您获得了匿名用戶的赞赏，得到了" + fzAppreciationRecord.getCoinNumber() + "个赞币");
+            } else {
+                actionCard.setTitle("您在" + DateUtils.formatDate(new Date(), "HH:mm:ss") + "获得了" + dingUser1.getName() + "的赞赏");
+                actionCard.setMarkdown("您获得了" + dingUser1.getName() + "的赞赏，得到了" + fzAppreciationRecord.getCoinNumber() + "个赞币");
+            }
+
             actionCard.setSingle_title("查看详情");
             dingMessage.setAction_card(actionCard);
             JSONObject jsonObject = JSONObject.fromObject(dingMessage);
-            String accessToken = RedisHelp.redisHelp.getAcessToken();
+            String accessToken = RedisHelp.redisHelp.getDingDingAcessToken();
             String url = SEND_ADDRESS + accessToken;
             String info = HttpClientUtils.ajaxPostJson(url, jsonObject.toString(), "UTF-8");
             recordLog.setTitle("梵赞消息推送");
@@ -112,7 +119,7 @@ DingFavorMessage {
         jsonObject.put("agentid",AGENT_ID);
         jsonObject.put("msgtype","action_card");
         jsonObject.put("touser","");
-        String accessToken= RedisHelp.redisHelp.getAcessToken();
+        String accessToken= RedisHelp.redisHelp.getDingDingAcessToken();
         RecordLog recordLog=new RecordLog();
         recordLog.setCreateTime(new Date());
         String url=SEND_ADDRESS+accessToken;

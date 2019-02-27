@@ -31,6 +31,12 @@ public class DingUserDepartment extends DataEntity<DingUserDepartment> {
 		this(null);
 	}
 
+	public DingUserDepartment(String userId, String departmentId) {
+		this(null);
+		this.userId = userId;
+		this.departmentId = departmentId;
+	}
+
 	public DingUserDepartment(String id){
 		super(id);
 	}

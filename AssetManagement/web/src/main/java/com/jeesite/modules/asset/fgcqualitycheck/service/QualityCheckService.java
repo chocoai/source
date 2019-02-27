@@ -531,4 +531,19 @@ public class QualityCheckService extends CrudService<QualityCheckDao, QualityChe
 			}
 		}
 	}
+
+	@Transactional(readOnly = true)
+	public List<QualityCheck> selectByFid(List<String> billNoList) {
+		return qualityCheckDao.selectByFid(billNoList);
+	}
+
+	/**
+	 * 删除质检单
+	 * @param billNoList
+	 */
+	@Transactional(readOnly = false)
+	public void deleteDb(List<String> billNoList) {
+		qualityCheckDao.deleteDb(billNoList);
+		qualityCheckDetailsDao.deleteDb(billNoList);
+	}
 }

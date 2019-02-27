@@ -6,6 +6,7 @@ package com.jeesite.modules.asset.fgcqualitycheck.web;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.jeesite.common.collect.ListUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -21,6 +22,8 @@ import com.jeesite.common.entity.Page;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.asset.fgcqualitycheck.entity.QualityCheck;
 import com.jeesite.modules.asset.fgcqualitycheck.service.QualityCheckService;
+
+import java.util.List;
 
 /**
  * 质检单Controller
@@ -94,5 +97,27 @@ public class QualityCheckController extends BaseController {
 		qualityCheckService.delete(qualityCheck);
 		return renderResult(Global.TRUE, "删除质检单成功！");
 	}
-	
+
+	/**
+	 * 删除质检单
+	 */
+	@RequiresPermissions("fgcqualitycheck:qualityCheck:delete")
+	@RequestMapping(value = "deleteDb")
+	@ResponseBody
+	public String deleteDb(String fid) {
+		String[] fids = fid.split(",");
+		List<String> billNoList = ListUtils.newArrayList();
+		if (fids.length > 0) {
+			for (int i = 0;i < fids.length; i++) {
+				billNoList.add(fids[i]);
+			}
+		}
+		List<QualityCheck> qualityCheckList = qualityCheckService.selectByFid(billNoList);
+		boolean isInit = qualityCheckList.stream().anyMatch(s ->!s.getDocumentStatus().equals("初始"));
+		if (isInit) {
+			return renderResult(Global.FALSE, "只能删除初始状态的质检单！");
+		}
+		qualityCheckService.deleteDb(billNoList);
+		return renderResult(Global.TRUE, "删除质检单成功！");
+	}
 }

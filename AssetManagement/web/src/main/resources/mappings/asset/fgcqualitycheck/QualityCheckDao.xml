@@ -77,4 +77,22 @@
 		LEFT JOIN js_fgc_quality_check_details AS B ON a.fid = b.fid
 		WHERE a.document_status = '完成'
 	</select>
+
+
+	<select id="selectByFid" resultType="QualityCheck">
+		SELECT fid,document_status FROM js_fgc_quality_check
+		WHERE fid IN
+		<foreach collection="list" item="item" open="(" separator="," close=")" index="index">
+			#{item}
+		</foreach>
+	</select>
+
+
+	<delete id="deleteDb">
+		DELETE FROM js_fgc_quality_check
+		WHERE fid IN
+		<foreach collection="list" item="item" open="(" separator="," close=")" index="index">
+			#{item}
+		</foreach>
+	</delete>
 </mapper>

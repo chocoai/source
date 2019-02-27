@@ -29,5 +29,184 @@
 		</where>
 		ORDER BY ${sqlMap.order.toSql()}
 	</select>
-	
+
+	<select id="getAccountRecord" resultType="com.jeesite.modules.fz.appreciation.entity.FzAccountRecord">
+		SELECT
+		t.*
+		FROM
+		(((
+		((
+		SELECT
+		a.praiser_id praiserId,
+		a.presenter_id presenterId,
+		a.coin_number coinNumber,
+		a.create_date createDate,
+		b.`name` praiserName,
+		c.`name` presenterName,
+		NULL expendMode,
+		0 type,
+		a.anonymous anonymous
+		FROM
+		fz_appreciation_record a
+		LEFT JOIN js_ding_user b ON a.praiser_id = b.userid
+		LEFT JOIN js_ding_user c ON a.presenter_id = c.userid
+		WHERE
+		a.praiser_id = #{userId}
+		ORDER BY
+		a.create_date DESC
+		)
+		UNION ALL
+		(
+		SELECT
+		a.praiser_id praiserId,
+		b.presenter_id presenterId,
+		b.coin_number coinNumber,
+		b.create_date createDate,
+		c.`name` praiserName,
+		d.`name` presenterName,
+		NULL expendMode,
+		0 type,
+		'' anonymous
+		FROM
+		fz_appreciation_record a
+		INNER JOIN fz_appreciation_follow b ON a.appreciation_code = b.appreciation_code
+		LEFT JOIN js_ding_user c ON a.praiser_id = c.userid
+		LEFT JOIN js_ding_user d ON b.presenter_id = d.userid
+		WHERE
+		a.praiser_id = #{userId}
+		ORDER BY
+		b.create_date DESC
+		)
+		)
+		<if test="flag==0">
+			UNION ALL
+			(
+			SELECT
+			user_id praiserId,
+			NULL,
+			expend_num coinNumber,
+			expend_time createDate,
+			NULL,
+			NULL,
+			expend_mode expendMode,
+			1 type,
+			'' anonymous
+			FROM
+			fz_expenditure_record
+			WHERE
+			user_id = #{userId}
+			)
+		</if>
+	)) UNION ALL
+		(
+		SELECT
+		a.user_id praiserId,
+		NULL presenterId,
+		a.refund_num coinNumber,
+		a.refund_time createDate,
+		a.user_name praiserName,
+		NULL presenterName,
+		a.refund_mode expendMode,
+		2 type,
+		'' anonymous
+		FROM
+		fz_refund_record a
+		WHERE
+		a.user_id = #{userId}
+		)) t
+ORDER BY
+	t.createDate DESC
+  LIMIT #{pageNo},#{pageSize}
+	</select>
+
+	<select id="selectCount" resultType="Integer">
+		SELECT count(1)
+		FROM (
+		SELECT
+		t.*
+		FROM
+		(((
+		((
+		SELECT
+		a.praiser_id praiserId,
+		a.presenter_id presenterId,
+		a.coin_number coinNumber,
+		a.create_date createDate,
+		b.`name` praiserName,
+		c.`name` presenterName,
+		NULL expendMode,
+		0 type,
+		a.anonymous anonymous
+		FROM
+		fz_appreciation_record a
+		LEFT JOIN js_ding_user b ON a.praiser_id = b.userid
+		LEFT JOIN js_ding_user c ON a.presenter_id = c.userid
+		WHERE
+		a.praiser_id = #{userId}
+		ORDER BY
+		a.create_date DESC
+		)
+		UNION ALL
+		(
+		SELECT
+		a.praiser_id praiserId,
+		b.presenter_id presenterId,
+		b.coin_number coinNumber,
+		b.create_date createDate,
+		c.`name` praiserName,
+		d.`name` presenterName,
+		NULL expendMode,
+		0 type,
+		'' anonymous
+		FROM
+		fz_appreciation_record a
+		INNER JOIN fz_appreciation_follow b ON a.appreciation_code = b.appreciation_code
+		LEFT JOIN js_ding_user c ON a.praiser_id = c.userid
+		LEFT JOIN js_ding_user d ON b.presenter_id = d.userid
+		WHERE
+		a.praiser_id = #{userId}
+		ORDER BY
+		b.create_date DESC
+		)
+		)
+		<if test="flag==0">
+			UNION ALL
+			(
+			SELECT
+			user_id praiserId,
+			NULL,
+			expend_num coinNumber,
+			expend_time createDate,
+			NULL,
+			NULL,
+			expend_mode expendMode,
+			1 type,
+			'' anonymous
+			FROM
+			fz_expenditure_record
+			WHERE
+			user_id = #{userId}
+			)
+		</if>
+		)) UNION ALL
+		(
+		SELECT
+		a.user_id praiserId,
+		NULL presenterId,
+		a.refund_num coinNumber,
+		a.refund_time createDate,
+		a.user_name praiserName,
+		NULL presenterName,
+		a.refund_mode expendMode,
+		2 type,
+		'' anonymous
+		FROM
+		fz_refund_record a
+		WHERE
+		a.user_id = #{userId}
+		)) t
+		ORDER BY
+		t.createDate DESC
+		) tmp
+	</select>
 </mapper>

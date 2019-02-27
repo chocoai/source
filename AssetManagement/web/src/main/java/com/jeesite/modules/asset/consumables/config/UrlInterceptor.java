@@ -8,7 +8,7 @@ import net.sf.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -37,9 +37,9 @@ public class UrlInterceptor implements HandlerInterceptor  {
     @Autowired
     private RedisService service;
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtil<String, String> redisString;
 //    @Resource
-//    private RedisTemplate<String, RedisData> redisTemplate;
+//    private RedisTemplate<String, RedisData> redisString;
     /**
      * 在控制器执行前调用
      * @param request 请求参数
@@ -119,7 +119,7 @@ public class UrlInterceptor implements HandlerInterceptor  {
                 data.setFlag(1);
                 JSONObject json = JSONObject.fromObject(data);
                 String rst=json.toString();
-                redisTemplate.opsForValue().set(documentCode,rst , 4,TimeUnit.SECONDS);
+                redisString.set(documentCode,rst , 4L,TimeUnit.SECONDS);
                 Map<String, Object> map = new HashMap<>(16);
                 map.put("code", "");
                 map.put("msg", "");

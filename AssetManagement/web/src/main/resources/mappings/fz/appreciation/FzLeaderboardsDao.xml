@@ -25,6 +25,7 @@
 	LEFT JOIN js_ding_user b ON a.praiser_id = b.userid
 	WHERE
 		a.create_date LIKE CONCAT('%',#{yearMonth},'%')
+		AND b.left = '0'
 	GROUP BY
 		a.praiser_id
 	ORDER BY
@@ -46,6 +47,7 @@
 	LEFT JOIN js_ding_user b ON a.praiser_id = b.userid
 	WHERE
 		a.create_date BETWEEN #{arg0} AND  #{arg1}
+		AND b.left = '0'
 	GROUP BY
 		a.praiser_id
 	ORDER BY

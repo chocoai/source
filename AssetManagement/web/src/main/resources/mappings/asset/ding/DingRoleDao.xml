@@ -11,5 +11,14 @@
 		</where>
 		ORDER BY ${sqlMap.order.toSql()}
 	</select> -->
-	
+	<update id="updateBatch" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			UPDATE js_ding_role SET role_name = #{item.roleName}, `group_name` = #{item.groupName} WHERE `role_id` = #{item.roleId}
+		</foreach>
+	</update>
+	<delete id="deleteBatch" parameterType="java.util.List">
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			DELETE FROM js_ding_role WHERE `role_id` = #{item}
+		</foreach>
+	</delete>
 </mapper>

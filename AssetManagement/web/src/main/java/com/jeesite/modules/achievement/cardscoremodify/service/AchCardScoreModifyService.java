@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 
 import com.jeesite.common.lang.StringUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.service.ServiceException;
 import com.jeesite.common.utils.excel.ExcelImport;
 import com.jeesite.common.validator.ValidatorUtils;
@@ -17,7 +18,7 @@ import com.jeesite.modules.asset.util.service.AmSeqService;
 import com.jeesite.modules.fz.utils.common.Variable;
 import com.jeesite.modules.sys.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,7 +100,7 @@ public class AchCardScoreModifyService extends CrudService<AchCardScoreModifyDao
 	}
 
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 	/**
 	 * 导入用户数据
 	 * @param file 导入的用户数据文件
@@ -113,7 +114,7 @@ public class AchCardScoreModifyService extends CrudService<AchCardScoreModifyDao
 		int successNum = 0; int failureNum = 0;
 		StringBuilder successMsg = new StringBuilder();
 		StringBuilder failureMsg = new StringBuilder();
-		List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 当前登录用户
 		String userName = UserUtils.getUser().getUserName();
 		try(ExcelImport ei = new ExcelImport(file, 2, 0)){

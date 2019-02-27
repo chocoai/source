@@ -14,7 +14,7 @@ import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -40,9 +40,6 @@ import java.util.Map;
 @Controller
 @RequestMapping(value = "${adminPath}/taobao/taobaoEvaluate")
 public class TaobaoEvaluateController extends BaseController {
-	@Resource
-	private RedisTemplate<String, TaobaoEvaluate> redisTemplate;
-
 
 	@Autowired
 	private TaobaoEvaluateService taobaoEvaluateService;

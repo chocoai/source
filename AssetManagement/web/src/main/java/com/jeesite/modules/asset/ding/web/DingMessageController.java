@@ -35,7 +35,7 @@ public class DingMessageController extends BaseController {
     @ResponseBody
     public String sendMessage(){
 
-        String result= RedisHelp.redisHelp.getAcessToken();
+        String result= RedisHelp.redisHelp.getDingDingAcessToken();
        // String url="https://oapi.dingtalk.com/message/send_to_conversation?access_token="+result;
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("touser","18392547561934016313");
@@ -71,7 +71,7 @@ public class DingMessageController extends BaseController {
             actionCard.setSingle_url(configName);
             dingMessage.setAction_card(actionCard);
             JSONObject jsonObject=JSONObject.fromObject(dingMessage);
-            String accessToken= RedisHelp.redisHelp.getAcessToken();
+            String accessToken= RedisHelp.redisHelp.getDingDingAcessToken();
             String url=SEND_ADDRESS+accessToken;
             String info= HttpClientUtils.ajaxPostJson(url,jsonObject.toString(),"UTF-8");
             RecordLog recordLog=new RecordLog();

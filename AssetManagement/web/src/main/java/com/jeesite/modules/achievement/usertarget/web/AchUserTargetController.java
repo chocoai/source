@@ -112,8 +112,7 @@ public class AchUserTargetController extends BaseController {
 		if(achUserTarget.getIsNewRecord()){
 			achUserTarget.setUserId(userData.getCurrentUser().getUserid());
 		}
-		else
-		{
+		else {
 			achUserTarget.setUpdateBy(userData.getCurrentUser().getUserid());
 		}
 

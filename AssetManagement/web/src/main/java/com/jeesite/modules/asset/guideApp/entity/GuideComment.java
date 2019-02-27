@@ -3,6 +3,8 @@
  */
 package com.jeesite.modules.asset.guideApp.entity;
 
+import com.jeesite.common.utils.excel.annotation.ExcelField;
+import com.jeesite.common.utils.excel.annotation.ExcelFields;
 import org.hibernate.validator.constraints.Length;
 import java.util.Date;
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -10,6 +12,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jeesite.common.entity.DataEntity;
 import com.jeesite.common.mybatis.annotation.Column;
 import com.jeesite.common.mybatis.annotation.Table;
+
+import javax.validation.Valid;
 
 /**
  * 导购活动表Entity
@@ -31,7 +35,16 @@ import com.jeesite.common.mybatis.annotation.Table;
 	}, orderBy="a.comment_code ASC"
 )
 public class GuideComment extends DataEntity<GuideComment> {
-	
+	@Valid
+	@ExcelFields({
+			@ExcelField(title="提问人", attrName="askBy", align=ExcelField.Align.CENTER, sort=10),
+			@ExcelField(title="提问时间", attrName="askTime", align=ExcelField.Align.CENTER, sort=10,dataFormat = "yyyy-MM-dd HH:mm:ss"),
+			@ExcelField(title="问题", attrName="question", align = ExcelField.Align.CENTER, sort=20),
+			@ExcelField(title="回复", attrName="answer", align=ExcelField.Align.LEFT, sort=30),
+			@ExcelField(title="回复人", attrName="answerBy", align=ExcelField.Align.CENTER, sort=30),
+			@ExcelField(title="回复时间", attrName="answerTime", align=ExcelField.Align.CENTER, sort=40,dataFormat = "yyyy-MM-dd HH:mm:ss"),
+
+	})
 	private static final long serialVersionUID = 1L;
 	private String commentCode;		// 评论编码
 	private GuideActivity activityCode;		// 活动编码 父类

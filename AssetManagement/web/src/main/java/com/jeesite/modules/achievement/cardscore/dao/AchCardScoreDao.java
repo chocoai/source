@@ -17,9 +17,12 @@ import org.apache.ibatis.annotations.Update;
 public interface AchCardScoreDao extends CrudDao<AchCardScore> {
     @Update("UPDATE ach_card_score as A\n" +
             "LEFT JOIN(\n" +
-            "SELECT card_code,left(score_group,4) score_group,SUM(IFNULL(actual_score,0)) examine_score, SUM(IFNULL(standard_score,0)) standard_score FROM ach_user_target GROUP BY card_code,left(score_group,4)\n" +
+            "SELECT a.card_code,left(a.score_group,4) score_group,(CASE WHEN B.data_status > '30' THEN SUM(IFNULL(a.examined_score,0)) ELSE 0 END) examine_score,SUM(IFNULL(a.actual_score,0)) evaluation_score, SUM(IFNULL(a.standard_score,0)) standard_score\n" +
+            "FROM ach_user_target a\n" +
+            "LEFT JOIN ach_card b on b.card_code = a.card_code\n" +
+            "GROUP BY a.card_code,left(a.score_group,4)\n" +
             ") B ON a.card_code = B.card_code and B.score_group = a.score_group\n" +
-            "SET A.examine_score = B.examine_score, A.standard_score = B.standard_score\n" +
+            "SET A.examine_score = B.examine_score, A.standard_score = B.standard_score, A.evaluation_score = B.evaluation_score\n" +
             "WHERE a.card_code = #{arg0} AND B.card_code IS NOT NULL AND (B.examine_score > 0 OR B.standard_score > 0)")
     int updateTargerScore(String cardCode);
     @Update("UPDATE ach_card_score as A\n" +
@@ -49,7 +52,7 @@ public interface AchCardScoreDao extends CrudDao<AchCardScore> {
             "JOIN ach_card C ON A.card_code = C.card_code\n" +
             "LEFT JOIN(\n" +
             "SELECT examine_month, user_id,\n" +
-            "SUM(IFNULL(add_sub_score,0)) examine_score\n" +
+            "SUM(CASE score_type WHEN '0' THEN IFNULL(add_sub_score,0) ELSE (0 - add_sub_score) END) examine_score\n" +
             "FROM ach_card_score_modify WHERE add_sub_score > 0 AND data_type = '2' GROUP BY examine_month,user_id\n" +
             ") B ON C.examine_month = B.examine_month AND A.user_id = B.user_id\n" +
             "SET A.examine_score = B.examine_score\n" +

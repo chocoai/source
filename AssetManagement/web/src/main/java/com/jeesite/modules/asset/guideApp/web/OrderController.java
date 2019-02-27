@@ -21,10 +21,12 @@ import com.jeesite.modules.asset.order.entity.k3Info.*;
 import com.jeesite.modules.asset.order.service.AmOrderImgService;
 import com.jeesite.modules.asset.order.service.AmOrderLogService;
 import com.jeesite.modules.asset.order.service.AmOrderService;
+import com.jeesite.modules.asset.tianmao.entity.TbItemImgs;
 import com.jeesite.modules.asset.tianmao.entity.TbProduct;
 import com.jeesite.modules.asset.tianmao.entity.TbSku;
 import com.jeesite.modules.asset.tianmao.service.TbProductService;
 import com.jeesite.modules.asset.tianmao.service.TbSkuService;
+import com.jeesite.modules.asset.tianmao.service.TbTianmaoItemsService;
 import com.jeesite.modules.asset.util.ParamentUntil;
 import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
@@ -32,6 +34,7 @@ import com.jeesite.modules.asset.util.service.AmSeqService;
 import com.jeesite.modules.sys.entity.Employee;
 import com.jeesite.modules.sys.service.EmployeeService;
 import com.jeesite.modules.sys.utils.UserUtils;
+import com.jeesite.modules.util.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +47,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -135,6 +139,7 @@ public class OrderController {
         if ("".equals(discount)) {
             discount = "0";
         }
+
         Double preferential = Double.parseDouble(discount);
 
         // 运费
@@ -164,7 +169,11 @@ public class OrderController {
         // 登录帐号
         String userCode = reqJson.get("userCode").toString();
         AmOrder amOrder = new AmOrder();
-
+        // 优惠码
+        if (reqJson.containsKey("couponCode")) {
+            String couponCode = reqJson.get("couponCode").toString();
+            amOrder.setCouponCode(couponCode);
+        }
         amOrder.setIsEnjoy(isEnjoy);
         amOrder.setOilSubsidy(Double.parseDouble(oilSubsidy));
 
@@ -439,16 +448,7 @@ public class OrderController {
             }
 
             // 根据用户账号获取当前用户的treeNames
-            String treeNames = guideService.selectShop(userCode);
-            String store = null;
-            if (treeNames != null) {
-                if (treeNames.contains("/")) {
-                    String[] officeNmaes = treeNames.split("/");
-                    store = officeNmaes[1];
-                }
-
-            }
-
+            String store = guideService.selectShop(userCode);
             JSONArray jsonArray = JSON.parseArray(reqJson.get("materialList").toString());
             List<VirtualQuotation> virtualQuotationList = new ArrayList<>();
             if (jsonArray != null && jsonArray.size() > 0) {
@@ -577,6 +577,8 @@ public class OrderController {
         }
     }
 
+    @Autowired
+    private TbTianmaoItemsService tbTianmaoItemsService;
     /**
      * 查询订单
      * @param
@@ -593,9 +595,34 @@ public class OrderController {
         }
         guide.setUserName(userCode);
         Page<GuideOrder> page = guideService.findPage(new Page<GuideOrder>(request, response), guide);
+        // 订单号
+        List<String> orderList = ListUtils.newArrayList();
         for (int i = 0; i < page.getList().size(); i++) {
-            List<GuideGoods> goodsList = guideService.getDetail(page.getList().get(i).getDocumentCode());
-            page.getList().get(i).setGoods(goodsList);
+            orderList.add(page.getList().get(i).getDocumentCode());
+        }
+        List<GuideGoods> goodsList = guideService.getDetail(orderList);
+
+        // 根据商品id获取主图图片
+        List<TbItemImgs> itemImgList = tbTianmaoItemsService.getLastImg(ListUtils.extractToList(goodsList, "numId"));
+        for (GuideOrder guideOrder : page.getList()) {
+            // 根据订单号查出该订单的商品
+            List<GuideGoods> guideGoodsList = goodsList.stream().filter(s ->s.getDocumentCode().equals(guideOrder.getDocumentCode())).collect(Collectors.toList());
+            // 如果该订单有商品
+            if (ListUtils.isNotEmpty(guideGoodsList)) {
+                for (GuideGoods guideGoods : goodsList) {
+                    // 取该商品选购的SKU的图片，若该SKU不存在图片，那么取商品主图的主图最后一张；
+                    if (StringUtils.isNotEmpty(guideGoods.getSkuUrl())) {
+                        guideGoods.setPicUrl(guideGoods.getSkuUrl());
+                    } else {
+                        Optional<TbItemImgs> optionalItemImg = itemImgList.stream().filter(s ->String.valueOf(s.getItemId()).equals(guideGoods.getNumId())).findFirst();
+                        if (optionalItemImg.isPresent()) {
+                            guideGoods.setSkuUrl(optionalItemImg.get().getUrl());
+                        }
+                    }
+                }
+                // 订单的商品
+                guideOrder.setGoods(guideGoodsList);
+            }
         }
         if (page.getList() != null && page.getList().size() >0) {
             map.put("code", "200");
@@ -689,7 +716,7 @@ public class OrderController {
     @RequiresPermissions("order:amOrder:deliver")
     @ResponseBody
     @RequestMapping(value = "submit")
-    public Map submit (String documentCode, String userCode, HttpServletRequest request) {
+    public Map submit (String documentCode, String userCode, HttpServletRequest request) throws Exception{
         Map<String, Object> map = new HashMap<>();
         AmOrder amOrder = new AmOrder();
         amOrder.setDocumentCode(documentCode);
@@ -819,6 +846,10 @@ public class OrderController {
             amOrder.setSubmitDate(DateUtils.getDateTime());
             amOrder.setSubmitBy(UserUtils.get(userCode).getUserName());
             amOrder.setDocumentStatus(SUBMIT);
+
+            if (StringUtils.isNotEmpty(amOrder.getCouponCode())) {
+                amOrderService.updateWriteoff(amOrder);
+            }
             amOrderService.saveData(amOrder);
             map.put("code", "200");
             map.put("msg", "提交优梵成功");
@@ -890,6 +921,15 @@ public class OrderController {
         }
         amOrder.setFreight(NumberUtils.add(logisticsFee, threeCharges));    // 运费
         List<AmOrderDetail> detailList = amOrderService.getDetail(documentCode);
+        for (AmOrderDetail amOrderDetail : detailList) {
+            if (StringUtils.isNotEmpty(amOrderDetail.getSkuUrl())) {
+                amOrderDetail.setPicUrl(amOrderDetail.getSkuUrl());
+            } else {
+                // 如果为空取商品详情图最后一张作为主图
+                String img = tbTianmaoItemsService.getLastImg(amOrderDetail.getNumId());
+                amOrderDetail.setPicUrl(img);
+            }
+        }
         amOrder.setAmOrderDetailList(detailList);
         if (amOrder != null) {
             map.put("code", "200");
@@ -999,4 +1039,318 @@ public class OrderController {
         List<AmOrderImg> imgList = amOrderImgService.findList(amOrderImg);
         return ReturnDate.success(imgList);
     }
+
+    /**
+     * 获取店铺
+     * @return
+     */
+    @RequiresPermissions("order:amOrder:view")
+    @ResponseBody
+    @RequestMapping("getShop")
+    public ReturnInfo getShop() {
+        String userCode = UserUtils.getUser().getUserCode();
+        // 根据用户账号获取当前用户的treeNames
+        String shop = guideService.selectShop(userCode);
+        JSONObject json = new JSONObject();
+        json.put("shop", shop);
+        json.put("userName", UserUtils.getUser().getUserName());
+        return ReturnDate.success(JSONObject.parseObject(json.toString()));
+    }
+
+
+    /**
+     * 引流到店客户
+     */
+    @RequiresPermissions("order:amOrder:view")
+    @ResponseBody
+    @RequestMapping("drainageCustomer")
+    public ReturnInfo drainageCustomer (String shop, String flag, Integer pageNo, Integer pageSize) throws Exception{
+        boolean isLogin = k3connection.getConnection();
+        if (!isLogin) {
+            return ReturnDate.error(500, "服务异常,请稍后");
+        }
+        // 表单名
+        String formId = "BD_Customer";
+        // k3客户资料标准api
+        String content = "{\"FormId\":\""+ formId +"\",\"FieldKeys\":\"FNumber,FName,F_YF_ShoppingGuide\",\"FilterString\":\"F_YF_ShoppingGuide LIKE '%"+ shop +"%'\",\"OrderString\":\"\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
+        String result = InvokeHelper.ExecuteBillQuery(formId, content, POST_K3ClOUDRL);
+        JSONArray jsonArray = JSONArray.parseArray(result);
+        int num = 0;
+        List<LineDownRegister> downRegisterList = ListUtils.newArrayList();
+        List<SpeedProgress> speedProgressList = ListUtils.newArrayList();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            JSONArray array = JSONArray.parseArray(jsonArray.get(i).toString());
+            // 导购宝账号/供销账号
+            String guideCode = array.get(2).toString();
+            // k3店铺编码
+            String shopCode =  array.get(0).toString();
+            //
+            String [] shops = guideCode.trim().split("\r\n");
+            boolean inFlag = StringUtils.inString(shop, shops);
+            if (inFlag) {
+                String obj = null;
+                if ("0".equals(flag)) {
+                    obj = "{\"FormId\":\"YF_SAL_LineDownRegister\",\"FieldKeys\":\"FBillNo,F_YF_TrackUserId\",\"FilterString\":\"FCreateDate>'2019-01-01' and FDocumentStatus = 'C' and F_YF_ReservationShop.FNUMBER='"+ shopCode +"'\",\"OrderString\":\"FCreateDate\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
+                } else {
+                    obj = "{\"FormId\":\"YF_SAL_LineDownRegister\",\"FieldKeys\":\"FBillNo,F_YF_TrackUserId,FCreateDate,FCustId.FNAME,F_YF_Phone,F_YF_TrackDatetime,F_YF_Schedule,F_YF_TrackUserId.FNAME,FID\",\"FilterString\":\"FCreateDate>'2019-01-01' and FDocumentStatus = 'C' and F_YF_ReservationShop.FNUMBER='"+ shopCode +"'\",\"OrderString\":\"FCreateDate DESC\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
+                }
+
+                String resultShop = InvokeHelper.ExecuteBillQuery("YF_SAL_LineDownRegister", obj, POST_K3ClOUDRL);
+                // 如果返回[[[]]]或者[]说明不存在符合条件的数据
+                if ("[[[]]]".equals(resultShop) || "[]".equals(resultShop)) {
+                    if ("0".equals(flag)) {
+                        return ReturnDate.success(num);
+                    } else {
+                        return ReturnDate.success(ListUtils.newArrayList());
+                    }
+
+                }
+                JSONArray shopArray = JSONArray.parseArray(resultShop);
+                num = 0;
+
+                for (int j = 0; j < shopArray.size(); j++) {
+                    JSONArray json = JSONArray.parseArray(shopArray.get(j).toString());
+                    String trackUserId = null;
+                    try {
+                        trackUserId = json.get(1).toString();
+                    } catch (NullPointerException e) {
+                    }
+                    // 0代表点我的时候的操作 只计算数量
+                    if (StringUtils.isEmpty(trackUserId)) {
+
+                        if ("0".equals(flag)) {
+                            num++;
+                        } else {
+                            getLineDownRegister(downRegisterList, json);
+                        }
+                    }
+                    if (StringUtils.isNotEmpty(trackUserId) && "1".equals(flag)){
+                        getLineDownRegister(downRegisterList, json);
+                        // 跟踪信息
+                        SpeedProgress speedProgress = new SpeedProgress();
+                        // 单号
+                        speedProgress.setFBillNo(json.get(0).toString());
+                        // 跟进时间
+                        String trackDatetime = json.get(5).toString().replace("T", " ");
+                        if (trackDatetime.contains(".")) {
+                            trackDatetime = trackDatetime.substring(0, trackDatetime.indexOf("."));
+                        }
+                        speedProgress.setFTrackDatetime(trackDatetime);
+                        // 进度
+                        speedProgress.setFSchedule(json.get(6).toString());
+                        // 跟进人
+                        speedProgress.setFTrackUserName(json.get(7).toString());
+                        // 跟进人id
+                        speedProgress.setFTrackUserId(json.get(1).toString());
+                        speedProgressList.add(speedProgress);
+                    }
+                }
+
+            }
+        }
+        // 点我的的时候只返回不存在跟踪记录的客户个数
+        if ("0".equals(flag)) {
+            return ReturnDate.success(num);
+        } else {
+            int size = downRegisterList.size();
+            // 点查看的时候返回客户列表和进度
+            if (ListUtils.isNotEmpty(downRegisterList)) {
+                // 如果页数*页码大于总条数 查到最后一条
+                if (pageSize * pageNo > size) {
+                    downRegisterList = downRegisterList.subList((pageNo - 1) * pageSize, size);
+                } else {
+                    downRegisterList = downRegisterList.subList((pageNo - 1) * pageSize, pageSize * pageNo);
+                }
+                for (LineDownRegister lineDownRegister : downRegisterList) {
+                    lineDownRegister.setSpeedProgressList(speedProgressList.stream().filter(s ->s.getFBillNo().equals(lineDownRegister.getFBillNo())).collect(Collectors.toList()));
+                }
+            }
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("count", size);
+            jsonObject.put("downRegisterList", downRegisterList);
+            return ReturnDate.success(jsonObject);
+        }
+    }
+
+    public void getLineDownRegister(List<LineDownRegister> downRegisterList, JSONArray json) {
+
+        LineDownRegister lineDownRegister = new LineDownRegister();
+        // 单号
+        String billNo = json.get(0).toString();
+        List list = downRegisterList.stream().filter(s ->s.getFBillNo().equals(billNo)).collect(Collectors.toList());
+        if (ListUtils.isEmpty(list)) {
+            lineDownRegister.setFBillNo(json.get(0).toString());
+            // fid
+            lineDownRegister.setFid(json.get(8).toString());
+            // 创建时间
+            String createDate = json.get(2).toString().replace("T", " ");
+            if (createDate.contains(".")) {
+                createDate = createDate.substring(0, createDate.indexOf("."));
+            }
+
+            lineDownRegister.setFCreateDate(createDate);
+            // 客户名称
+            lineDownRegister.setFCustName(json.get(3).toString());
+            // 移动电话
+            lineDownRegister.setFPhone(json.get(4).toString());
+
+            downRegisterList.add(lineDownRegister);
+
+        }
+
+    }
+
+    /**
+     * 查询/核销优惠码接口
+     * @param couponCode 优惠码
+     * 根据优惠码获取赠送状态
+     */
+    @RequiresPermissions("order:amOrder:view")
+    @ResponseBody
+    @RequestMapping("checkStatus")
+    public ReturnInfo checkStatus(String couponCode) throws Exception{
+        boolean isLogin = k3connection.getConnection();
+        if (!isLogin) {
+            return ReturnDate.error(500, "服务异常,请稍后");
+        }
+        String content = "{\"FormId\":\"YF_SAL_LineDownRegister\",\"FieldKeys\":\"FCustId.FNAME,F_YF_GiftStatus,F_YF_StoreGuide,FID\",\"FilterString\":\"F_YF_PromoCode='"+ couponCode +"'\",\"OrderString\":\"\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
+        String resultStatus = InvokeHelper.ExecuteBillQuery("YF_SAL_LineDownRegister", content, POST_K3ClOUDRL);
+
+        if ("[[[]]]".equals(resultStatus) || "[]".equals(resultStatus)) {
+            return ReturnDate.success(10012, "不存在优惠码", null);
+        }
+        JSONArray jsonArray = JSONArray.parseArray(resultStatus);
+
+        JSONArray json = JSONArray.parseArray(jsonArray.get(0).toString());
+        // 赠送状态
+        String giftStatus = json.get(1).toString();
+        JSONObject object = new JSONObject();
+        // 客户名
+        String custName = json.get(0).toString();
+        object.put("custName", custName);
+        // 门店导购员
+        String storeGuide = json.get(2).toString();
+        // 未赠送
+        String fid = json.get(3).toString();
+        if (!"B".equals(giftStatus)) {
+            object.put("fid", fid);
+            return ReturnDate.success(10010, "", object);
+        } else {
+            object.put("storeGuide", storeGuide);
+            object.put("couponCode", couponCode);
+            return ReturnDate.success(10011, "", object);
+        }
+    }
+
+
+    /**
+     * 领取赠品后更新赠品状态和赠品领取时间
+     * @param fid
+     * @return
+     * @throws Exception
+     */
+    @RequiresPermissions("order:amOrder:view")
+    @ResponseBody
+    @RequestMapping("addSchedule")
+    public ReturnInfo addSchedule(String fid, String schedule) throws Exception{
+        boolean isLogin = k3connection.getConnection();
+        if (!isLogin) {
+            return ReturnDate.error(500, "服务异常,请稍后");
+        }
+        // 门店
+        String shop = guideService.selectShop(UserUtils.getUser().getUserCode());
+        String date = DateUtils.formatDateTime(new Date());
+        date = date.replace(" ","T");
+        String saveParam = "{\"Creator\":\"\",\"NeedUpDateFields\":[],\"NeedReturnFields\":[],\"IsDeleteEntry\":\"false\",\"SubSystemId\":\"\",\"IsVerifyBaseDataField\":\"false\",\"IsEntryBatchFill\":\"True\",\"ValidateFlag\":\"True\",\"NumberSearch\":\"True\",\"InterationFlags\":\"\",\"IsAutoSubmitAndAudit\":\"false\",\"Model\":{\"FID\":\""+ fid +"\",\"F_YF_ScheduleEntity\":[{\"F_YF_Schedule\":\""+ schedule +"\",\"F_YF_TrackDatetime\":\""+ date +"\",\"F_YF_TrackStore\":\""+ shop +"\",\"F_YF_Guide\":\""+ UserUtils.getUser().getUserName()+"\"}]}";
+        StringBuffer buffer1 = InvokeHelper.Save("YF_SAL_LineDownRegister", saveParam, POST_K3ClOUDRL);
+        boolean isSuccess = isSuccess(buffer1);
+        if (isSuccess) {
+            return ReturnDate.success();
+        } else {
+            return ReturnDate.error(500, "服务异常");
+        }
+    }
+
+    /**
+     * 领取赠品后更新赠品状态和赠品领取时间
+     * @param fid
+     * @return
+     * @throws Exception
+     */
+    @RequiresPermissions("order:amOrder:view")
+    @ResponseBody
+    @RequestMapping("updateStatus")
+    public ReturnInfo update(String fid) throws Exception{
+        boolean isLogin = k3connection.getConnection();
+        if (!isLogin) {
+            return ReturnDate.error(500, "服务异常,请稍后");
+        }
+        String date = DateUtils.formatDateTime(new Date());
+        date = date.replace(" ","T");
+        String saveParam = "{\"Creator\":\"\",\"NeedUpDateFields\":[],\"NeedReturnFields\":[],\"IsDeleteEntry\":\"True\",\"SubSystemId\":\"\",\"IsVerifyBaseDataField\":\"false\",\"IsEntryBatchFill\":\"True\",\"ValidateFlag\":\"True\",\"NumberSearch\":\"True\",\"InterationFlags\":\"\",\"IsAutoSubmitAndAudit\":\"false\",\"Model\":{\"FID\":\""+ fid +"\",\"F_YF_GIFTSTATUS\":\"B\",\"F_YF_GetGiftTime\":\""+ date +"\"}";
+        StringBuffer buffer1 = InvokeHelper.Save("YF_SAL_LineDownRegister", saveParam, POST_K3ClOUDRL);
+        boolean isSuccess = isSuccess(buffer1);
+        if (isSuccess) {
+            return ReturnDate.success();
+        } else {
+            return ReturnDate.error(500, "服务异常");
+        }
+    }
+
+    /**
+     * 查询优惠码是否核销
+     * @param couponCode
+     */
+    @RequiresPermissions("order:amOrder:view")
+    @ResponseBody
+    @RequestMapping("checkWriteoff")
+    public ReturnInfo checkWriteoff(String couponCode) throws Exception {
+        for (int i = 0; i < couponCode.length(); i++) {
+            if (Character.isLowerCase(couponCode.charAt(i))) {
+                return ReturnDate.error(10013, "字母不能输入小写");
+            }
+        }
+        boolean isLogin = k3connection.getConnection();
+        if (!isLogin) {
+            return ReturnDate.error(500, "服务异常,请稍后");
+        }
+        String content = "{\"FormId\":\"YF_SAL_LineDownRegister\",\"FieldKeys\":\"FCustId.FNAME,F_YF_WRITEOFFSTATUS,FID\",\"FilterString\":\"F_YF_PromoCode='" + couponCode + "'\",\"OrderString\":\"\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
+        String resultStatus = InvokeHelper.ExecuteBillQuery("YF_SAL_LineDownRegister", content, POST_K3ClOUDRL);
+
+        if ("[[[]]]".equals(resultStatus) || "[]".equals(resultStatus)) {
+            return ReturnDate.success(10012, "不存在优惠码", null);
+        }
+        JSONArray jsonArray = JSONArray.parseArray(resultStatus);
+        JSONArray json = JSONArray.parseArray(jsonArray.get(0).toString());
+        // 核销状态
+        String writeoffStatus = json.get(1).toString();
+        // 如果已核销
+        if ("1".equals(writeoffStatus)) {
+            return ReturnDate.success(10010, "该优惠码已使用", null);
+        } else {
+            AmOrder amOrder = new AmOrder();
+            amOrder.setCouponCode(couponCode);
+            List<AmOrder> amOrderList = amOrderService.findList(amOrder);
+            if (ListUtils.isNotEmpty(amOrderList)) {
+                return ReturnDate.success(10011, "请核对优惠码并且删除已使用该优惠码的历史订单", null);
+            } else {
+                return ReturnDate.success();
+            }
+        }
+    }
+
+    /**
+     * 获取保存信息
+     * @param buffer
+     * @return
+     */
+    public boolean isSuccess (StringBuffer buffer) {
+        JSONObject json = JSON.parseObject(buffer.toString());
+        String responseStatus = json.getJSONObject("Result").get("ResponseStatus").toString();
+        JSONObject json1 = JSON.parseObject(responseStatus);
+        boolean isSuccess = Boolean.parseBoolean(json1.get("IsSuccess").toString());
+        return isSuccess;
+    }
+
+
 }

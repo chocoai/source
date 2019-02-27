@@ -28,7 +28,7 @@ public interface ProductCategoryDao extends TreeDao<ProductCategory> {
     /**
      * 二级分类查询
      */
-    @Select("select * from tb_product where procategory_code=#{arg0} AND approve_status='onsale' AND nick != 'saladliang' limit #{arg1},#{arg2}")
+    @Select("select a.*,MIN(b.distribution_price) lowerDistrPrice from tb_product a LEFT JOIN tb_sku b ON a.num_iid=b.num_iid where procategory_code=#{arg0} AND approve_status='onsale' AND nick != 'saladliang' GROUP BY a.num_iid limit #{arg1},#{arg2}")
     List<TbProduct> findProductListByCode(String code, int start, int end);
     /**
      * 二级分类查询总数

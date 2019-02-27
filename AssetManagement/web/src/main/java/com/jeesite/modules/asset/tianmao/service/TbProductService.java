@@ -3,14 +3,23 @@
  */
 package com.jeesite.modules.asset.tianmao.service;
 
+import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.entity.Page;
 import com.jeesite.common.service.CrudService;
-import com.jeesite.modules.asset.product.dao.ProductCategoryDao;
 import com.jeesite.modules.asset.tianmao.dao.TbProductDao;
+import com.jeesite.modules.asset.tianmao.dao.TbSkuDao;
 import com.jeesite.modules.asset.tianmao.entity.TbProduct;
+import com.jeesite.modules.asset.tianmao.entity.TbSku;
+import com.jeesite.modules.distribution.pricelog.dao.DistrPriceLogDao;
+import com.jeesite.modules.distribution.pricelog.entity.DistrPriceLog;
+import com.jeesite.modules.sys.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 /**
  * 同步淘宝商品列表Service
@@ -22,7 +31,9 @@ import org.springframework.transaction.annotation.Transactional;
 public class TbProductService extends CrudService<TbProductDao, TbProduct> {
 	@Autowired
 	private TbProductDao dao;
-	
+
+	@Autowired
+	private TbSkuDao tbSkuDao;
 	/**
 	 * 获取单条数据
 	 * @param tbProduct
@@ -44,7 +55,9 @@ public class TbProductService extends CrudService<TbProductDao, TbProduct> {
 		page.setPageSize(50);
 		return super.findPage(page, tbProduct);
 	}
-	
+
+	@Autowired
+	private DistrPriceLogDao distrPriceLogDao;
 	/**
 	 * 保存数据（插入或更新）
 	 * @param tbProduct
@@ -53,6 +66,43 @@ public class TbProductService extends CrudService<TbProductDao, TbProduct> {
 	@Transactional(readOnly=false)
 	public void save(TbProduct tbProduct) {
 		super.save(tbProduct);
+		List<TbSku> tbSkuList = ListUtils.newArrayList();
+		List<DistrPriceLog> logList = ListUtils.newArrayList();
+		for (TbSku tbSku : tbProduct.getTbSkuList()) {
+			if (new BigDecimal(0).compareTo(new BigDecimal(tbSku.getDistributionPrice())) != 0) {
+				tbSkuList.add(tbSku);
+			}
+			// 如果原分销价和页面上更新后的分销价不一样 添加日志记录
+			if (new BigDecimal(tbSku.getDistributionPrice()).compareTo(new BigDecimal(tbSku.getHidePrice())) != 0) {
+				DistrPriceLog distrPriceLog = new DistrPriceLog();
+				// 商品id
+				distrPriceLog.setNumIid(tbProduct.getNumIid());
+				// 商品名称
+				distrPriceLog.setGoodsName(tbProduct.getTitle());
+				// 原分销价
+				distrPriceLog.setOriginalPrice(tbSku.getHidePrice());
+				// 现价
+				distrPriceLog.setCurrentPrice(tbSku.getDistributionPrice());
+				// sku
+				distrPriceLog.setSku(tbSku.getOuterId());
+				// skuid
+				distrPriceLog.setSkuId(String.valueOf(tbSku.getSkuId()));
+				// 更新时间
+				distrPriceLog.setTime(new Date());
+				// 更新人
+				distrPriceLog.setUpdateBy(UserUtils.getUser().getUserName());
+				distrPriceLog.setIsNewRecord(true);
+				logList.add(distrPriceLog);
+			}
+		}
+		// 根据skuId更新分销价
+		if (ListUtils.isNotEmpty(tbSkuList)) {
+			tbSkuDao.updateDistributionPrice(tbSkuList);
+		}
+		// 添加日志
+		if (ListUtils.isNotEmpty(logList)) {
+			distrPriceLogDao.insertBatch(logList);
+		}
 	}
 	
 	/**

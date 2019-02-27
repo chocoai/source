@@ -1,54 +1,205 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jeesite.modules.asset.ding.dao.DingDepartmentDao">
-	
-	<!-- 查询数据
-	<select id="findList" resultType="DingDepartment">
-		SELECT ${sqlMap.column.toSql()}
-		FROM ${sqlMap.table.toSql()}
-		<where>
-			${sqlMap.where.toSql()}
-		</where>
-		ORDER BY ${sqlMap.order.toSql()}
-	</select> -->
 
-	<!--
+    <!-- 查询数据
+    <select id="findList" resultType="DingDepartment">
+        SELECT ${sqlMap.column.toSql()}
+        FROM ${sqlMap.table.toSql()}
+        <where>
+            ${sqlMap.where.toSql()}
+        </where>
+        ORDER BY ${sqlMap.order.toSql()}
+    </select> -->
 
-	<insert id="syncAllDepartment" keyProperty="departmentId" parameterType="java.util.List">
-		        insert into js_ding_department (
-		        department_id,
-		        name,
-		        parentid,
-		        order,
-		        create_dept_group,
-		        auto_add_user,
-		        dept_hiding,
-		        dept_permits,
-		        user_permits,
-		        outer_dept,
-		        outer_permit_pepts,
-		        outer_permit_users,
-		        org_dept_owner,
-		        dept_manager_userid_list,
-		        source_identifier,
-		        group_contain_subdept,
-		        parent_code,
-		        parent_codes,
-		        user_count
 
-		)
-		        values
-		        <foreach collection="list" item="DingDepartment" separator=","> 
-		            (#{cmsRoleMenu.roleId,jdbcType=BIGINT},
-		            #{cmsRoleMenu.roleType,jdbcType=VARCHAR},
-		            #{cmsRoleMenu.menuId,jdbcType=BIGINT},
-		            #{cmsRoleMenu.buttonId,jdbcType=VARCHAR},
-		            #{cmsRoleMenu.createdUser,jdbcType=VARCHAR},
-		            #{cmsRoleMenu.createdTime,jdbcType=TIMESTAMP},
-		            #{cmsRoleMenu.updatedTime,jdbcType=TIMESTAMP},
-		            #{cmsRoleMenu.remark,jdbcType=VARCHAR})
-		        </foreach>
-		    </insert>
+    <insert id="insertAllDepartment" parameterType="java.util.List" keyProperty="departmentId" useGeneratedKeys="false">
+        INSERT INTO js_ding_department
+        (department_id,
+        `name`,
+        parentid,
+        `order`,
+        create_dept_group,
+        auto_add_user,
+        dept_hiding,
+        dept_permits,
+        user_permits,
+        outer_dept,
+        outer_permit_pepts,
+        outer_permit_users,
+        org_dept_owner,
+        dept_manager_userid_list,
+        source_identifier,
+        group_contain_subdept)
+        VALUES
+        <foreach collection="list" item="dingDepartment" index="index" separator=",">
+          (#{dingDepartment.departmentId,jdbcType=VARCHAR},
+            #{dingDepartment.name,jdbcType=VARCHAR},
+            #{dingDepartment.parentid,jdbcType=VARCHAR},
+            #{dingDepartment.order,jdbcType=VARCHAR},
+            #{dingDepartment.createDeptGroup,jdbcType=VARCHAR},
+            #{dingDepartment.autoAddUser,jdbcType=VARCHAR},
+            #{dingDepartment.deptHiding,jdbcType=VARCHAR},
+            #{dingDepartment.deptPermits,jdbcType=VARCHAR},
+            #{dingDepartment.userPermits,jdbcType=VARCHAR},
+            #{dingDepartment.outerDept,jdbcType=VARCHAR},
+            #{dingDepartment.outerPermitPepts,jdbcType=VARCHAR},
+            #{dingDepartment.outerPermitUsers,jdbcType=VARCHAR},
+            #{dingDepartment.orgDeptOwner,jdbcType=VARCHAR},
+            #{dingDepartment.deptManagerUseridList,jdbcType=VARCHAR},
+            #{dingDepartment.sourceIdentifier,jdbcType=VARCHAR},
+            #{dingDepartment.groupContainSubdept,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
 
- -->
+    <update id="updateAllDepartment" parameterType="java.util.List">
+        update js_ding_department
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="`name`=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.name!=null">
+                        when department_id = #{dept.departmentId} then #{dept.name}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="parentid=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.parentid!=null">
+                        when department_id = #{dept.departmentId} then #{dept.parentid}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="`order`=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.order!=null">
+                        when department_id = #{dept.departmentId} then #{dept.order}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="create_dept_group=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.createDeptGroup!=null">
+                        when department_id = #{dept.departmentId} then #{dept.createDeptGroup}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="auto_add_user=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.autoAddUser!=null">
+                        when department_id = #{dept.departmentId} then #{dept.autoAddUser}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="dept_hiding=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.deptHiding!=null">
+                        when department_id = #{dept.departmentId} then #{dept.deptHiding}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="dept_permits=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.deptPermits!=null">
+                        when department_id = #{dept.departmentId} then #{dept.deptPermits}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="user_permits=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.userPermits!=null">
+                        when department_id = #{dept.departmentId} then #{dept.userPermits}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="outer_dept=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.outerDept!=null">
+                        when department_id = #{dept.departmentId} then #{dept.outerDept}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="outer_permit_pepts=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.outerPermitPepts!=null">
+                        when department_id = #{dept.departmentId} then #{dept.outerPermitPepts}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="outer_permit_users=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.outerPermitUsers!=null">
+                        when department_id = #{dept.departmentId} then #{dept.outerPermitUsers}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="org_dept_owner=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.orgDeptOwner!=null">
+                        when department_id = #{dept.departmentId} then #{dept.orgDeptOwner}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="dept_manager_userid_list=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.deptManagerUseridList!=null">
+                        when department_id = #{dept.departmentId} then #{dept.deptManagerUseridList}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="source_identifier=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.sourceIdentifier!=null">
+                        when department_id = #{dept.departmentId} then #{dept.sourceIdentifier}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="group_contain_subdept=case" suffix="end,">
+                <foreach collection="list" item="dept" index="index">
+                    <if test="dept.groupContainSubdept!=null">
+                        when department_id = #{dept.departmentId} then #{dept.groupContainSubdept}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+            <foreach collection="list" separator="or" item="dept" index="index">
+                department_id = #{dept.departmentId}
+            </foreach>
+    </update>
+
+    <update id="updateBatch" parameterType="java.util.List">
+
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            UPDATE js_ding_department
+            <set>
+                `name` = #{item.name}, `parentid` = #{item.parentid}, `order` = #{item.order}, `create_dept_group` = #{item.createDeptGroup},
+                `auto_add_user` = #{item.autoAddUser}, `dept_hiding` = #{item.deptHiding}, `dept_permits` = #{item.deptPermits},
+                `user_permits` = #{item.userPermits}, `outer_dept` = #{item.outerDept},
+                `outer_permit_pepts` = #{item.outerPermitPepts}, `outer_permit_users` = #{item.outerPermitUsers}, `org_dept_owner` = #{item.orgDeptOwner},
+                `dept_manager_userid_list` = #{item.deptManagerUseridList}, `source_identifier` = #{item.sourceIdentifier},
+                `group_contain_subdept` = #{item.groupContainSubdept}, `parent_code` = #{item.parentCode},
+                `parent_codes` = #{item.parentCodes}, `tree_sort` = #{item.treeSort}, `tree_sorts` = #{item.treeSorts}, `tree_leaf` = #{item.treeLeaf},
+                `tree_level` = #{item.treeLevel}, `tree_names` = #{item.treeNames}, `user_count` = #{item.userCount}
+            </set>
+            WHERE `department_id` = #{item.departmentId}
+        </foreach>
+
+    </update>
+
+    <delete id="deleteBatch" parameterType="java.util.List">
+
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            DELETE FROM js_ding_department WHERE `department_id` = #{item}
+        </foreach>
+
+    </delete>
+
+    <update id="updateBatchUserCount" parameterType="java.util.List">
+
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            UPDATE js_ding_department SET `user_count` = #{item.userCount} WHERE `department_id` = #{item.departmentId}
+        </foreach>
+
+    </update>
+
 </mapper>

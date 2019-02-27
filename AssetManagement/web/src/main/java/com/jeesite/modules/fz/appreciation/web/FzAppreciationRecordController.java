@@ -7,6 +7,7 @@ import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.config.Global;
 import com.jeesite.common.entity.Page;
 import com.jeesite.common.lang.DateUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.utils.excel.ExcelExport;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.asset.ding.entity.*;
@@ -20,19 +21,19 @@ import com.jeesite.modules.asset.util.TimeUtils;
 import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
 import com.jeesite.modules.asset.util.service.AmSeqService;
-import com.jeesite.modules.fz.appreciation.entity.FzAppreciationFollow;
-import com.jeesite.modules.fz.appreciation.entity.FzAppreciationRecord;
-import com.jeesite.modules.fz.appreciation.entity.FzAppreciationType;
+import com.jeesite.modules.fz.appreciation.entity.*;
 import com.jeesite.modules.fz.appreciation.returnData.LeaderboardData;
 import com.jeesite.modules.fz.appreciation.service.FzAppreciationRecordService;
 import com.jeesite.modules.fz.appreciation.service.FzAppreciationTypeService;
 import com.jeesite.modules.fz.config.AccessLimit;
 import com.jeesite.modules.fz.config.IsFileter;
+import com.jeesite.modules.fz.expendrecord.entity.FzExpenditureRecord;
+import com.jeesite.modules.fz.expendrecord.service.FzExpenditureRecordService;
 import com.jeesite.modules.fz.utils.common.Variable;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -66,7 +67,7 @@ public class FzAppreciationRecordController extends BaseController {
     @Autowired
     private AmFileUploadService amFileUploadService;
     @Resource
-    private RedisTemplate<String, List> redisTemplate;
+    private RedisUtil<String, List> redisList;
     @Autowired
     private FzAppreciationTypeService appreciationTypeService;
     @Autowired
@@ -541,7 +542,7 @@ public class FzAppreciationRecordController extends BaseController {
             List<DingDepartment> presenterList = dingUserService.getDepartName(presenter);
             Map<String, String> presenterMap = new HashMap<>();
             presenterMap = getMap(presenterList, presenterMap);
-            List<DingUser> dingUserList = redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+            List<DingUser> dingUserList = redisList.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
             for (int i = 0; i < page.getList().size(); i++) {
                 FzAppreciationRecord  fzAppreciationRecord1 = page.getList().get(i);
                 fzAppreciationRecord1.setPraiserDepartment(praiserMap.get(page.getList().get(i).getPraiserId()));
@@ -615,9 +616,9 @@ public class FzAppreciationRecordController extends BaseController {
             appreciationDataList = fzAppreciationRecordService.getExportData1();
             fileName="赞赏数量和跟赞数量信息";
         }
-        List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+        List<DingUserDepartment> dingUserDepartmentList = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
         // 获取缓存中所有部门
-        List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+        List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
         for (ExportAppreciationData exportAppreciationData : appreciationDataList) {
 
             DingUser dingUser=new DingUser();
@@ -713,5 +714,32 @@ public class FzAppreciationRecordController extends BaseController {
             e.printStackTrace();
             return ReturnDate.error(-100,e.getMessage());
         }
+    }
+
+    @Autowired
+    private FzExpenditureRecordService fzExpenditureRecordService;
+
+    /**
+     * 梵赞我的支出记录
+     * @param fzExpenditureRecord
+     * @param request
+     * @param response
+     * @return
+     */
+    @IsFileter(isFile="true")
+    @RequestMapping(value = "expenditureRecord")
+    @ResponseBody
+    public Page<FzExpenditureRecord> expenditureRecord(FzExpenditureRecord fzExpenditureRecord, HttpServletRequest request, HttpServletResponse response) {
+        Page<FzExpenditureRecord> page = fzExpenditureRecordService.findPage(new Page<FzExpenditureRecord>(request, response), fzExpenditureRecord);
+        return page;
+    }
+
+
+    @IsFileter(isFile="true")
+    @RequestMapping(value = "accountRecord")
+    @ResponseBody
+    public ReturnInfo accountRecord(FzAccountRecord fzAccountRecord, HttpServletRequest request, HttpServletResponse response) {
+        FzGoldRecord fzGoldRecord = fzAppreciationRecordService.getAccountRecord(new Page<FzAccountRecord>(request, response), fzAccountRecord);
+        return ReturnDate.success(fzGoldRecord);
     }
 }

@@ -15,13 +15,19 @@
         a.quantity as quantity,
         a.price as price,
         a.spec as spec,
-        a.sku_id skuId
+        a.sku_id skuId,
+        b.sku_url skuUrl,
+        a.document_code documentCode
     FROM
 	   js_am_order_detail a
     LEFT JOIN tb_sku b ON a.sku_id = b.sku_id
     LEFT JOIN tb_product c ON c.num_iid = b.num_iid
-    WHERE
-	  a.document_code = #{documentCode}
+        <where>
+            a.document_code in
+            <foreach collection="list" item="item" index="index" open="(" close=")" separator=",">
+            #{item}
+            </foreach>
+        </where>
     </select>
 
     <select id="findList" resultType="GuideOrder">

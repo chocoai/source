@@ -7,7 +7,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.lang.DateUtils;
 import com.jeesite.modules.asset.fgcqualitycheck.common.Convert;
@@ -31,8 +30,8 @@ import com.jeesite.common.entity.Page;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.modules.asset.tianmao.entity.TbSku;
 import com.jeesite.modules.asset.tianmao.service.TbSkuService;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.text.DecimalFormat;
 import java.util.List;
 
 /**
@@ -157,8 +156,12 @@ public class TbSkuController extends BaseController {
     @RequiresPermissions("tianmao:tbSku:batchPrint")
 	@RequestMapping(value = "print",method = RequestMethod.POST)
 	public String print(@RequestBody String request, Model model) {
+		System.out.println(request);
 		String []req = request.split("\r\n");
-		String[] outerIds = req[1].replace("arrzzz=","").split(",");
+		String outerIds = req[1].replace("arrzzz=","");
+		outerIds = "[" + outerIds + "]";
+		JSONArray skuArr = JSONArray.parseArray(outerIds);
+		List<TbSku> tbSkuList = skuArr.toJavaList(TbSku.class);
 		String type = req[0].replace("type=", "");
 		String materialFormId = "BD_MATERIAL";
 		String priceFormId = "BD_SAL_PriceList";
@@ -174,14 +177,14 @@ public class TbSkuController extends BaseController {
 		} else {
 			URL = K3Config.K3ClOUDRL;
 		}
-		for (int i =0; i< outerIds.length; i++) {
+		for (TbSku tbSku : tbSkuList) {
 			String result = null;
 			String resultPrice = null;
-			String outerId = outerIds[i];
+			String outerId = tbSku.getOuterId();
 			String quoteDate = DateUtils.getDateTime();
 
 				String content = "{\"FormId\":\"BD_MATERIAL\",\"FieldKeys\":\"FNUMBER,F_YF_UnderLineName,F_YF_EnglishName,F_YF_PlaceOfOrigin,FLENGTH,FWIDTH,FHEIGHT,F_YF_UnderLineProductColor,F_YF_Specifications.FNAME,FImageFileServer1,F_YF_BaseProperty,F_YF_PROPVALUE\",\"FilterString\":\"FNUMBER='"+outerId+"'\",\"OrderString\":\"\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
-				String content1 = "{\"FormId\":\"BD_SAL_PriceList\",\"FieldKeys\":\"FPrice\",\"FilterString\":\"FMaterialId.FNumber='"+ outerId +"' and F_YF_Shop.FNAME='优梵艺术旗舰店' AND F_YF_EntryExpiryDateLong>'"+ quoteDate +"' AND F_YF_EntryEffectiveDateLong<'"+ quoteDate +"'AND FRowAuditStatus='A' AND FEntryForbidStatus='A'\",\"OrderString\":\"\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
+//				String content1 = "{\"FormId\":\"BD_SAL_PriceList\",\"FieldKeys\":\"FPrice\",\"FilterString\":\"FMaterialId.FNumber='"+ outerId +"' and F_YF_Shop.FNAME='优梵艺术旗舰店' AND F_YF_EntryExpiryDateLong>'"+ quoteDate +"' AND F_YF_EntryEffectiveDateLong<'"+ quoteDate +"'AND FRowAuditStatus='A' AND FEntryForbidStatus='A'\",\"OrderString\":\"\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
 
 				try {
 					result = InvokeHelper.ExecuteBillQuery(materialFormId, content, POST_K3ClOUDRL);
@@ -191,12 +194,7 @@ public class TbSkuController extends BaseController {
 						continue;
 					}
 					GoodsTag goodsTag = assignment(result);
-					resultPrice = InvokeHelper.ExecuteBillQuery(priceFormId, content1, POST_K3ClOUDRL);
-					if (resultPrice != null && !"[]".equals(resultPrice)) {
-						JSONArray jsonArray = JSONObject.parseArray(resultPrice);
-						String realPrice = jsonArray.getJSONArray(0).get(0).toString();
-						goodsTag.setMoney(removeTrim(realPrice));
-					}
+					goodsTag.setMoney(tbSku.getRealPrice());
 					goodsTagList.add(goodsTag);
 				} catch (Exception e) {
 					return renderResult(Global.FALSE, "服务异常，请稍后");
@@ -288,4 +286,20 @@ public class TbSkuController extends BaseController {
 		return str;
 	}
 
+
+	/**
+	 * 导入用户数据
+	 */
+	@ResponseBody
+	@RequiresPermissions("tianmao:tbSku:import")
+	@PostMapping(value = "importData")
+	public String importData(MultipartFile file, String updateSupport) {
+		try {
+			boolean isUpdateSupport = Global.YES.equals(updateSupport);
+			String message = tbSkuService.importData(file, isUpdateSupport);
+			return renderResult(Global.TRUE, "posfull:"+message);
+		} catch (Exception ex) {
+			return renderResult(Global.FALSE, "posfull:"+ex.getMessage());
+		}
+	}
 }

@@ -17,10 +17,7 @@ import com.jeesite.modules.asset.k3webapi.K3connection;
 import com.jeesite.modules.asset.order.service.AmOrderLogService;
 import com.jeesite.modules.asset.scheduledtask.K3Config;
 import com.jeesite.modules.asset.tianmao.dao.DaoGouDAO;
-import com.jeesite.modules.asset.tianmao.dao.TbSkuDao;
-import com.jeesite.modules.asset.tianmao.dao.TbSkuK3NameDao;
 import com.jeesite.modules.asset.tianmao.entity.*;
-import com.jeesite.modules.asset.tianmao.service.TbLogService;
 import com.jeesite.modules.asset.tianmao.service.TbProductService;
 import com.jeesite.modules.asset.tianmao.service.TbSkuService;
 import com.jeesite.modules.asset.tianmao.service.TbTianmaoItemsService;
@@ -28,6 +25,7 @@ import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
 import com.taobao.api.domain.Item;
 import com.taobao.api.domain.ItemImg;
+import org.apache.shiro.authz.annotation.Logical;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,6 +107,9 @@ public class TbProductController extends BaseController {
 		tbProduct.setApproveStatus(approveStatus);
 		TbTianmaoItems tbTianmaoItems = tbTianmaoItemsService.get(tbProduct.getNumIid());
 		List<TbSku> tbSkuList = tbSkuService.getSku(Long.valueOf(tbProduct.getNumIid()));
+		for (TbSku tbSku : tbSkuList) {
+            tbSku.setHidePrice(tbSku.getDistributionPrice());
+        }
 		tbProduct.setTbSkuList(tbSkuList);
 		//tbProduct.setProcategoryCode(tbProduct1.getProcategoryCode());
 		//tbProduct.setProseriesCode(tbProduct1.getProseriesCode());
@@ -128,99 +129,13 @@ public class TbProductController extends BaseController {
 	@PostMapping(value = "save")
 	@ResponseBody
 	public String save(@Validated TbProduct tbProduct) {
-		String str[]=tbProduct.getNumIid().split(",");
-		tbProductService.updateProductCategory(tbProduct.getProcategoryCode(),tbProduct.getProseriesCode(),str[0]);
-		return renderResult(Global.TRUE, "保存同步淘宝商品列表成功！");
-	}
-/*	public String save(@Validated TbProduct tbProduct) {
-        if("在售".equals(tbProduct.getApproveStatus())){
-            tbProduct.setApproveStatus("onsale");
-        }else {
-            tbProduct.setApproveStatus("instock");
-        }
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        String time = sdf.format(new Date());
-		User user = UserUtils.getUser();
-		System.out.println("获取用户名："+ user.getUserName());
-		List<TbSku> tbSkuList = tbProduct.getTbSkuList();
-		//循环遍历skuList并对比sku的字段值
-		for(TbSku tbSku: tbSkuList){
-			String outerId = tbSku.getOuterId();
-			//K3物料名称，是否更新
-            TbSkuK3Name tbSkuK3Name = tbSkuK3NameDao.selectByOuterId(outerId);
-			if( tbSkuK3Name!=null && !tbSkuK3Name.getSkuName().equals(tbSku.getSkuName())){
-                LOGGER.info("K3物料名称原值【"+tbSkuK3Name.getSkuName()+"】,新值【"+tbSku.getSkuName()+"】");
-                String describe = "K3物料名称原值【"+tbSkuK3Name.getSkuName()+"】,新值【"+tbSku.getSkuName()+"】";
-                TbLog tbLog = new TbLog();
-                tbLog.setDescribe(describe);
-                tbLog.setSku(tbSku.getOuterId());
-                tbLog.setSkuId(tbSku.getSkuId().toString());
-                tbLog.setUser(user.getUserName());
-                tbLog.setType("门店下单");
-                tbLog.setTime(time);
-                tbLogService.save(tbLog);
-//                tbSkuK3NameDao.updateK3Name(outerId,tbSku.getSkuName()); //保存
-            }
-            //SKU是否更新
-            TbSku tbSku2 = tbSkuService.get(tbSku);
-            if(tbSku2!=null && !tbSku2.getOuterId().equals(tbSku.getOuterId())){
-                LOGGER.info("SKU原值【"+tbSku2.getOuterId()+"】,新值【"+tbSku.getOuterId()+"】");
-                String describe = "SKU原值【"+tbSku2.getOuterId()+"】,新值【"+tbSku.getOuterId()+"】";
-                TbLog tbLog = new TbLog();
-                tbLog.setDescribe(describe);
-                tbLog.setSku(tbSku.getOuterId());
-                tbLog.setSkuId(tbSku.getSkuId().toString());
-                tbLog.setUser(user.getUserName());
-                tbLog.setType("门店下单");
-                tbLog.setTime(time);
-                tbLogService.save(tbLog);
-            }
-            //标准售价是否更新
-            assert tbSku2 != null;
-            if(!tbSku2.getPrice().equals(tbSku.getPrice())){
-                LOGGER.info("标准售价原值【"+tbSku2.getPrice()+"】,新值【"+tbSku.getPrice()+"】");
-                String describe = "标准售价原值【"+tbSku2.getPrice()+"】,新值【"+tbSku.getPrice()+"】";
-                TbLog tbLog = new TbLog();
-                tbLog.setDescribe(describe);
-                tbLog.setSku(tbSku.getOuterId());
-                tbLog.setSkuId(tbSku.getSkuId().toString());
-                tbLog.setUser(user.getUserName());
-                tbLog.setType("门店下单");
-                tbLog.setTime(time);
-                tbLogService.save(tbLog);
-            }
-            //真实售价是否更新
-            if(!tbSku2.getRealPrice().equals(tbSku.getRealPrice())){
-                LOGGER.info("真实售价原值【"+tbSku2.getRealPrice()+"】,新值【"+tbSku.getRealPrice()+"】");
-                String describe = "真实售价原值【"+tbSku2.getRealPrice()+"】,新值【"+tbSku.getRealPrice()+"】";
-                TbLog tbLog = new TbLog();
-                tbLog.setDescribe(describe);
-                tbLog.setSku(tbSku.getOuterId());
-                tbLog.setSkuId(tbSku.getSkuId().toString());
-                tbLog.setUser(user.getUserName());
-                tbLog.setType("门店下单");
-                tbLog.setTime(time);
-                tbLogService.save(tbLog);
-            }
-            //商品规格是否更新
-            if (!tbSku2.getPropertiesName().equals(tbSku.getPropertiesName())){
-                LOGGER.info("商品规格原值【"+tbSku2.getPropertiesName()+"】,新值【"+tbSku.getPropertiesName()+"】");
-                String describe = "商品规格原值【"+tbSku2.getPropertiesName()+"】,新值【"+tbSku.getPropertiesName()+"】";
-                TbLog tbLog = new TbLog();
-                tbLog.setDescribe(describe);
-                tbLog.setSku(tbSku.getOuterId());
-                tbLog.setSkuId(tbSku.getSkuId().toString());
-                tbLog.setUser(user.getUserName());
-                tbLog.setType("门店下单");
-                tbLog.setTime(time);
-                tbLogService.save(tbLog);
-            }
-		}
-
+		tbProduct.setApproveStatus(tbProduct.getApproveStatus().equals("在售") ? "onsale":"instock");
+//		String str[]=tbProduct.getNumIid().split(",");
+//		tbProductService.updateProductCategory(tbProduct.getProcategoryCode(),tbProduct.getProseriesCode(),str[0]);
 		tbProductService.save(tbProduct);
 		return renderResult(Global.TRUE, "保存同步淘宝商品列表成功！");
-	}*/
-	
+	}
+
 	/**
 	 * 停用同步淘宝商品列表
 	 */
@@ -251,7 +166,7 @@ public class TbProductController extends BaseController {
     /**
      * 查看编辑表单
      */
-    @RequiresPermissions("tianmao:tbProduct:view")
+    @RequiresPermissions(value = {"tianmao:tbProduct:view", "distribution:api"}, logical = Logical.OR)
     @RequestMapping(value = "formDaoGou")
     public Map formDaoGou(TbProduct tbProduct) {
         String approveStatus = tbProduct.getApproveStatus();
@@ -263,17 +178,21 @@ public class TbProductController extends BaseController {
             }
         }
         tbProduct.setApproveStatus(approveStatus);
+
+        // 分销的商品主图
+        String distrPicUrl = tbTianmaoItemsService.getLastImg(tbProduct.getNumIid());
+		tbProduct.setDistrPicUrl(distrPicUrl);
         TbTianmaoItems tbTianmaoItems = tbTianmaoItemsService.get(tbProduct.getNumIid());
          List<TbSku> tbSkuList = daoGouDAO.getSkuList(tbProduct.getNumIid());
         for (TbSku tbSku : tbSkuList) {
         	if (tbSku.getPreSale() == null) {
         		tbSku.setPreSale("");
 			}
+			if (StringUtils.isEmpty(tbSku.getSkuUrl())) {
+				tbSku.setSkuUrl(distrPicUrl);
+			}
 		}
         tbProduct.setTbSkuList(tbSkuList);
-//        String text = JSONObject.toJSONString(tbProduct);
-//        System.out.println(text);
-//        JSONObject jsonTbProduct= JSONObject.parseObject(text);
         String text = JsonMapper.toJson(tbProduct);
         JSONObject jsonTbProduct= JSONObject.parseObject(text);
         Item item= JSONObject.parseObject(tbTianmaoItems.getBody(),Item.class);
@@ -284,7 +203,6 @@ public class TbProductController extends BaseController {
 
         Map<String,Object> dataMap = new HashMap<>(20);
         dataMap.put("item",jsonTbProduct);
-//        dataMap.put("item",item);
 
         Map<String,Object> map1 = new HashMap<>(20);
         map1.put("code",200);

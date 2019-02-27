@@ -24,7 +24,7 @@ jdbc:
   # Mysql 数据库配置
   type: mysql
   driver: com.mysql.jdbc.Driver
-  url: jdbc:mysql://10.1.10.51:3307/jeesite?useSSL=true&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
+  url: jdbc:mysql://10.0.35.181:3307/jeesite?useSSL=true&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true
   username: root
   password: 123456
   testSql: SELECT 1
@@ -118,7 +118,7 @@ redis:
 #  
   # Redis 连接池配置
   pool:
-    maxIdle: 3
+    maxIdle: 20
     maxTotal: 20
 #
 #  # 是否启用Redis系统缓存及会话（专业版）
@@ -475,9 +475,9 @@ file:
 #pwd: iiii.1234
 #lang: 2052
 #测试库
-POST_K3ClOUDRL: http://59.38.255.210:33881/k3cloud/
-dbId: 5ab0d51363d36b
-uid: denise
+POST_K3ClOUDRL: http://59.38.255.210:33881/K3Cloud/
+dbId: 5c1b969fc7cc12
+uid: denisetan
 pwd: uuuu.6668
 lang: 2052
 #测试库
@@ -492,8 +492,8 @@ SAVE_IMG_PREFIX: D:/img/
 RM_PREFIX: D:\
 
 #提交k3接口地址测试库
-K3URL: http://10.1.10.51:8085/api/k3api/GetK3Trade
-K3NOREALURL: http://10.1.10.51:8085/api/k3api/CreateK3Trade
+K3URL: http://10.0.35.181:8085/api/k3api/GetK3Trade
+K3NOREALURL: http://10.0.35.181:8085/api/k3api/CreateK3Trade
 #提交k3接口地址正式库
 RDSORDER: https://sms.uvanart.com/api/k3api/GetTradeNicks
 #K3URL: https://sms.uvanart.com/api/k3api/GetK3Trade
@@ -550,10 +550,10 @@ spring:
 #    port: 6379
 #    password:
   rabbitmq:
-    host: 10.1.10.51
+    host: 127.0.0.1
     port:  5672
-    username: admin
-    password: admin
+    username: guest
+    password: guest
 
 
 #梵赞排行榜 赞赏大厅 稳定版
@@ -587,6 +587,8 @@ fzMsgP1: fzMsg1
 fzAppreciationP: fzAppreciationRecordMsg1
 fzNeigouLoginLogP: fzNeigouLoginLog
 fzNeigouOrderLogP: fzNeigouOrderLog
+#梵钻支出
+fzExpendRecordP: fzExpendRecord
 
 
 #消费端
@@ -597,12 +599,13 @@ fzMsgC1: fzMsg1
 fzAppreciationC: fzAppreciationRecordMsg1
 fzNeigouLoginLogC: fzNeigouLoginLog
 fzNeigouOrderLogC: fzNeigouOrderLog
+fzExpendRecordC: fzExpendRecord
 
 #排行榜表达式 测试库用
 leaderboardCron: 0/30 * * * * ?
 userCron: 0 0/10 * * * ?
 
-jobGroups: fzGroup,fgcGroup,rookieGroup,skuGroup
+jobGroups: fzGroup,fgcGroup,rookieGroup,skuGroup,SyncGroup
 
 neigou:
   #内购获取access_token,不分正式测试
@@ -626,6 +629,8 @@ neigou:
   surl: http://life.test.neigou.com
   #内购联合登陆失败跳转地址,测试
   furl: http://uvh5.uvanart.com/likeApp2/index.html
+  #内购订单接口查询,测试
+  order_url: http://openapi.test.neigou.com/ChannelInterop/V1/Standard/Order/GetOrderList
 
   #正式的
   #client_id: c7a17bfd58554f783ece3680ee7f805a
@@ -642,6 +647,21 @@ neigou:
   #furl: https://uvanhd.uvanart.com/likeApphttps/index.html
   #内购联合登陆失败跳转地址,正式
   #surl: http://life.neigou.com
+  #内购订单接口查询,正式
+  #order_url: https://openapi.neigou.com/ChannelInterop/V1/Standard/Order/GetOrderList
 
+#梵店商品评价接口
+#测试
+evaluate: https://wxapp.uvanart.com/lr/s2bapi/getproductrates?tmallnumiid=
+#正式
+#evaluate: https://s2bapi.uvanart.com/lr/s2bapi/getproductrates?tmallnumiid=
 
+videoPlatform:
+  push_timespan: 5000
+  customer_left_timespan: 10000
+faceplus:
+  api_key: "L8ENaLyQ3YyGuLAmEoL_wgDONxyapy7r"
+  api_secret: "J-RrhP_kmM7xkuAcAOCJPzrhhbYnfr0K"
+  outer_id: "UserID"
+  match_confidence: 90
 

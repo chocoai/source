@@ -36,6 +36,31 @@ public class GuideGoods {
      */
     private String skuId;
 
+    /**
+     * sku图片
+     */
+    private String skuUrl;
+    /**
+     * 订单号
+     */
+    private String documentCode;
+
+    public String getDocumentCode() {
+        return documentCode;
+    }
+
+    public void setDocumentCode(String documentCode) {
+        this.documentCode = documentCode;
+    }
+
+    public String getSkuUrl() {
+        return skuUrl;
+    }
+
+    public void setSkuUrl(String skuUrl) {
+        this.skuUrl = skuUrl;
+    }
+
     public String getSkuId() {
         return skuId;
     }

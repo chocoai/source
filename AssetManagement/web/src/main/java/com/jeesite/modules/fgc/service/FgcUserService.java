@@ -17,11 +17,10 @@ import com.jeesite.modules.asset.wechat.util.FgcLogUtil;
 import com.jeesite.modules.fgc.dao.FgcUserDao;
 import com.jeesite.modules.fgc.dao.UserDataInfo;
 import com.jeesite.modules.fgc.entity.FgcUser;
-import com.jeesite.modules.fgc.token.TokenProccessor;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +43,7 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
     @Value("${FGC_EXPRIED_TIME}")
     Long FGC_EXPRIED_TIME;  //token过期时间
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtil<String, String> redisString;
     @Value("${SYSNOTIFICATION}")
     String SYSNOTIFICATION;  //登录端口
     /**
@@ -129,7 +128,7 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
             return ReturnDate.error(10001,"登陆失败,微信code错误", "");
         }
         //得到缓存的用户信息
-        String dataJson = redisTemplate.opsForValue().get("uvanfactory_user_" + openid);
+        String dataJson = redisString.get("uvanfactory_user_" + openid);
         //缓存不存在，就判断数据库中是否存在
         if (dataJson != null && dataJson.length() > 0) {
             JSONObject json1 = JSONObject.parseObject(dataJson);
@@ -150,8 +149,8 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
                 String result = isSysLogin(uName, pwd);
                 if ("true".equals(result)) {
                     response.setHeader("Token", token);
-                    redisTemplate.opsForValue().set("uvanfactory_user_" + openid, dataJson,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
-                    redisTemplate.opsForValue().set("uvanfactory_user_" + token,openid ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                    redisString.set("uvanfactory_user_" + openid, dataJson,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                    redisString.set("uvanfactory_user_" + token,openid ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
                     return ReturnDate.success(0, "登陆成功", "");
                 } else {
                     return ReturnDate.error(10001,"登陆失败，系统用户密码错误", "");
@@ -159,7 +158,7 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
             } else {
                 UserDataInfo userDataInfo= getData(user,"");
                 JSONObject jsonObject = (JSONObject) JSONObject.toJSON(userDataInfo);
-                redisTemplate.opsForValue().set("uvanfactory_user_" + openid, jsonObject.toString(),FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                redisString.set("uvanfactory_user_" + openid, jsonObject.toString(),FGC_EXPRIED_TIME,TimeUnit.SECONDS);
                 return ReturnDate.error(-300, "跳转到系统用户登录页面", "");
             }
 //            }else {
@@ -179,7 +178,7 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
 
                 UserDataInfo userDataInfo= getData(fgcUser,"");
                 JSONObject jsonObject = (JSONObject) JSONObject.toJSON(userDataInfo);
-                redisTemplate.opsForValue().set("uvanfactory_user_" + openid, jsonObject.toString(),FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                redisString.set("uvanfactory_user_" + openid, jsonObject.toString(),FGC_EXPRIED_TIME,TimeUnit.SECONDS);
                 return ReturnDate.error(-300, "跳转到系统用户登录页面", "");
             }else {
                 if ("1".equals(fgcUser.getStatus())){
@@ -196,8 +195,8 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
                     if ("true".equals(result)) {
                         UserDataInfo userDataInfo= getData(fgcUser,token);
                         JSONObject jsonObject = (JSONObject) JSONObject.toJSON(userDataInfo);
-                        redisTemplate.opsForValue().set("uvanfactory_user_" +openid ,jsonObject.toString() ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
-                        redisTemplate.opsForValue().set("uvanfactory_user_" + token,openid ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                        redisString.set("uvanfactory_user_" +openid ,jsonObject.toString() ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                        redisString.set("uvanfactory_user_" + token,openid ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
                         response.setHeader("Token", token);
                         return ReturnDate.success(0, "登陆成功", "");
                     } else {
@@ -206,7 +205,7 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
                 }else {
                     UserDataInfo userDataInfo= getData(fgcUser,"");
                     JSONObject jsonObject = (JSONObject) JSONObject.toJSON(userDataInfo);
-                    redisTemplate.opsForValue().set("uvanfactory_user_" + openid, jsonObject.toString());
+                    redisString.set("uvanfactory_user_" + openid, jsonObject.toString());
                     return ReturnDate.error(-300, "跳转到系统用户登录页面", "");
                 }
             }
@@ -268,8 +267,8 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
         fgcUser.setToken(token);
         //写入redis
         JSONObject jsonObject = (JSONObject) JSONObject.toJSON(fgcUser);
-        redisTemplate.opsForValue().set("uvanfactory_user_" + openid, token);
-        redisTemplate.opsForValue().set("uvanfactory_user_" + token, jsonObject.toString());
+        redisString.set("uvanfactory_user_" + openid, token);
+        redisString.set("uvanfactory_user_" + token, jsonObject.toString());
         String wxuser = json.get("nickname") + "," + openid;
         FgcLogUtil.insertLog(wxuser, "", "", "/fgc/wechatLogin", "微信登录", "微信登录成功");
         return ReturnDate.success(0, "微信登录成功，跳转系统用户登录界面！", token);
@@ -279,7 +278,7 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
         //保存微信信息
         this.save(wxUserInfo);
         //得到缓存的用户信息
-        String dataJson = redisTemplate.opsForValue().get("uvanfactory_user_" + openid);
+        String dataJson = redisString.get("uvanfactory_user_" + openid);
         if (dataJson != null && dataJson.length() > 0) {
             String secretKey = Global.getConfig(LOGINSUBMIT);
             String uName = DesUtils.encode(userName, secretKey);
@@ -304,8 +303,8 @@ public class FgcUserService extends CrudService<FgcUserDao, FgcUser> {
                 }
                 UserDataInfo userDataInfo= getData(user2,token);
                 JSONObject jsonObject = (JSONObject) JSONObject.toJSON(userDataInfo);
-                redisTemplate.opsForValue().set("uvanfactory_user_" +openid ,jsonObject.toString() ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
-                redisTemplate.opsForValue().set("uvanfactory_user_" + token,openid ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                redisString.set("uvanfactory_user_" +openid ,jsonObject.toString() ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
+                redisString.set("uvanfactory_user_" + token,openid ,FGC_EXPRIED_TIME,TimeUnit.SECONDS);
                 response.setHeader("token", token);
                 return ReturnDate.success(0, "登陆成功", "");
             } else {

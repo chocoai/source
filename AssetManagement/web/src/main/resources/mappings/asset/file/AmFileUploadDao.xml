@@ -32,4 +32,16 @@
 			AND a.biz_type = 'fzAppreciationRecord_image'
 		</where>
 	</select>
+
+	<select id="getImgs" resultType="AmFileUpload">
+		SELECT a.*
+		FROM js_am_file_upload a
+		<where>
+			a.biz_key in
+			<foreach collection="bizKeyList" item="item" index="index" open="(" separator="," close=")">
+				#{item}
+			</foreach>
+			AND a.biz_type = #{bizType}
+		</where>
+	</select>
 </mapper>

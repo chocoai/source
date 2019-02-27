@@ -6,12 +6,12 @@ package com.jeesite.modules.fz.report.service;
 import java.util.List;
 import java.util.Optional;
 
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
 import com.jeesite.modules.asset.ding.entity.DepartmentUtil;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.asset.ding.entity.DingUserDepartment;
 import com.jeesite.modules.fz.utils.common.Variable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +31,7 @@ import javax.annotation.Resource;
 @Transactional(readOnly=true)
 public class FzFollowReportService extends CrudService<FzFollowReportDao, FzFollowReport> {
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 	
 	/**
 	 * 获取单条数据
@@ -54,11 +54,11 @@ public class FzFollowReportService extends CrudService<FzFollowReportDao, FzFoll
 		//return super.findPage(page, fzFollowReport);
 		Page<FzFollowReport> page1 = super.findPage(page, fzFollowReport);
 		// 获取缓存中所有部门
-		List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取部门用户中间表的数据
-		List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUserDepartment> dingUserDepartmentList = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取所有用户
-		List<DingUser> dingUserList = redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUser> dingUserList = redisList.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
 		for (FzFollowReport fzFollowReport1 : page1.getList()) {
 			Optional<DingUser> optionalDingUser = dingUserList.stream().filter(s ->s.getUserid().equals(fzFollowReport1.getUserid())).findFirst();
 			if (optionalDingUser.isPresent()) {

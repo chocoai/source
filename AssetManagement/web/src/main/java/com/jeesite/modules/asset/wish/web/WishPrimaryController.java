@@ -11,6 +11,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.lang.DateUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.utils.excel.ExcelExport;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
 import com.jeesite.modules.asset.ding.entity.DingUser;
@@ -25,7 +26,7 @@ import com.jeesite.modules.sys.utils.ConfigUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -151,7 +152,7 @@ public class WishPrimaryController extends BaseController {
 		}
 	}
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 
 	/**
 	 * 初选添加选择人
@@ -175,9 +176,9 @@ public class WishPrimaryController extends BaseController {
 		}
 		if (ListUtils.isNotEmpty(wishPrimary.getWishPrimaryDetailList())) {
 			// 获取缓存中所有部门
-			List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+			List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 			// 获取部门用户中间表的数据
-			List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+			List<DingUserDepartment> dingUserDepartmentList = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
 			for (WishPrimaryDetail wishPrimaryDetail : wishPrimary.getWishPrimaryDetailList()) {
 				try {
 					// 根据userid获取部门中间表中的部门id

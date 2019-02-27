@@ -7,6 +7,8 @@ import com.jeesite.common.dao.CrudDao;
 import com.jeesite.common.mybatis.annotation.MyBatisDao;
 import com.jeesite.modules.fz.order.entity.FzNeigouOrder;
 
+import java.util.List;
+
 /**
  * 梵赞兑换订单表DAO接口
  * @author easter
@@ -14,5 +16,6 @@ import com.jeesite.modules.fz.order.entity.FzNeigouOrder;
  */
 @MyBatisDao
 public interface FzNeigouOrderDao extends CrudDao<FzNeigouOrder> {
-	
+
+    void updateBatch(List<FzNeigouOrder> list);
 }

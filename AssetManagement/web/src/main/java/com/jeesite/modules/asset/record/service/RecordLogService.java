@@ -90,7 +90,7 @@ public class RecordLogService extends CrudService<RecordLogDao, RecordLog> {
 		JSONObject jsonObject=new JSONObject();
 		RecordLog recordLog=new RecordLog();
 		recordLog.setCreateTime(new Date());
-		String accessToken= RedisHelp.redisHelp.getAcessToken();
+		String accessToken= RedisHelp.redisHelp.getDingDingAcessToken();
 		jsonObject.put("touser",touser);
 		jsonObject.put("agentid",AGENT_ID);
 		jsonObject.put("msgtype","action_card");

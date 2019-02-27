@@ -483,7 +483,16 @@
 									<% } %>
 								</div>
 							</div>
+						</div><div class="col-xs-4">
+						<div class="form-group">
+							<label class="control-label col-sm-4" title="">
+								<span class="required hide">*</span> 优惠码：<i
+									class="fa icon-question hide"></i></label>
+							<div class="col-sm-8">
+								<#form:input path="couponCode" class="form-control" readonly="true"/>
+							</div>
 						</div>
+					</div>
 					</div>
 					<div class="row">
 						<div class="col-xs-4">
@@ -804,8 +813,7 @@
                     if (val == 'new'){
                         actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOrderDetailDataGrid\').dataGrid(\'delRowData\',\''+obj.rowId+'\');sq.countAll();});return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
                     }else{
-                        actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOrderDetailDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'});$(\'#'+obj.rowId+'_quantity\').removeClass(\'digits required isIntGtZero\');' +
-						'$(\\\'#\'+obj.rowId+\'_sku\\\').removeClass(\'required\');$(\'#\'+obj.rowId+\'_price\').removeClass(\'number required\');sq.countAll();});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
+                        actions.push('<a href="#" onclick="js.confirm(\'${text('你确认要删除这条数据吗？')}\', function(){$(\'#amOrderDetailDataGrid\').dataGrid(\'setRowData\',\''+obj.rowId+'\',null,{display:\'none\'});$(\'#'+obj.rowId+'_quantity\').removeClass(\'digits required isIntGtZero\');$(\'#'+obj.rowId+'_sku\').removeClass(\'required\');$(\'#'+obj.rowId+'_price\').removeClass(\'number required\');sq.countAll();});$(\'#'+obj.rowId+'_status\').val(\''+Global.STATUS_DELETE+'\');return false;"><i class="fa fa-trash-o"></i></a>&nbsp;');
                     }
                     return actions.join('');
                 }, editoptions: {defaultValue: 'new'}},
@@ -1454,4 +1462,4 @@
         });
     }
 </script>
-<script type="text/javascript" src="${ctxStatic}/area/area.js?ver0.2"></script>
+<script type="text/javascript" src="${ctxStatic}/area/area.js?ver0.3"></script>

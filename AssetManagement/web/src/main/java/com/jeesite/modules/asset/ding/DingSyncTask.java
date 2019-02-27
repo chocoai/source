@@ -4,14 +4,19 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.web.http.HttpClientUtils;
+import com.jeesite.modules.asset.ding.entity.DingDepartment;
 import com.jeesite.modules.asset.ding.service.DingDepartmentService;
+import com.jeesite.modules.asset.ding.service.DingRoleService;
 import com.jeesite.modules.asset.ding.service.DingUserService;
+import com.jeesite.modules.dingding.entity.DingApiUser;
+import com.jeesite.modules.dingding.service.DingDingService;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.stream.Collectors;
 
 //若DingUser实体类有了getLeft的构造方法，会导致此同步方法失败
 
@@ -30,6 +35,10 @@ public class DingSyncTask {
     private DingUserService userService;
     @Autowired
     private DingDepartmentService departmentService;
+    @Autowired
+    private DingRoleService roleService;
+    @Autowired
+    private DingDingService dingDingService;
 
 
     /**
@@ -39,14 +48,15 @@ public class DingSyncTask {
      * @param
      * @return void
      */
-
-    //@Scheduled(cron = "15 * * * * ?")
-    public static void syncDingData(){
+    //@Scheduled(cron = "10 * * * * ?")
+    public static void syncDingData() {
         String access_token = dingSyncTask.getDingToken();
-        if(dingSyncTask.syncDingDepartments(access_token))if (dingSyncTask.successSyncRole(access_token)) if (dingSyncTask.syncDingUsers())
-            System.out.println("同步钉钉通信录成功");
-        else System.out.println("同步钉钉通信录失败");
-}
+        if (dingSyncTask.syncDingDepartments(access_token))
+            if (dingSyncTask.successSyncRole(access_token))
+                if (dingSyncTask.syncDingUsers(access_token))
+                    System.out.println("同步钉钉通信录成功");
+                else System.out.println("同步钉钉通信录失败");
+    }
 
     /**
      * 调用钉钉接口，查询钉钉所有部门列表,得出id后根据id调用接口得到部门数据
@@ -68,11 +78,14 @@ public class DingSyncTask {
             List deptIdList = JSONArray.parseArray(deptJson);
 
             System.out.println(deptIdList);
+            System.out.println(deptIdList.size());
             List<String> ids = new ArrayList<>();
             for (Object s : deptIdList) {
                 Map idMap = JSONObject.parseObject(s.toString());
                 ids.add(idMap.get("id").toString());
             }
+            System.out.println(ids);
+            System.out.println(ids.size());
             getDepartmentDetails(access_token, ids);
             System.out.println("同步部门成功，syncDingDepartments");
             return true;
@@ -96,8 +109,8 @@ public class DingSyncTask {
         try {
             String url = "https://oapi.dingtalk.com/department/get?access_token=" + token + "&id=";
             List <Map> dept = new LinkedList<>();
-            ids.forEach(id ->  dept.add((Map) JSONObject.parse(HttpClientUtils.get(url + "" + id))));
-            departmentService.sysAllDepartment(JSON.toJSONString(dept));
+            ids.forEach(id ->  dept.add((Map) JSONObject.parse(HttpClientUtils.get(url + id))));
+            departmentService.syncAllDepartment(JSON.toJSONString(dept));
             System.out.println("同步部门详情成功，getDepartmentDetails");
         }catch (Exception e){
             System.out.println("同步部门详情出错，getDepartmentDetails");
@@ -106,20 +119,25 @@ public class DingSyncTask {
     }
 
 
-    private boolean successSyncRole(String access_token){
-    try{
-        syncDingRoles(access_token,0,50);
+    /**
+     * 由于有递归逻辑，因此要另起一个方法调用递归逻辑，避免出错
+     * @author thomas
+     * @version 2018-12-07
+     * @param access_token
+     * @return boolean
+     */
+    private boolean successSyncRole(String access_token) {
+        try {
+            syncDingRoles(access_token, 0, 50);
 
-        System.out.println("同步角色成功，syncDingRoles");
-        return true;
-    }catch (Exception e){
-        System.out.println("同步角色出错，syncDingRoles");
-        e.printStackTrace();
-        return false;
+            System.out.println("同步角色成功，syncDingRoles");
+            return true;
+        } catch (Exception e) {
+            System.out.println("同步角色出错，syncDingRoles");
+            e.printStackTrace();
+            return false;
+        }
     }
-    }
-
-
 
 
 
@@ -142,7 +160,7 @@ public class DingSyncTask {
 
             Map json = JSONObject.parseObject(HttpClientUtils.post(url, requestParam));
             Map result = (Map) json.get("result");
-            userService.sysDingRole(JSONObject.toJSONString(result));
+            roleService.sysDingRole(JSONObject.toJSONString(result));
             if (result.get("hasMore").toString().equals("true")) syncDingRoles(access_token, offset+size+1, size);
 
     }
@@ -156,52 +174,31 @@ public class DingSyncTask {
      * @return boolean
      */
 
-    public boolean syncDingUsers (){
+    public boolean syncDingUsers (String accessToken){
         try {
-            String access_token = getDingToken();
-            Set<String> userIds = syncDingUsersID();
-            System.out.println(userIds);
-            String url = "https://oapi.dingtalk.com/user/get?access_token=" + access_token + "&userid=";
-            List<String> list = new ArrayList<>();
-            if (userIds!=null) userIds.forEach(s -> list.add(HttpClientUtils.get(url + "" +s)));
-            userService.sysDingUser(JSONArray.toJSONString(list));
+
+            String deptUrl = "https://oapi.dingtalk.com/user/getDeptMember?access_token=" + accessToken + "&deptId=";
+            String userUrl = "https://oapi.dingtalk.com/user/get?access_token=" + accessToken + "&userid=";
+            List<String> deptIds = departmentService.getAllDepartmentId();
+            List<DingApiUser> userJsonObjects = new ArrayList<>();
+            for (String deptId : deptIds) {
+                Map result = JSONObject.parseObject(HttpClientUtils.get(deptUrl + deptId));
+                List<String> userIds = JSONArray.parseArray(result.get("userIds").toString(), String.class);
+                //if(!userIds.contains("1559511342-607104135")) continue;
+                for (String userId : userIds) {
+                    String userJson = HttpClientUtils.get(userUrl+userId);
+                    DingApiUser userJsonObject =JSONObject.parseObject(userJson, DingApiUser.class);
+                    userJsonObjects.add(userJsonObject);
+                }
+                //break;
+            }
+            userService.saveUsersFromApi(userJsonObjects);
             System.out.println("根据userid同步员工详情成功，syncDingUsers");
             return true;
-        }catch (Exception e){
+        } catch (Exception e){
             System.out.println("根据userid同步员工详情出错，syncDingUsers");
             e.printStackTrace();
             return false;
-        }
-    }
-
-    /**
-     * 调用钉钉接口,根据部门id去查询所有部门下的员工userid
-     * @author thomas
-     * @version 2018-12-06
-     * @method GET
-     * @param
-     * @return Set<String>
-     */
-    private Set<String> syncDingUsersID(){
-
-        try {
-            String access_token =getDingToken();
-            String url = "https://oapi.dingtalk.com/user/getDeptMember?access_token="+access_token+"&deptId=";
-            List<String> deptId = departmentService.getAllDepartmentId();
-            HashSet<String> userIdSet = new HashSet<>();
-            for (String s :deptId) {
-                Map result = JSONObject.parseObject(HttpClientUtils.get(url+""+s));
-                List userIds = JSONArray.parseArray(result.get("userIds").toString());
-                for (Object id :userIds) {
-                    userIdSet.add(id.toString());
-                }
-            }
-            System.out.println("通过部门id获取部门下员工的userid成功，syncDingUsersID");
-            return userIdSet;
-        }catch (Exception e){
-            System.out.println("通过部门id获取部门下员工的userid出错，syncDingUsersID");
-            e.printStackTrace();
-            return null;
         }
     }
 
@@ -215,17 +212,14 @@ public class DingSyncTask {
      * @return String(access_token)
      */
     private String getDingToken(){
-        String corpid ="dingde55314a8e20f3f6";
-        String corpsecret = "Fz7Yg3r7ITk18Lfx434b2gaRikVN6vtZnX7OxMVIckfF-l0YWZW5lwPobYm48brI";
-        String url="https://oapi.dingtalk.com/gettoken?corpid="+corpid+"&corpsecret="+corpsecret;
-        Map result = JSON.parseObject(HttpClientUtils.get(url));
-        return result.get("access_token").toString();
+        return dingDingService.getAccessToken();
     }
 
 
-    //@Scheduled(cron = "15 * * * * ?")
-    public void test(){
-        syncDingUsers();
-
+    @Test
+    public void test1(){
+        String id = "01093037676985";
+        String url ="https://oapi.dingtalk.com/user/get?access_token="+getDingToken()+"&userid=";
+        System.out.println(HttpClientUtils.get(url));
     }
 }

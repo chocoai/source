@@ -1,9 +1,9 @@
 package com.jeesite.modules.asset.util;
 
 import com.jeesite.common.web.BaseController;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping(value = "${adminPath}/redisUnits")
 public class RedisUnitlController extends BaseController {
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtil<String, String> redisString;
     @Autowired
     private RedisService service;
 //    @RequestMapping(value = "getFlag")
@@ -23,7 +23,7 @@ public class RedisUnitlController extends BaseController {
 //    public boolean getFlag(String documentCode) {
 //        boolean rst=false;
 //        String key = RedisKeyPrefix.GIRL + documentCode;
-//        RedisData data= redisTemplate.opsForValue().get(key);
+//        RedisData data= redisString.get(key);
 //        if (data==null){
 //            rst=true;
 //        }
@@ -35,11 +35,11 @@ public class RedisUnitlController extends BaseController {
     public void updataTime(String code) {
         String key =code;
         if (key!=null&&key.length()>0){
-            String dataJson= redisTemplate.opsForValue().get(key);
+            String dataJson= redisString.get(key);
 //            JSONObject jsonObject=JSONObject.fromObject(dataJson);
 //            RedisData data=(RedisData)JSONObject.toBean(jsonObject, RedisData.class);
-//        RedisData data= redisTemplate.opsForValue().get(key);
-            redisTemplate.opsForValue().set(key,dataJson , 4,TimeUnit.SECONDS);
+//        RedisData data= redisString.get(key);
+            redisString.set(key,dataJson , 4L,TimeUnit.SECONDS);
         }
     }
 }

@@ -194,7 +194,7 @@ public class FzGoldDistributionService extends CrudService<FzGoldDistributionDao
 	 * @param type
 	 * @return
 	 */
-	private FzGoldChangeRecord getEntity(String name, long number, String userid, String type) {
+	private FzGoldChangeRecord getEntity(String name, Long number, String userid, String type) {
 		if (!ParamentUntil.isBackString(name)){
 			Date date=new Date();
 			SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -206,8 +206,8 @@ public class FzGoldDistributionService extends CrudService<FzGoldDistributionDao
 		fzGoldChangeRecord.setRecordCode(UUID.randomUUID().toString());
 		fzGoldChangeRecord.setInOrOut("0");  //0:收入，1：支出
 		fzGoldChangeRecord.setGoldType(type);
-		fzGoldChangeRecord.setBalance((long) 0);   //余额写死为0
-		fzGoldChangeRecord.setNumber(number);  //变更数量为赠送数量
+		fzGoldChangeRecord.setBalance((double) 0);   //余额写死为0
+		fzGoldChangeRecord.setNumber(number.doubleValue());  //变更数量为赠送数量
 		fzGoldChangeRecord.setUserid(userid);
 		fzGoldChangeRecord.setIsNewRecord(true);
 		fzGoldChangeRecord.setStatus("0");
@@ -228,7 +228,7 @@ public class FzGoldDistributionService extends CrudService<FzGoldDistributionDao
 		return fzGoldChangeRecord;
 	}
 
-	private void saveRecode(String name,long number, String userid,String type) {
+	private void saveRecode(String name,Long number, String userid,String type) {
 		if (!ParamentUntil.isBackString(name)){
 		Date date=new Date();
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -241,8 +241,8 @@ public class FzGoldDistributionService extends CrudService<FzGoldDistributionDao
 		fzGoldChangeRecord.setRecordCode(code);
 		fzGoldChangeRecord.setInOrOut("0");
 		fzGoldChangeRecord.setGoldType(type);
-		fzGoldChangeRecord.setBalance((long) 0);   //写死为0
-		fzGoldChangeRecord.setNumber(number);  //变更数量为赠送数量
+		fzGoldChangeRecord.setBalance((double) 0);   //写死为0
+		fzGoldChangeRecord.setNumber(number.doubleValue());  //变更数量为赠送数量
 		fzGoldChangeRecord.setUserid(userid);
 		fzGoldChangeRecord.setIsNewRecord(true);
 		fzGoldChangeRecord.setMsgDate(new Date());

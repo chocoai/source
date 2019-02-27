@@ -42,6 +42,31 @@ public class Shopping {
      */
     private Integer count;
 
+    /**
+     * sku图片
+     */
+    private String skuUrl;
+    /**
+     * 分销价
+     */
+    private Double distributionPrice;
+
+    public String getSkuUrl() {
+        return skuUrl;
+    }
+
+    public void setSkuUrl(String skuUrl) {
+        this.skuUrl = skuUrl;
+    }
+
+    public Double getDistributionPrice() {
+        return distributionPrice;
+    }
+
+    public void setDistributionPrice(Double distributionPrice) {
+        this.distributionPrice = distributionPrice;
+    }
+
     public String getName() {
         return name;
     }

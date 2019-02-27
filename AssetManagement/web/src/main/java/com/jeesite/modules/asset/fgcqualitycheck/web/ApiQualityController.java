@@ -11,7 +11,7 @@ import com.jeesite.modules.fgc.entity.FgcUser;
 import com.jeesite.modules.fgc.service.FgcUserService;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -31,7 +31,7 @@ public class ApiQualityController {
     private QualityCheckService qualityCheckService;
 
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtil<String, String> redisString;
 
     @Autowired
     private FgcUserService fgcUserService;
@@ -48,7 +48,7 @@ public class ApiQualityController {
     @RequestMapping(value = "listData", method = RequestMethod.GET)
     @ResponseBody
     public Object listData(QualityCheck qualityCheck, HttpServletRequest request, HttpServletResponse response, String token) {
-        String openId = redisTemplate.opsForValue().get("uvanfactory_user_" + token);
+        String openId = redisString.get("uvanfactory_user_" + token);
 //        String openId = "obaI65A28NoBge7apAkT_KH-dt5g";
 //        if (openId == null || "".equals(openId)) {
 //            return ReturnDate.error(10000, "请检查登录信息");
@@ -76,7 +76,7 @@ public class ApiQualityController {
     public Map formData (QualityCheck qualityCheck) {
         // 传billno
         Map<String, Object> map = new HashMap<>();
-//        String openId = redisTemplate.opsForValue().get("uvanfactory_user_" + token);
+//        String openId = redisString.get("uvanfactory_user_" + token);
 ////        String openId = "obaI65Fwh5oFiRmbBdI7kLY0i1Zw";
 //        if (openId == null || "".equals(openId)) {
 //            map.put("code", 10000);
@@ -112,7 +112,7 @@ public class ApiQualityController {
     @RequestMapping(value = "saveDetail", method = RequestMethod.POST)
     public Map saveDetail(@RequestBody String req, String token) {
         Map<String, Object> map = new HashMap<>();
-        String openId = redisTemplate.opsForValue().get("uvanfactory_user_" + token);
+        String openId = redisString.get("uvanfactory_user_" + token);
 //        String  openId = "obaI65GJhkkCUKeJudphg2-mndeg";
         FgcUser fgcUser = fgcUserService.getFgcUserByOpenId(openId);
 

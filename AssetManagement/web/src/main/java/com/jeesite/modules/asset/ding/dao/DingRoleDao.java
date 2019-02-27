@@ -20,4 +20,7 @@ import java.util.List;
 public interface DingRoleDao extends CrudDao<DingRole> {
     @Select("select role_name from js_ding_role  a left join  js_ding_user_role b on a.role_id=b.role_id where b.user_id=#{userid} ")
     List<String> getRoleNamesByUser(String userid);
+
+    void updateBatch(List<DingRole> list);
+    void deleteBatch(List<String> list);
 }

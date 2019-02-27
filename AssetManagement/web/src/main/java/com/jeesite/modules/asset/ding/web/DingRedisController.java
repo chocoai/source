@@ -15,7 +15,7 @@ public class DingRedisController extends BaseController {
     @ResponseBody
     public String test(){
 
-        String result= RedisHelp.redisHelp.getAcessToken();
+        String result= RedisHelp.redisHelp.getDingDingAcessToken();
        // String url="https://oapi.dingtalk.com/message/send_to_conversation?access_token="+result;
         JSONObject jsonObject=new JSONObject();
         jsonObject.put("touser","1856293363663750138");

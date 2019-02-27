@@ -4,6 +4,7 @@
 package com.jeesite.modules.fz.appreciation.service;
 
 import com.jeesite.common.entity.Page;
+import com.jeesite.common.lang.NumberUtils;
 import com.jeesite.common.service.CrudService;
 import com.jeesite.modules.asset.ding.FzTask;
 import com.jeesite.modules.asset.ding.ReadFile;
@@ -18,11 +19,9 @@ import com.jeesite.modules.asset.util.result.ReturnInfo;
 import com.jeesite.modules.asset.util.service.AmSeqService;
 import com.jeesite.modules.fz.appreciation.dao.FzAppreciationFollowDao;
 import com.jeesite.modules.fz.appreciation.dao.FzAppreciationRecordDao;
-import com.jeesite.modules.fz.appreciation.entity.FzAppreciationDate;
-import com.jeesite.modules.fz.appreciation.entity.FzAppreciationFollow;
-import com.jeesite.modules.fz.appreciation.entity.FzAppreciationRecord;
-import com.jeesite.modules.fz.appreciation.entity.FzAppreciationSlideRecord;
+import com.jeesite.modules.fz.appreciation.entity.*;
 import com.jeesite.modules.fz.appreciation.returnData.LeaderboardData;
+import com.jeesite.modules.fz.expendrecord.dao.FzExpenditureRecordDao;
 import com.jeesite.modules.fz.fzgoldchangerecord.entity.FzGoldChangeRecord;
 import com.jeesite.modules.fz.fzgoldchangerecord.service.FzGoldChangeRecordService;
 import org.springframework.amqp.core.AmqpTemplate;
@@ -166,7 +165,7 @@ public class FzAppreciationRecordService extends CrudService<FzAppreciationRecor
 
     }
 
-    private void addRecord(String inOrOut, String userid, long coin_count, String outGoldType, int type) {
+    private void addRecord(String inOrOut, String userid, Long coin_count, String outGoldType, int type) {
 
         //增加梵钻支出变更记录
         String code = amSeqService.getCode(FZBGCORD_PER_FIX);
@@ -174,8 +173,8 @@ public class FzAppreciationRecordService extends CrudService<FzAppreciationRecor
         fzGoldChangeRecord1.setRecordCode(code);
         fzGoldChangeRecord1.setInOrOut(inOrOut);
         fzGoldChangeRecord1.setGoldType(outGoldType);
-        fzGoldChangeRecord1.setBalance((long) 0);
-        fzGoldChangeRecord1.setNumber(coin_count);  //变更数量为赠送数量
+        fzGoldChangeRecord1.setBalance((double) 0);
+        fzGoldChangeRecord1.setNumber(coin_count.doubleValue());  //变更数量为赠送数量
         fzGoldChangeRecord1.setUserid(userid);
         fzGoldChangeRecord1.setIsNewRecord(true);
         fzGoldChangeRecord1.setType(type);
@@ -555,4 +554,36 @@ public class FzAppreciationRecordService extends CrudService<FzAppreciationRecor
         return endTime;
     }
 
+    @Autowired
+    private FzExpenditureRecordDao fzExpenditureRecordDao;
+    /**
+     * 梵赞收入和全部记录
+     * @param
+     */
+    @Transactional(readOnly = true)
+    public FzGoldRecord getAccountRecord(Page<FzAccountRecord> page, FzAccountRecord fzAccountRecord) {
+        Integer pageNo = page.getPageNo();
+        if (pageNo == 1) {
+            pageNo = 0;
+        } else {
+            pageNo = page.getPageSize() * (pageNo-1);
+        }
+        // 查总数
+        int count = fzAppreciationRecordDao.selectCount(fzAccountRecord.getUserId(), pageNo, page.getPageSize(), fzAccountRecord.getFlag());
+        // 和查总数的sql一样如果需要改都要改成一样
+        List<FzAccountRecord> fzAccountRecordList = fzAppreciationRecordDao.getAccountRecord(fzAccountRecord.getUserId(), pageNo, page.getPageSize(), fzAccountRecord.getFlag());
+
+        DingUser dingUser = dingUserService.get(fzAccountRecord.getUserId());
+        // 个人支出梵钻总和
+        Double expendGold = fzExpenditureRecordDao.getExpendGold(fzAccountRecord.getUserId());
+        // 剩余梵钻
+        Double surplusGold = NumberUtils.sub(dingUser.getConvertibleGold().doubleValue(), expendGold);
+        FzGoldRecord fzGoldRecord = new FzGoldRecord();
+        fzGoldRecord.setCount(count);
+        fzGoldRecord.setConvertibleGold(dingUser.getConvertibleGold().intValue());
+        fzGoldRecord.setExpendGold(expendGold);
+        fzGoldRecord.setSurplusGold(surplusGold);
+        fzGoldRecord.setFzAccountRecordList(fzAccountRecordList);
+        return fzGoldRecord;
+    }
 }

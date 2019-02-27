@@ -49,11 +49,11 @@
         var i =0;
         for(item in priceTag.goodsTagList){
         i++;
-        if(priceTag.type == "0"){
+        if(priceTag.type == "0"||priceTag.type == "3"||priceTag.type == "6"){
         %>
         <div class="card1" style="background: #ebebea !important;">
             <div class="content" style="background: #ebebea !important;">
-                <div class="cnName" style="font-family:Microsoft YaHei !important;">${item.materielName}</div>
+                <div class="cnName" style="font-family:Microsoft YaHei !important;">${item.materielName}  <% if(priceTag.type == "3"){%><img src="${ctxStatic}/print/tmlogo.png" alt=""><%}%></div>
                 <div class="enName" style="font-family:Microsoft YaHei !important;">${item.empName}</div>
                 <div class="line" style="height: 1px;width: 100%;background: #ccc !important" ></div>
                 <div class="text" style="font-family:Microsoft YaHei !important;">${item.specName}</div>
@@ -70,10 +70,12 @@
                         </div>
                     </div>
                     <div>
+                        <% if(priceTag.type != "6"){%>
                         <div id = "qrcodeid${i}" class="qrcode" style="background:#fff !important">
                             <img src="${item.linkAddress}${priceTag.token}" alt="" srcset="">
                         </div>
                         <div class="taobao" style="font-family:Microsoft YaHei !important;">手机淘宝扫码</div>
+                        <%}%>
                     </div>
                 </div>
                 <img class="angle-top-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
@@ -83,10 +85,10 @@
             </div>
             <!-- <div class="addre">https://uvanart.tmall.com</div> -->
         </div>
-        <%}else if(priceTag.type == "2"){%>
+        <%}else if(priceTag.type == "2"||priceTag.type == "4"||priceTag.type == "7"){%>
         <div class="card3">
             <div class="content" style="background: #ebebea !important;">
-                <div class="cnName" style="font-family:Microsoft YaHei !important;">${item.materielName}</div>
+                <div class="cnName" style="font-family:Microsoft YaHei !important;">${item.materielName} <% if(priceTag.type == "4"){%><img src="${ctxStatic}/print/tmlogo.png" alt=""><%}%></div>
                 <div class="enName" style="font-family:Microsoft YaHei !important;">${item.empName}</div>
                 <div class="line" style="height: 1px;width: 100%;background: #ccc !important" ></div>
                 <div class="text" style="font-family:Microsoft YaHei !important;">${item.specName}</div>
@@ -103,10 +105,12 @@
                         </div>
                     </div>
                     <div>
+                        <% if(priceTag.type != "7"){%>
                         <div id = "qrcodeid${i}" class="qrcode" style="background:#fff !important">
                             <img src="${item.linkAddress}${priceTag.token}" alt="" srcset="">
                         </div>
                         <div class="taobao" style="font-family:Microsoft YaHei !important;">手机淘宝扫码</div>
+                        <%}%>
                     </div>
                 </div>
                 <img class="angle-top-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
@@ -116,10 +120,11 @@
             </div>
             <div class="addre">https://uvanart.tmall.com</div>
         </div>
-        <%}else if(priceTag.type == "1"){%>
+        <%}else if(priceTag.type == "1"||priceTag.type == "5"||priceTag.type == "8"){%>
         <div class="card2">
             <div class="bg" style="background: #000 !important;">
                 <div class="bottom" style="background: #000 !important;">
+                    <% if(priceTag.type == "5"){%><img class='bottom-img' src="${ctxStatic}/print/tmlogotest.png" alt=""><%}%>
                     <div class="content1">
                         <div class="cnName"  style="color: #fff !important;font-family:Microsoft YaHei !important;">${item.materielName}</div>
                         <div class="enName"  style="color: #fff !important;font-family:Microsoft YaHei !important;">${item.empName}</div>
@@ -137,7 +142,7 @@
                     <img class="angle-bottom-right" src="${ctxStatic}/print/rLine02.png" alt="" srcset="">
                 </div>
             </div>
-            
+            <% if(priceTag.type != "8"){%>
             <div class="img">
                 <div id = "qrcodeid${i}" class="imgshow" style="background:#fff !important">
                     <img src="${item.linkAddress}${priceTag.token}" alt="" srcset="">
@@ -148,6 +153,7 @@
                 <img class="angle-bottom-left" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
                 <img class="angle-bottom-right" src="${ctxStatic}/print/rLine01.png" alt="" srcset="">
             </div>
+            <%}%>
         </div>
         <%}%>
         <div style="page-break-after:always;"></div>

@@ -12,6 +12,7 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.collect.ListUtils;
+import com.jeesite.common.lang.DateUtils;
 import com.jeesite.common.lang.NumberUtils;
 import com.jeesite.modules.asset.guideApp.service.GuideService;
 import com.jeesite.modules.asset.k3webapi.InvokeHelper;
@@ -963,5 +964,27 @@ public class AmOrderService extends CrudService<AmOrderDao, AmOrder> {
 	@Transactional(readOnly = false)
 	public List<AmOrder> selectByPrivilege(Set<String> set) {
 		return amOrderDao.selectByPrivilege(set);
+	}
+
+	/**
+	 * 更新核销状态
+	 * @param amOrder
+	 * @throws Exception
+	 */
+	public void updateWriteoff(AmOrder amOrder) throws Exception{
+		boolean isLogin = k3connection.getConnection();
+		if (isLogin) {
+			String content = "{\"FormId\":\"YF_SAL_LineDownRegister\",\"FieldKeys\":\"FID\",\"FilterString\":\"F_YF_PromoCode='"+ amOrder.getCouponCode() +"'\",\"OrderString\":\"\",\"TopRowCount\":\"0\",\"StartRow\":\"0\",\"Limit\":\"0\"}";
+			String fid = InvokeHelper.ExecuteBillQuery("YF_SAL_LineDownRegister", content, POST_K3ClOUDRL);
+			if (!"[[[]]]".equals(fid) || !"[]".equals(fid)) {
+				fid = fid.replace("[[", "");
+				fid = fid.replace("]]", "");
+				String date = DateUtils.formatDateTime(new Date());
+				date = date.replace("T", " ");
+				String shop = guideService.selectShop(UserUtils.getUser().getUserCode());
+				String saveParam = "{\"Creator\":\"\",\"NeedUpDateFields\":[],\"NeedReturnFields\":[],\"IsDeleteEntry\":\"True\",\"SubSystemId\":\"\",\"IsVerifyBaseDataField\":\"false\",\"IsEntryBatchFill\":\"True\",\"ValidateFlag\":\"True\",\"NumberSearch\":\"True\",\"InterationFlags\":\"\",\"IsAutoSubmitAndAudit\":\"false\",\"Model\":{\"FID\":\""+ fid +"\",\"F_YF_WriteoffStatus\":\"1\",\"F_YF_WriteoffTime\":\""+ date +"\",\"F_YF_WriteoffStore\":\""+ shop +"\",\"F_YF_StoreGuide\":\""+ UserUtils.getUser().getUserName() +"\"}";
+				InvokeHelper.Save("YF_SAL_LineDownRegister", saveParam, POST_K3ClOUDRL);
+			}
+		}
 	}
 }

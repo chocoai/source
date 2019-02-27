@@ -11,5 +11,15 @@
 		</where>
 		ORDER BY ${sqlMap.order.toSql()}
 	</select> -->
-	
+
+	<update id="updateBatch" parameterType="java.util.List">
+
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			update fz_neigou_order  set ship_name = #{item.shipName},receiver_mobile =#{item.receiverMobile},province =#{item.province},
+			city =#{item.city},county =#{item.county},town =#{item.town},p_id =#{item.pId},detail_address =#{item.detailAddress},
+			ship_status =#{item.shipStatus},logi_no =#{item.logiNo},logi_name =#{item.logiName},money =#{item.money} where order_id = #{item.orderId}
+		</foreach>
+
+	</update>
+
 </mapper>

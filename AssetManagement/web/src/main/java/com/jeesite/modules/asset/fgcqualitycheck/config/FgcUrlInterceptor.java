@@ -1,11 +1,10 @@
 package com.jeesite.modules.asset.fgcqualitycheck.config;
 
 import com.alibaba.fastjson.JSON;
-import com.jeesite.modules.asset.util.service.AmUtilService;
 import com.jeesite.modules.fgc.entity.FgcUser;
 import com.jeesite.modules.fgc.service.FgcUserService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
@@ -27,7 +26,7 @@ public class FgcUrlInterceptor implements HandlerInterceptor {
     @Autowired
     private FgcUserService fgcUserService;
     @Resource
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisUtil<String, String> redisString;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -35,7 +34,7 @@ public class FgcUrlInterceptor implements HandlerInterceptor {
         Map<String, Object> map = new HashMap<>();
         String openId = null;
         try{
-            openId = redisTemplate.opsForValue().get("uvanfactory_user_" + token);
+            openId = redisString.get("uvanfactory_user_" + token);
         }catch (NullPointerException e) {
 
         }

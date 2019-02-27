@@ -88,6 +88,9 @@
 					<button type="button" class="btn btn-sm btn-primary" onclick="uploadFile.subFrom()"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
 					<button type="submit" class="btn btn-sm btn-primary" id="btnSubmit" style="display: none"><i class="fa fa-check"></i> ${text('保 存')}</button>&nbsp;
 					<% } %>
+					<% if (hasPermi('guide:guideActivity:export')){ %>
+					<button type="button" class="btn btn-sm btn-primary" id="btnExport"><i class="fa fa-check"></i> ${text('导出评论')}</button>&nbsp;
+					<% } %>
 					<button type="button" class="btn btn-sm btn-default" id="btnCancel" onclick="js.closeCurrentTabPage()"><i class="fa fa-reply-all"></i> ${text('关 闭')}</button>
 				</div>
 			</div>
@@ -141,7 +144,7 @@
 											class="fa icon-question hide"></i></label>
 									<div class="col-sm-8">
 										<#form:input path="startTime" readonly="true" maxlength="20" class="form-control Wdate required"
-										dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+										dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false});"/>
 									</div>
 								</div>
 							</div>
@@ -152,7 +155,7 @@
 											class="fa icon-question hide"></i></label>
 									<div class="col-sm-8">
 										<#form:input path="endTime" readonly="true" maxlength="20" class="form-control Wdate required"
-										dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd',isShowClear:false});"/>
+										dataFormat="datetime" onclick="WdatePicker({dateFmt:'yyyy-MM-dd HH:mm:ss',isShowClear:false});"/>
 									</div>
 								</div>
 							</div>
@@ -914,4 +917,11 @@ window.onload=function () {
         $("#edui49_body").css('display','none');
     },1)
 }
+
+$('#btnExport').click(function(){
+    js.ajaxSubmitForm($('#inputForm'), {
+        url:'${ctx}/guide/guideActivity/exportData',
+        downloadFile:true
+    });
+});
 </script>

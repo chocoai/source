@@ -7,11 +7,12 @@ import com.jeesite.common.dao.CrudDao;
 import com.jeesite.common.mybatis.annotation.MyBatisDao;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.asset.ding.entity.ExportAppreciationData;
+import com.jeesite.modules.fz.appreciation.entity.FzAccountRecord;
 import com.jeesite.modules.fz.appreciation.entity.FzAppreciationDate;
 import com.jeesite.modules.fz.appreciation.entity.FzAppreciationRecord;
 import org.apache.ibatis.annotations.Delete;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
-import org.springframework.test.context.jdbc.Sql;
 
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -153,4 +154,12 @@ public interface FzAppreciationRecordDao extends CrudDao<FzAppreciationRecord> {
     @Select("SELECT IFNULL(SUM(f.`coin_number`),0) SUM FROM `fz_appreciation_record` f WHERE f.`praiser_id`=#{arg3} AND f.`presenter_id`=#{arg2} \n" +
             "AND f.`create_date`>=#{arg0} AND f.`create_date`<=#{arg1}")
     int countThidDay(Timestamp dayStartTime, Timestamp dayEndTime, String presenterId, String praiserId)throws SQLException;
+
+    /**
+     * 梵赞收入记录
+     * @param userId
+     */
+    List<FzAccountRecord> getAccountRecord(@Param("userId") String userId, @Param("pageNo") Integer pageNo, @Param("pageSize") Integer pageSize,@Param("flag") String flag);
+
+    Integer selectCount(@Param("userId") String userId, @Param("pageNo") Integer pageNo, @Param("pageSize") Integer pageSize,@Param("flag") String flag);
 }

@@ -8,7 +8,6 @@ import com.jeesite.common.mybatis.annotation.MyBatisDao;
 import com.jeesite.modules.asset.ding.data.Node;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
 import com.jeesite.modules.asset.ding.entity.DingDepartment;
-import com.jeesite.modules.asset.ding.entity.SyncOrganize;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
 
@@ -26,7 +25,7 @@ public interface DingDepartmentDao extends TreeDao<DingDepartment> {
     List<DingDepartment> selectAll();
     @Select("select department_id from js_ding_department where parentid=#{arg0}")
     List<String> getDingDepartmentByParentCode(String parentCode);
-    @Select("select department_id from js_ding_department where parentid='0'")
+    @Select("select department_id from js_ding_department where parent_code='0'")
     String getRootCode();
     @Select("select department_id from js_ding_department where parent_codes  like #{s}")
     List<String> getIdByParntsId(String s);
@@ -42,6 +41,17 @@ public interface DingDepartmentDao extends TreeDao<DingDepartment> {
     @Select("select a.department_id as id,a.name as name, a.parentid as parentId,a.tree_level as level  from js_ding_department a ORDER BY a.tree_level DESC")
     List<Node> getAll();
 
+    @Update("update js_ding_department t\n" +
+            "left join (\n" +
+            "select c.department_id,c.`name`,count(b.user_id) c from js_ding_department c\n" +
+            "left join js_ding_department child on child.department_id = c.department_id or INSTR(child.parent_codes,CONCAT(',',c.department_id,',')) > 0\n" +
+            "left join js_ding_user_department as b on child.department_id=b.department_id\n" +
+            "left join js_ding_user a on a.userid=b.user_id and a.`left` = '0'\n" +
+            "where a.`name` is not null and a.left='0'\n" +
+            "group by c.department_id,c.`name`\n" +
+            ") t1 on t.department_id = t1.department_id\n" +
+            "set t.user_count = t1.c")
+    void updateAllUserCount();
 
 
     //根据部门名字得到部门id
@@ -60,5 +70,19 @@ public interface DingDepartmentDao extends TreeDao<DingDepartment> {
     @Select("SELECT DISTINCT department_id FROM js_ding_department")
     List<String> getAllDepartmentId();
 
-    //boolean syncAllDepartment(List<DingDepartment> );
+
+    void insertAllDepartment(List<DingDepartment> departments);
+
+    void updateAllDepartment(List<DingDepartment> departments);
+
+    void updateBatch(List<DingDepartment> list);
+
+    void deleteBatch(List<String> list);
+
+    void updateBatchUserCount(List<DingDepartment> list);
+
+    @Select("SELECT * FROM js_ding_department where department_id=#{arg0}")
+    DingDepartment getDeptByID(String id);
+
+
 }

@@ -40,6 +40,7 @@ import com.jeesite.common.mybatis.mapper.query.QueryType;
 		@Column(name="score_coefficient", attrName="scoreCoefficient", label="得分系数"),
 		@Column(name="relevance", attrName="relevance", label="相关性"),
 		@Column(name="actual_score", attrName="actualScore", label="本期实际分数"),
+		@Column(name="examined_score", attrName="examinedScore", label="考核得分"),
 		@Column(name="examined_staff_remark", attrName="examinedStaffRemark", label="被考核人备注"),
 		@Column(name="assessor_remark", attrName="assessorRemark", label="考核人备注"),
 		@Column(includeEntity=DataEntity.class),
@@ -77,6 +78,7 @@ public class AchUserTarget extends DataEntity<AchUserTarget> {
 	private Float scoreCoefficient;		// 得分系数
 	private String relevance;		// 相关性
 	private Float actualScore;		// 本期实际分数
+	private Float examinedScore;	// 考核得分
 	private String examinedStaffRemark;		// 被考核人备注
 	private String assessorRemark;		// 考核人备注
 	private Float lastScore;		// 上一期得分
@@ -279,6 +281,14 @@ public class AchUserTarget extends DataEntity<AchUserTarget> {
 
 	public void setActualScore(Float actualScore) {
 		this.actualScore = actualScore;
+	}
+
+	public Float getExaminedScore() {
+		return examinedScore;
+	}
+
+	public void setExaminedScore(Float examinedScore) {
+		this.examinedScore = examinedScore;
 	}
 
 	@Length(min=0, max=2000, message="被考核人备注长度不能超过 2000 个字符")

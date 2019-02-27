@@ -2,6 +2,7 @@ package com.jeesite.modules.asset.tianmao.web;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.jeesite.common.collect.ListUtils;
 import com.jeesite.modules.asset.tianmao.entity.BigItem;
 import com.jeesite.modules.asset.tianmao.entity.TbItemImgs;
 import com.jeesite.modules.asset.tianmao.entity.TbProduct;
@@ -9,6 +10,7 @@ import com.jeesite.modules.asset.tianmao.entity.TbSku;
 import com.jeesite.modules.asset.tianmao.service.SynchroTbService;
 import com.taobao.api.domain.Item;
 import com.taobao.api.domain.ItemImg;
+import com.taobao.api.domain.PropImg;
 import com.taobao.api.domain.Sku;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +52,8 @@ public class SynchroTbController {
                 map.put("msg", "saladliang店铺的商品不同步！");
                 return map;
             }
+            // sku图片
+            List<PropImg> propImgList = item.getPropImgs();
             //遍历sku
             List<Sku> skuList = item.getSkus();
             List<TbSku> tbSkus = new ArrayList<>();
@@ -59,6 +63,12 @@ public class SynchroTbController {
                     tbSku.setSkuId(aSkuList.getSkuId());
                     tbSku.setNumIid(item.getNumIid());
                     tbSku.setPropertiesName(aSkuList.getPropertiesName());
+                    if (ListUtils.isNotEmpty(propImgList)) {
+                        Optional<PropImg> proImg = propImgList.stream().filter(s -> aSkuList.getPropertiesName().contains(s.getProperties())).findFirst();
+                        if (proImg.isPresent()) {
+                            tbSku.setSkuUrl(proImg.get().getUrl());
+                        }
+                    }
                     tbSku.setPrice(aSkuList.getPrice());
                     tbSku.setQuantity(aSkuList.getQuantity());
                     tbSku.setProperties(aSkuList.getProperties());

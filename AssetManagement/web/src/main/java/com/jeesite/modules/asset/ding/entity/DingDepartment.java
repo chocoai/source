@@ -7,7 +7,11 @@ import com.jeesite.common.entity.TreeEntity;
 import com.jeesite.common.mybatis.annotation.Column;
 import com.jeesite.common.mybatis.annotation.Table;
 import com.jeesite.common.mybatis.mapper.query.QueryType;
+import net.sf.json.JSONObject;
 import org.hibernate.validator.constraints.Length;
+
+import java.util.Map;
+import java.util.function.Consumer;
 
 /**
  * js_ding_departmentEntity
@@ -102,6 +106,11 @@ public class DingDepartment extends TreeEntity<DingDepartment> {
 	}
 	public DingDepartment() {
 		this(null);
+	}
+	public DingDepartment(String departmentId, Integer userCount) {
+		this(departmentId);
+		this.setDepartmentId(departmentId);
+		this.setUserCount(Long.valueOf(userCount));
 	}
 
 	public DingDepartment(String id){
@@ -260,6 +269,5 @@ public class DingDepartment extends TreeEntity<DingDepartment> {
 	public void setGroupContainSubdept(String groupContainSubdept) {
 		this.groupContainSubdept = groupContainSubdept;
 	}
-
 
 }

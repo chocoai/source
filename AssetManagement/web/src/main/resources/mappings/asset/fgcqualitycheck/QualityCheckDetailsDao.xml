@@ -16,4 +16,12 @@
 		FROM js_fgc_quality_check_details
 		where fentityId= #{entityId}
 	</select>
+
+	<delete id="deleteDb">
+		DELETE FROM js_fgc_quality_check_details
+		WHERE fid IN
+		<foreach collection="list" item="item" open="(" separator="," close=")" index="index">
+			#{item}
+		</foreach>
+	</delete>
 </mapper>

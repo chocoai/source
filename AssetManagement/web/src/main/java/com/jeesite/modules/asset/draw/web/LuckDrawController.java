@@ -6,7 +6,6 @@ package com.jeesite.modules.asset.draw.web;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.mapper.JsonMapper;
 import com.jeesite.common.web.http.HttpClientUtils;
@@ -15,7 +14,6 @@ import com.jeesite.modules.asset.ding.service.DingUserService;
 import com.jeesite.modules.asset.draw.entity.ActionCard;
 import com.jeesite.modules.asset.draw.entity.LuckDetail;
 import com.jeesite.modules.asset.draw.entity.PushMsg;
-import com.jeesite.modules.asset.fgcqualitycheck.timedtask.QcBillTask;
 import com.jeesite.modules.asset.file.service.AmFileUploadService;
 import com.jeesite.modules.asset.util.RedisHelp;
 import com.jeesite.modules.asset.util.service.AmSeqService;
@@ -179,7 +177,7 @@ public class LuckDrawController extends BaseController {
 
 		actionCard.setText("![alt]("+ filePath +")");
 //		actionCard.setContent(prizeType);
-		String accessToken = RedisHelp.redisHelp.getAcessToken();
+		String accessToken = RedisHelp.redisHelp.getDingDingAcessToken();
 		String url = SEND_ADDRESS + accessToken;
 		List<DingUser> dingUserList = ListUtils.newArrayList();
 		for (LuckDetail luckDetail : luckDraw.getLuckDetailList()) {

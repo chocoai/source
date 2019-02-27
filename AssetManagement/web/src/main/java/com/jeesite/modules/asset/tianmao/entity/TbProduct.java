@@ -37,6 +37,7 @@ import java.util.List;
 		@Column(name="modified", attrName="modified", label="商品修改时间"),
 		@Column(name="nick", attrName="nick", label="卖家昵称"),
 		@Column(name="outer_code", attrName="outerCode", label="商家外部编码",queryType=QueryType.LIKE),
+		@Column(name="interactive_name", attrName="interactiveName", label="交互屏名称"),
 	}, joinTable={
 		@JoinTable(type=JoinTable.Type.LEFT_JOIN, entity=ProductCategory.class, alias="b",
 				on="b.procategory_code=a.procategory_code ",
@@ -66,6 +67,42 @@ public class TbProduct extends DataEntity<TbProduct> {
 	private String proseriesCode;
 	private String procategoryCode;
 	private String queryNick;	// 根据昵称过滤数据
+	private Double lowerPrice;	// 商品最低价
+	private String interactiveName;	// 交互屏名称
+	private Double lowerDistrPrice;	// 分销商商品最低价
+	private String distrPicUrl;		// 分销商品主图
+
+	public String getDistrPicUrl() {
+		return distrPicUrl;
+	}
+
+	public void setDistrPicUrl(String distrPicUrl) {
+		this.distrPicUrl = distrPicUrl;
+	}
+
+	public Double getLowerDistrPrice() {
+		return lowerDistrPrice;
+	}
+
+	public void setLowerDistrPrice(Double lowerDistrPrice) {
+		this.lowerDistrPrice = lowerDistrPrice;
+	}
+
+	public String getInteractiveName() {
+		return interactiveName;
+	}
+
+	public void setInteractiveName(String interactiveName) {
+		this.interactiveName = interactiveName;
+	}
+
+	public Double getLowerPrice() {
+		return lowerPrice;
+	}
+
+	public void setLowerPrice(Double lowerPrice) {
+		this.lowerPrice = lowerPrice;
+	}
 
 	public String getQueryNick() {
 		return queryNick;

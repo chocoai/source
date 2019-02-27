@@ -3,6 +3,7 @@
  */
 package com.jeesite.modules.asset.ding.service;
 
+import com.google.common.collect.Sets;
 import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.entity.Page;
 import com.jeesite.common.idgen.IdGen;
@@ -13,14 +14,17 @@ import com.jeesite.common.service.ServiceException;
 import com.jeesite.common.utils.excel.ExcelImport;
 import com.jeesite.common.validator.ValidatorUtils;
 import com.jeesite.common.web.http.HttpClientUtils;
-import com.jeesite.modules.asset.ding.dao.DingDepartmentDao;
-import com.jeesite.modules.asset.ding.dao.DingRoleDao;
-import com.jeesite.modules.asset.ding.dao.DingUserBackupsDao;
-import com.jeesite.modules.asset.ding.dao.DingUserDao;
+import com.jeesite.modules.asset.ding.FzTask;
+import com.jeesite.modules.asset.ding.dao.*;
 import com.jeesite.modules.asset.ding.entity.*;
 import com.jeesite.modules.asset.fgcqualitycheck.common.Convert;
 import com.jeesite.modules.asset.util.ParamentUntil;
+import com.jeesite.modules.dingding.entity.DingApiUser;
 import com.jeesite.modules.fz.fzlogin.service.FzLoginRecordService;
+import com.jeesite.modules.util.CompareObejct;
+import com.jeesite.modules.util.CompareStatus;
+import com.jeesite.modules.util.StringUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.apache.commons.beanutils.BeanUtils;
@@ -30,8 +34,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.message.BasicNameValuePair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +43,7 @@ import javax.validation.ConstraintViolationException;
 import java.io.UnsupportedEncodingException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 人员管理Service
@@ -54,9 +57,15 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
 
     @Value("${FZ_EXPRIED_TIME}")
     Long FZ_EXPRIED_TIME;  //token过期时间
+    public static final String REDIS_KEY_DING_USER = "dinguser";
+    public static final String REDIS_KEY_DING_USER_TOKEN = "dingusertoken";
 
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisUtil<String, String> redisString;
+    @Resource
+    private RedisUtil<String, DingDepartment> redisDingDepartment;
+    @Resource
+    private RedisUtil<String, DingUser> redisUser;
 
     @Autowired
     private FzLoginRecordService fzLoginRecordService;
@@ -64,6 +73,8 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
     private DingDepartmentDao dingDepartmentDao;
     @Autowired
     private DingDepartmentService dingDepartmentService;
+    @Autowired
+    private DingUserDepartmentDao dingUserDepartmentDao;
 
     @Autowired
     private DingRoleDao dingRoleDao;
@@ -101,7 +112,7 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
     public Page<DingUser> findPage(Page<DingUser> page, DingUser dingUser) {
         try {
             super.findPage(page, dingUser);
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return super.findPage(page, dingUser);
@@ -527,6 +538,7 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
 
     /**
      * 得到该员工的所有根部门
+     *
      * @param userid
      * @return
      */
@@ -567,7 +579,7 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
         dingUser.setleft("0");
 
         List<DingUser> list = dingUserDao.findList(dingUser);
-        if(list == null || list.size() == 0) return null;
+        if (list == null || list.size() == 0) return null;
         return list.get(0);
     }
 
@@ -626,8 +638,10 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
     public Integer getPresenterFollowCount(String userId) {
         return dao.getPresenterFollowCount(userId);
     }
+
     @Autowired
     private DingUserBackupsDao dingUserBackupsDao;
+
     // 先备份表再更新梵钻
     @Transactional(readOnly = false)
     public void updateGoldNumber(List<DingUser> dingUserList) {
@@ -669,7 +683,8 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
     public List<DingUser> getUserByIds(List<String> userIdList) {
         return dao.getUserByIds(userIdList);
     }
-    public List<String> getNamesByUserIds(List<String> userIdList){
+
+    public List<String> getNamesByUserIds(List<String> userIdList) {
         return dao.getNamesByUserIds(userIdList);
     }
 
@@ -685,12 +700,13 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
      * @throws Exception
      */
     @Transactional(readOnly = false)
-    public void updateUserIsVip(String userid, String status){
-        dingUserDao.updateUserIsVip(userid,status);
+    public void updateUserIsVip(String userid, String status) {
+        dingUserDao.updateUserIsVip(userid, status);
     }
 
     /**
      * 内购专用的post请求
+     *
      * @param url
      * @param dataMap
      * @param headerMap
@@ -721,19 +737,17 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
     }
 
 
-
-
-
     @Transactional(readOnly = false)
     public String importData(MultipartFile file, Boolean isUpdateSupport) {
-        if (file == null){
+        if (file == null) {
             throw new ServiceException("请选择导入的数据文件！");
         }
-        int successNum = 0; int failureNum = 0;
+        int successNum = 0;
+        int failureNum = 0;
         StringBuilder successMsg = new StringBuilder();
         StringBuilder failureMsg = new StringBuilder();
         // 当前登录用户
-        try(ExcelImport ei = new ExcelImport(file, 2, 0)){
+        try (ExcelImport ei = new ExcelImport(file, 2, 0)) {
             // 获取所有用户
 
             List<DingUser> dingUserList = this.findList(new DingUser());
@@ -745,17 +759,17 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
                     dingUser1.setJobLevel(dingUser.getJobLevel());
                     dingUserList1.add(dingUser1);
                     successNum++;
-                }catch (NoSuchElementException e) {
+                } catch (NoSuchElementException e) {
 
                 } catch (Exception e) {
                     failureNum++;
-                    String msg = "<br/>" + failureNum  + " 导入失败：";
-                    if (e instanceof ConstraintViolationException){
-                        List<String> messageList = ValidatorUtils.extractPropertyAndMessageAsList((ConstraintViolationException)e, ": ");
+                    String msg = "<br/>" + failureNum + " 导入失败：";
+                    if (e instanceof ConstraintViolationException) {
+                        List<String> messageList = ValidatorUtils.extractPropertyAndMessageAsList((ConstraintViolationException) e, ": ");
                         for (String message : messageList) {
                             msg += message + "; ";
                         }
-                    }else{
+                    } else {
                         msg += e.getMessage();
                     }
                     failureMsg.append(msg);
@@ -771,12 +785,11 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
         if (failureNum > 0) {
             failureMsg.insert(0, "很抱歉，导入失败！共 " + failureNum + " 条数据格式不正确，错误如下：");
             throw new ServiceException(failureMsg.toString());
-        }else{
+        } else {
             successMsg.insert(0, "恭喜您，数据已全部导入成功！共 " + successNum + " 条，数据如下：");
         }
         return successMsg.toString();
     }
-
 
 
     public void setUserData(DingUser dingUser, String token, UserData userData) {
@@ -883,9 +896,8 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
     }
 
 
-
     @Transactional(readOnly = true)
-    public DingUser getMyBoss(String userId){
+    public DingUser getMyBoss(String userId) {
         return dingUserDao.getMyBoss(userId);
     }
 
@@ -901,20 +913,72 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
         return dingUser;
     }
 
+    /**
+     * 获取钉钉用户(优先缓存)
+     * @param userId
+     * @return
+     */
+    public DingUser getDingUserFromCache(String userId) {
+        DingUser dingUser = null;
+        if (!StringUtils.isBlank(userId)) {
+            dingUser = redisUser.get(redisUser.DINGUSER, REDIS_KEY_DING_USER + "_" + userId);
+            if(dingUser == null){
+                dingUser = getUserById(userId);
+                if(dingUser != null){
+                    setNewToken(dingUser);
+                }
+            }
+            else{
+                if(StringUtils.isBlank(dingUser.getUvan_token())){
+                    setNewToken(dingUser);
+                } else {
+                    //token过期，则重设uvantoken
+                    Long expTime = redisString.getExpire(REDIS_KEY_DING_USER_TOKEN + "_" + dingUser.getUvan_token(), TimeUnit.MICROSECONDS);
+                    if(expTime == null || expTime < 0){
+                        setNewToken(dingUser);
+                    }
+                }
+            }
+        }
+        return dingUser;
+    }
+
+    private void setNewToken(DingUser dingUser){
+        dingUser.setUvan_token(getUvanToken());
+        saveCache(dingUser);
+    }
+
+    private String getUvanToken(){
+        //根据uuid生产随机token,把"-"去掉,不然在跟前端交互的时候会出现问题
+        return UUID.randomUUID().toString().replaceAll("-", "");
+    }
+
+    @Deprecated
     public void saveToken(DingUser dingUser) {
         // 保存登录记录表
         fzLoginRecordService.saveData(dingUser);
         List<DingDepartment> dingDepartments = dingDepartmentService.getDingDepartmentByUser(dingUser.getUserid());
         dingUser.setDingDepartmentList(dingDepartments);
-        //根据uuid生产随机token,把"-"去掉,不然在跟前端交互的时候会出现问题
-        String token = UUID.randomUUID().toString().replaceAll("-", "");
+        String token = getUvanToken();
         //token = EncodeUtils.encodeHex(token.getBytes());     //不加密了
         dingUser.setUvan_token(token);
-        String userData = prossesOne(dingUser, token);
-        stringRedisTemplate.opsForValue().set("dingding_user_" + token, dingUser.getUserid(), FZ_EXPRIED_TIME, TimeUnit.SECONDS);
-        stringRedisTemplate.opsForValue().set("dingding_user_" + dingUser.getUserid(), userData, FZ_EXPRIED_TIME, TimeUnit.SECONDS);
+        String userDataJson = prossesOne(dingUser, token);
+        saveCacheOld(dingUser.getUserid(), token, userDataJson);
     }
 
+    public void saveCache(DingUser dingUser){
+        redisString.set(REDIS_KEY_DING_USER_TOKEN + "_" + dingUser.getUvan_token(), dingUser.getUserid(), FZ_EXPRIED_TIME, TimeUnit.SECONDS);
+        redisUser.set(redisUser.DINGUSER,REDIS_KEY_DING_USER + "_" + dingUser.getUserid(), dingUser, FZ_EXPRIED_TIME, TimeUnit.SECONDS);
+        saveCacheOld(dingUser.getUserid(), dingUser.getUvan_token(), prossesOne(dingUser, dingUser.getUvan_token()));
+    }
+
+    @Deprecated
+    public void saveCacheOld(String userId, String token, String userDataJson){
+        redisString.set("dingding_user_" + token, userId, FZ_EXPRIED_TIME, TimeUnit.SECONDS);
+        redisString.set("dingding_user_" + userId, userDataJson, FZ_EXPRIED_TIME, TimeUnit.SECONDS);
+    }
+
+    @Deprecated
     private String prossesOne(DingUser dingUser, String token) {
 
         UserData userData = getUserData(dingUser, token);
@@ -926,227 +990,261 @@ public class DingUserService extends CrudService<DingUserDao, DingUser> {
     }
 
 
+    /**
+     * 将同步的用户处理后保存到数据库
+     * @param users
+     */
+
+    @Transactional(readOnly = false)
+    public void saveUsersFromApi(List<DingApiUser> users) {
+        List<DingUser> dbUsers = dingUserDao.findList(new DingUser());
+        List<DingUserDepartment> dbUserDepts = dingUserDepartmentDao.findList(new DingUserDepartment());
+
+        boolean dbIsEmpty = ListUtils.isEmpty(dbUsers);
+        Map<String, DingUser> dbMap = null;
+        if(!dbIsEmpty)
+            dbMap = dbUsers.stream().collect(Collectors.toMap(DingUser::getUserid, a -> a,(k1, k2)->k1));   //如果有重复的key,则保留key1,舍弃key2
+        List<DingUser> updateUsersList = new ArrayList<>();
+        List<DingUser> insertUsersList = new ArrayList<>();
+        List<DingUserDepartment> insertUserDeptsList = new ArrayList<>();
+        List<DingUserDepartment> deleteUserDeptsList = new ArrayList<>();
+
+        if (!ListUtils.isEmpty(users)) {
+            for (int j = 0; j < users.size(); j++) {
+
+                DingApiUser apiUser = users.get(j);
+                if(StringUtils.isBlank(apiUser.getExtattr()) || StringUtils.isBlank(apiUser.getOpenId()) || StringUtils.isBlank(apiUser.getUserid())) continue; //供应商、空id不加入
+
+                DingUser dingUser = getDingUserFromApiUser(apiUser);
+
+                CompareObejct<DingUser> compare = new CompareObejct<>();
+                if(dbMap != null && dbMap.containsKey(dingUser.getUserid())){
+                    DingUser dbUser = dbMap.get(dingUser.getUserid());
+
+                    dingUser.setIsNewRecord(false);
+                    //设置导入的工号及职级
+                    dingUser.setJobnumber(dbUser.getJobnumber());
+                    dingUser.setJobLevel(dbUser.getJobLevel());
+                    //设置其他增加的属性
+                    dingUser.setWinningPrize(dbUser.getWinningPrize());
+                    dingUser.setUserStatus(dbUser.getUserStatus());
+                    dingUser.setUserIsVip(dbUser.getUserIsVip());
+                    dingUser.setIsManager(dbUser.getIsManager());
+                    //dingUser.setDirectSuperior(dbUser.getDirectSuperior());
+                    //dingUser.setDepartmentHeader(dbUser.getDepartmentHeader());
+                    dingUser.setInDepartmentGold(dbUser.getInDepartmentGold());
+                    dingUser.setOutDepartmentGold(dbUser.getOutDepartmentGold());
+                    dingUser.setConvertibleGold(dbUser.getConvertibleGold());
+
+                    compare.setOriginal(dbUser);
+                    DingUser changed = new DingUser();
+                    compare.setIgnoreNames(Sets.newHashSet("department", "dingDepartmentList", "chineseName", "sex", "serialVersionUID", "roleNames", "usedPoint", "freezePoint", "achievement", "prizeType"));
+                    if(dbUser.isCustomized()) {
+                        Set<String> sets = compare.getIgnoreNames();
+                        sets.add("directSuperior");
+                        sets.add("departmentHeader");
+                        sets.add("isManager");
+                        compare.setIgnoreNames(sets);
+                    }
+                    compare.setChanged(changed);
+                    compare.setCurrent(dingUser);
+                    compare.contrastObj(DingUser.class);
+                    //System.out.println(compare.getStatus());
+
+                    if(compare.getStatus().equals(CompareStatus.CHANGE)) {
+                        changed.setUserid(dingUser.getUserid());
+                        updateUsersList.add(changed);
+                        //过滤已配置过的上级,上级已变更&部门!=最高级的部门
+                        //if(changed.getDirectSuperior() != null && !ObjectUtils.isNull(maxDept) && !dingUser.getDepartment().equals(maxDept.getDepartmentId())){
+                        //
+                        //}
+                    }
+                } else {
+                    dingUser.setInDepartmentGold(0L);
+                    dingUser.setOutDepartmentGold(0L);
+                    dingUser.setConvertibleGold(0L);
+                    dingUser.setIsNewRecord(true);
+                    if(insertUsersList.stream().noneMatch(a->a.getUserid().equals(dingUser.getUserid()))){
+                        insertUsersList.add(dingUser);
+                    }
+                    //else{
+                    //    insertUsersList.stream().filter(a->a.getUserid().equals(dingUser.getUserid())).findFirst().ifPresent(a->{
+                    //        CompareObejct<DingUser> compare1 = new CompareObejct<>();
+                    //        DingUser changed1 = new DingUser();
+                    //        compare1.setOriginal(dingUser);
+                    //        compare1.setCurrent(a);
+                    //        compare1.setChanged(changed1);
+                    //        compare1.contrastObj(DingUser.class);
+                    //        System.out.println(compare1.getStatus());
+                    //    });
+                    //}
+                }
+                redisUser.set(redisDingDepartment.DINGUSER, REDIS_KEY_DING_USER + "_" + dingUser.getUserid(), dingUser);
+                if(ListUtils.isNotEmpty(dingUser.getDingDepartmentList())){
+                    List<DingUserDepartment> currentDbDepts = dbUserDepts.stream().filter(a-> a.getUserId().equals(dingUser.getUserid())).collect(Collectors.toList());
+                    List<DingDepartment> insertDepts = dingUser.getDingDepartmentList().stream().filter(a->
+                            currentDbDepts.stream().noneMatch(b->b.getDepartmentId().equals(a.getDepartmentId()))
+                    ).collect(Collectors.toList());
+                    insertUserDeptsList.addAll(insertDepts.stream().map(a-> new DingUserDepartment(dingUser.getUserid(), a.getDepartmentId())).collect(Collectors.toList()));
+                    deleteUserDeptsList.addAll(currentDbDepts.stream().filter(a->dingUser.getDingDepartmentList().stream().noneMatch(b->b.getDepartmentId().equals(a.getDepartmentId()))).collect(Collectors.toList()));
+                }
+            }
 
 
+            if (!ListUtils.isEmpty(insertUsersList)) dingUserDao.insertAllUsers(insertUsersList);
+            if (!ListUtils.isEmpty(updateUsersList)) dingUserDao.updateAllUsers(updateUsersList);
+            if (!ListUtils.isEmpty(insertUserDeptsList)) {
+                insertUserDeptsList = removeDuplicateDepts(insertUserDeptsList);
+                dingUserDepartmentDao.insertBatch(insertUserDeptsList);
+            }
+            if (!ListUtils.isEmpty(deleteUserDeptsList)) dingUserDepartmentDao.deleteBatch(deleteUserDeptsList);
+            if(dbMap != null) {
+                List<String> deleteUsersList = dbMap.keySet().stream().filter(a ->
+                        users.stream().noneMatch(b -> String.valueOf(b.getUserid()).equals(a))
+                ).collect(Collectors.toList());
+                if (!ListUtils.isEmpty(deleteUsersList)) dingUserDao.deleteBatch(deleteUsersList);
+            }
+            //删除加盟商多余数据
+            dingUserDao.deleteAllianceUser();
+            FzTask.departmentUser();
+        }
+    }
 
     /**
-     * 调用钉钉接口，同步角色信息,与上面不同，返回数据中的键值不一样
-     * @author thomas
-     * @version 2018-12-05
-     * @param
-     * @return void
+     * 移除重复数据
+     * @param orderList
+     * @return
      */
-    @Transactional(readOnly = false)
-    public void sysDingRole(String role) {
-        JSONObject jsonObject = JSONObject.fromObject(role);
-        JSONArray jsonArray = jsonObject.getJSONArray("list");
-        if (jsonArray != null && jsonArray.size() > 0) {
-            for (int i = 0; i < jsonArray.size(); i++) {
-                JSONObject jsonObject4 = jsonArray.getJSONObject(i);
-                String groupName = jsonObject4.getString("name");
-                if (jsonObject4 != null) {
-                    JSONArray jsonArray1 = jsonObject4.getJSONArray("roles");
-                    if (jsonArray1 != null && jsonArray1.size() > 0) {
-                        for (int j = 0; j < jsonArray1.size(); j++) {
-                            JSONObject jsonObject6 = jsonArray1.getJSONObject(j);
-                            String id = jsonObject6.getString("id");
-                            DingRole dingRole = new DingRole();
-                            dingRole.setRoleId(id);
-                            dingRole = dingRoleDao.get(dingRole);
-                            DingRole dingRole1 = new DingRole();
-                            dingRole1.setRoleId(id);
-                            dingRole1.setRoleName(jsonObject6.getString("name"));
-                            dingRole1.setGroupName(groupName);
-                            if (dingRole == null) {
-                                dingRole1.setIsNewRecord(true);
-                                dingRoleDao.insert(dingRole1);
-                            } else {
-                                dingRole1.setIsNewRecord(false);
-                                dingRoleDao.update(dingRole1);
-                            }
+    private List<DingUserDepartment> removeDuplicateDepts(List<DingUserDepartment> orderList) {
+        Set<DingUserDepartment> set = new TreeSet<DingUserDepartment>(new Comparator<DingUserDepartment>() {
+            @Override
+            public int compare(DingUserDepartment a, DingUserDepartment b) {
+                // 字符串则按照asicc码升序排列
+                int c1 = a.getDepartmentId().compareTo(b.getDepartmentId());
+                if(c1 == 0)
+                    return a.getUserId().compareTo(b.getUserId());
+                return c1;
+            }
+        });
+
+        set.addAll(orderList);
+        return new ArrayList<DingUserDepartment>(set);
+    }
+
+    /**
+     * 将API用户转为数据库钉钉用户
+     * @param apiUser
+     * @return
+     */
+    public DingUser getDingUserFromApiUser(DingApiUser apiUser) {
+        DingUser dingUser = new DingUser();
+        apiUser.CopyTo(dingUser);
+        setDingUserDepts(dingUser, JsonMapper.toJson(apiUser.getDepartment()));
+        return dingUser;
+    }
+
+    /**
+     * 设置用户部门信息
+     * @param dingUser
+     * @param apiDeptIdsString
+     */
+    private void setDingUserDepts(DingUser dingUser, String apiDeptIdsString){
+        //设置用户关联的部门
+        dingUser.setDepartment(apiDeptIdsString);
+        DingDepartment maxDept = null;
+        if(StringUtils.isBlank(apiDeptIdsString)) return;
+        List<Integer> apiDeptIds = com.alibaba.fastjson.JSONObject.parseArray(apiDeptIdsString, Integer.class);
+        if(apiDeptIds != null && !apiDeptIds.isEmpty()){
+            List<DingDepartment> depts = new ArrayList<>();
+            for(Integer iDeptCode : apiDeptIds){
+                //String key = redisDingDepartment.getFirstKey(redisString.DEPT, dingDepartmentService.REDIS_KEY_DING_DEPARTMENT + "*_" + iDeptId.toString());
+                DingDepartment dept = dingDepartmentService.getDingDepartmentByIdFromCache(iDeptCode.toString());
+                if(dept != null){
+                    depts.add(dept);
+                }
+            }
+            dingUser.setDingDepartmentList(depts);
+            if(!dingUser.getUserid().equals("manager9586")){   //排除CEO，工号0000是CEO,userid=manager9586
+                Optional<DingDepartment> optionalDingDepartment = depts.stream().min(Comparator.comparingInt(DingDepartment::getTreeLevel));
+                if(optionalDingDepartment.isPresent()){
+                    maxDept = optionalDingDepartment.get();
+                    if(maxDept.getDepartmentId().equals("1")){
+                        //上级是根，则属于CEO考核
+                        dingUser.setDirectSuperior("manager9586");
+                        dingUser.setDepartmentHeader("manager9586");
+                    }
+                    else{
+                        //获取上级部门
+                        String ownerId = getDeptOwner(maxDept);
+                        if(ownerId.equals(dingUser.getUserid()))
+                            maxDept = dingDepartmentService.getDingDepartmentByIdFromCache(maxDept.getParentCode());
+                        //设置上级
+                        dingUser.setDirectSuperior(getDeptOwner(maxDept));
+                        //设置上上级
+                        DingDepartment deptParent = dingDepartmentService.getDingDepartmentByIdFromCache(maxDept.getParentCode());
+                        if(deptParent != null && !deptParent.getDepartmentId().equals("1")){
+                            //上上级并非根节点，则设置为上上级部门的管理者
+                            dingUser.setDepartmentHeader(getDeptOwner(deptParent));
+                        } else {
+                            //上级为中心管理员，上上级则是CEO
+                            dingUser.setDepartmentHeader("manager9586");
                         }
                     }
                 }
             }
         }
-
     }
-
-
 
     /**
-     * 同步钉钉用户,与上面稍微不同
+     * 获取部门主管ID
+     * @param maxDept
+     * @return
      */
-
-    @Transactional(readOnly = false)
-    public String  sysDingUser(String users) {
-
-        JSONArray jsonArrayList = JSONArray.fromObject(users);
-        if (jsonArrayList != null && jsonArrayList.size() > 0) {
-
-            for (Object user : jsonArrayList) {
-
-
-                JSONObject jsonObject = JSONObject.fromObject(user);
-                String userId = jsonObject.getString("userid");
-
-                List<String> ids = this.getUserIdList();
-                if (!ids.contains(userId)) {
-                    DingUser dingUserNew = new DingUser();
-
-                    if (jsonObject.containsKey("department")) {
-                        String departmnet = jsonObject.getString("department");
-                        dingUserDao.deleteUserDepartment(userId);
-                        JSONArray jsonArray1 = JSONArray.fromObject(departmnet);
-                        if (jsonArray1 != null && jsonArray1.size() > 0) {
-                            for (int j = 0; j < jsonArray1.size(); j++) {
-                                String departmnetId = String.valueOf(jsonArray1.get(j));
-                                DingDepartment dingDepartment = new DingDepartment();
-                                dingDepartment.setDepartmentId(departmnetId);
-                                dingDepartment = dingDepartmentDao.get(dingDepartment);
-                                if (dingDepartment != null) {
-                                    if ("1".equals(dingDepartment.getOuterDept())) {
-                                        return "该员工所在部门限制本部门成员查看通讯录";
-                                    } else {
-                                        dingUserDao.insertUserDepartment(userId, departmnetId);
-                                    }
-                                }
-
-                            }
-                        }
-                    }
-                    if (jsonObject.containsKey("remark")) {
-                        dingUserNew.setRemark(jsonObject.getString("remark"));
-                    }
-                    if (jsonObject.containsKey("openId")) {
-                        dingUserNew.setOpenid(jsonObject.getString("openId"));
-                    }
-                    dingUserNew.setUserid(jsonObject.getString("userid"));
-                    if (jsonObject.containsKey("isLeaderInDepts")) {
-                        dingUserNew.setIsLeaderInDepts(jsonObject.getString("isLeaderInDepts"));
-                    }
-                    if (jsonObject.containsKey("isBoss")) {
-                        boolean isBoss = jsonObject.getBoolean("isBoss");
-                        if (isBoss) {
-                            dingUserNew.setIsBoss("1");
-                        } else {
-                            dingUserNew.setIsBoss("0");
-                        }
-
-                    }
-                    if (jsonObject.containsKey("name")) {
-                        dingUserNew.setName(jsonObject.getString("name"));
-                    }
-                    if (jsonObject.containsKey("tel")) {
-                        dingUserNew.setTel(jsonObject.getString("tel"));
-                    }
-                    if (jsonObject.containsKey("workPlace")) {
-                        dingUserNew.setWorkPlace(jsonObject.getString("workPlace"));
-                    }
-                    if (jsonObject.containsKey("mobile")) {
-                        dingUserNew.setMobile(jsonObject.getString("mobile"));
-                    }
-                    if (jsonObject.containsKey("email")) {
-                        dingUserNew.setEmail(jsonObject.getString("email"));
-                    }
-                    if (jsonObject.containsKey("orgEmail")) {
-                        dingUserNew.setOrgEmail(jsonObject.getString("orgEmail"));
-                    }
-                    if (jsonObject.containsKey("active")) {
-                        boolean active = jsonObject.getBoolean("active");
-                        if (active) {
-                            dingUserNew.setActive("1");
-                        } else {
-                            dingUserNew.setActive("0");
-                        }
-
-                    }
-                    if (jsonObject.containsKey("orderInDepts")) {
-                        dingUserNew.setOrderinDepts(jsonObject.getString("orderInDepts"));
-                    }
-                    if (jsonObject.containsKey("isAdmin")) {
-                        boolean isAdmin = jsonObject.getBoolean("isAdmin");
-                        if (isAdmin) {
-                            dingUserNew.setIsAdmin("1");
-                        } else {
-                            dingUserNew.setIsAdmin("0");
-                        }
-
-                    }
-                    if (jsonObject.containsKey("unionid")) {
-                        dingUserNew.setUnionid(jsonObject.getString("unionid"));
-                    }
-
-                    if (jsonObject.containsKey("isHide")) {
-                        boolean isHide = jsonObject.getBoolean("isHide");
-                        if (isHide) {
-                            dingUserNew.setIsHide("1");
-                        } else {
-                            dingUserNew.setIsHide("0");
-                        }
-                    }
-                    if (jsonObject.containsKey("position")) {
-                        dingUserNew.setPosition(jsonObject.getString("position"));
-                    }
-                    if (jsonObject.containsKey("avatar")) {
-                        dingUserNew.setAvatar(jsonObject.getString("avatar"));
-                    }
-                    if (jsonObject.containsKey("hiredDate")) {
-                        Long date1 = jsonObject.getLong("hiredDate");
-                        Date date = DateUtils.parseDate(date1);
-                        String datestr = DateUtils.formatDate(date1, "yyyy-MM-dd HH:mm:ss");
-                        dingUserNew.setHiredDate(DateUtils.parseDate(datestr));
-
-                    }
-                    if (jsonObject.containsKey("jobnumber")) {
-                        dingUserNew.setJobnumber(jsonObject.getString("jobnumber"));
-                    }
-                    if (jsonObject.containsKey("extattr")) {
-                        dingUserNew.setExtattr(jsonObject.getString("extattr"));
-                    }
-                    if (jsonObject.containsKey("stateCode")) {
-                        dingUserNew.setStateCode(jsonObject.getString("stateCode"));
-                    }
-                    if (jsonObject.containsKey("isSenior")) {
-                        boolean isSenior = jsonObject.getBoolean("isSenior");
-                        if (isSenior) {
-                            dingUserNew.setIsSenior("1");
-                        } else {
-                            dingUserNew.setIsSenior("0");
-                        }
-                    }
-                    dingUserDao.deleteUserRole(userId);
-                    if (jsonObject.containsKey("roles")) {
-                        JSONArray jsonArray = jsonObject.getJSONArray("roles");
-                        if (jsonArray != null && jsonArray.size() > 0) {
-                            for (int i = 0; i < jsonArray.size(); i++) {
-                                DingRole dingRole = new DingRole();
-                                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                                String id = Convert.getString(jsonObject1, "id");
-                                dingRole.setRoleId(id);
-                                dingRole = dingRoleDao.get(dingRole);
-                                DingRole dingRole1 = new DingRole();
-                                dingRole1.setRoleId(id);
-                                dingRole1.setGroupName(Convert.getString(jsonObject1, "groupName"));
-                                dingRole1.setRoleName(Convert.getString(jsonObject1, "name"));
-                                if (dingRole == null) {
-                                    dingRole1.setIsNewRecord(true);
-                                    dingRoleDao.insert(dingRole1);
-                                } else {
-                                    dingRole.setIsNewRecord(false);
-                                    dingRoleDao.update(dingRole1);
-                                }
-                                dingUserDao.insertUserRole(userId, id);
-                            }
-                        }
-                    }
-
-                }
+    private String getDeptOwner(DingDepartment maxDept){
+        if(!StringUtils.isBlank(maxDept.getDeptManagerUseridList())) {
+            if(maxDept.getDeptManagerUseridList().contains("|")){
+                String[] managerUserIds = maxDept.getDeptManagerUseridList().split("|");
+                if(managerUserIds.length > 0)
+                    return managerUserIds[0];
+            } else {
+                return maxDept.getDeptManagerUseridList();
             }
+
+        } else if(!StringUtils.isBlank(maxDept.getOrgDeptOwner())) {
+            return maxDept.getOrgDeptOwner();
+        } else {
+            DingDepartment deptParent = dingDepartmentService.getDingDepartmentByIdFromCache(maxDept.getParentCode());
+            if(deptParent!= null) return getDeptOwner(deptParent);
         }
-        return "";
+        return maxDept.getOrgDeptOwner();
     }
 
+    @Deprecated
+    private String getLeaderUserId(String userId) {
+        if (userId.equals("manager9586"))return " ";
+        List<DingDepartment> deptList = dingDepartmentDao.getDingDepartmentByUser(userId);
+        if (deptList.size() > 0) {
+            //树排序
+            deptList.sort(Comparator.comparingInt(o -> (o.getTreeLevel() == null ? 10 : o.getTreeLevel())));
+            //得到最高部门
+            DingDepartment department = deptList.get(0);
+            String leaderId = department.getOrgDeptOwner();
+            String pid = department.getParentid();
+            if (pid!=null && pid.equals("1"))return "manager9586";
+            if (leaderId == null) return null;
+            else if (leaderId.equals(userId)) {
+                //如果本部门的领导是自己，取本部门的上级部门领导
+                DingDepartment upperDepartment = dingDepartmentDao.getDeptByID(pid);
+                if (upperDepartment == null || upperDepartment.getOrgDeptOwner() == null) return null;
+                else return upperDepartment.getOrgDeptOwner();
+            }
+            else if (!leaderId.equals("")) return leaderId;
+        }
+        return null;
+    }
 
-
+    @Transactional(readOnly = false)
+    public void updateCustomized(String userId) {
+        dingUserDao.updateCustomized(userId);
+    }
 }

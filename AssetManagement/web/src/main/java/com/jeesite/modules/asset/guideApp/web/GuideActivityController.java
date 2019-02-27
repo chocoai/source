@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.lang.DateUtils;
+import com.jeesite.common.utils.excel.ExcelExport;
 import com.jeesite.modules.asset.guideApp.dao.GuideCommentDao;
 import com.jeesite.modules.asset.guideApp.entity.GuideComment;
 import com.jeesite.modules.asset.guideApp.entity.GuideFaq;
@@ -187,13 +188,12 @@ public class GuideActivityController extends BaseController {
 		// 活动编码
 		String activityCode = jsonObject.get("activityCode").toString();
 		// 根据活动编码获取对象
-		GuideActivity guideActivity = guideActivityService.get(activityCode);
+		GuideImg guideImg = guideImgService.get(activityCode);
 		List<String> imgList = ListUtils.newArrayList();
-		if (guideActivity != null) {
-			imgList.add(guideActivity.getBannerImage());
-			// 把图片设置为空
-			guideActivity.setBannerImage("");
-			guideActivityService.save(guideActivity);
+		if (guideImg != null) {
+			imgList.add(guideImg.getBannerUrl());
+			// 把图片记录删除
+			guideImgService.delete(guideImg);
 			//删除阿里云图片
 			amUtilService.deletePicAli(imgList);
 			return renderResult(Global.TRUE, "图片删除成功！");
@@ -271,13 +271,10 @@ public class GuideActivityController extends BaseController {
 		// 提问人id
 		String askId = UserUtils.getUser().getUserCode();
 		// 根据用户账号获取当前用户的treeNames
-		String treeNames = guideService.selectShop(askId);
 		// 提问人所在门店
-		if (treeNames != null) {
-			if (treeNames.contains("/")) {
-				String[] officeNames = treeNames.split("/");
-				guideComment.setAskShop(officeNames[1]);
-			}
+		String shop = guideService.selectShop(askId);
+		if (StringUtils.isNotEmpty(shop)) {
+			guideComment.setAskShop(shop);
 		}
 		// 问题
 		guideComment.setQuestion(question);
@@ -358,5 +355,22 @@ public class GuideActivityController extends BaseController {
 	@RequestMapping(value = "newCreateTime", method = RequestMethod.GET)
 	public ReturnInfo newCreateTime() {
 		return ReturnDate.success(DateUtils.formatDateTime(guideActivityService.getNewTime()));
+	}
+
+
+	/**
+	 * 获取表中最新一条数据的创建时间
+	 * @return
+	 */
+	@RequiresPermissions(value = "guide:guideActivity:export")
+	@RequestMapping(value = "exportData")
+	public void exportData(GuideActivity guideActivity, HttpServletResponse response) {
+		GuideComment guideComment = new GuideComment();
+		guideComment.setActivityCode(guideActivity);
+		List<GuideComment> list = guideCommentDao.findList(guideComment);
+		String fileName = "评论" + DateUtils.getDate("yyyyMMddHHmmss") + ".xlsx";
+		try(ExcelExport ee = new ExcelExport("评论", GuideComment.class)){
+			ee.setDataList(list).write(response, fileName);
+		}
 	}
 }

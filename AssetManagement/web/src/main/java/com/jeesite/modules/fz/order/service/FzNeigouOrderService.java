@@ -3,8 +3,8 @@
  */
 package com.jeesite.modules.fz.order.service;
 
-import java.util.List;
-
+import com.jeesite.common.mybatis.mapper.query.QueryType;
+import com.jeesite.modules.util.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +40,14 @@ public class FzNeigouOrderService extends CrudService<FzNeigouOrderDao, FzNeigou
 	 */
 	@Override
 	public Page<FzNeigouOrder> findPage(Page<FzNeigouOrder> page, FzNeigouOrder fzNeigouOrder) {
+		if (StringUtils.isEmpty(fzNeigouOrder.getQuery())) {
+			fzNeigouOrder.getSqlMap().getWhere().and("p_id", QueryType.EQ, "0");
+		} else {
+			String pId = fzNeigouOrder.getOrderId();
+			fzNeigouOrder = new FzNeigouOrder();
+			fzNeigouOrder.getSqlMap().getWhere().and("p_id", QueryType.EQ, pId);
+		}
+
 		return super.findPage(page, fzNeigouOrder);
 	}
 	

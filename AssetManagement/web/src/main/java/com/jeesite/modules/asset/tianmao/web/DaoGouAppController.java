@@ -10,9 +10,11 @@ import com.jeesite.modules.asset.tianmao.entity.Series;
 import com.jeesite.modules.asset.tianmao.entity.TbProduct;
 import com.jeesite.modules.asset.tianmao.entity.TbSku;
 import com.jeesite.modules.asset.tianmao.service.TbProductService;
+import com.jeesite.modules.asset.tianmao.service.TbTianmaoItemsService;
 import com.jeesite.modules.asset.util.ChineseAndEnglish;
 import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
+import com.jeesite.modules.util.StringUtils;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -38,6 +40,8 @@ public class DaoGouAppController {
     @Autowired
     private ProductSeriesService productSeriesService;
     private static String REGEX_CHINESE = "[\u4e00-\u9fa5]";// 中文正则
+    @Autowired
+    private TbTianmaoItemsService tbTianmaoItemsService;
     /**
      * 查询列表数据
      */
@@ -65,17 +69,25 @@ public class DaoGouAppController {
             if (tbSkuList.size() == 0) {
                 continue;
             }
+            String distrPicUrl =  tbTianmaoItemsService.getLastImg(aList.getNumIid());
             JSONObject jsonObject1 = new JSONObject();
             jsonObject1.put("numIid", aList.getNumIid());
             jsonObject1.put("picUrl", aList.getPicUrl());
             jsonObject1.put("title", aList.getTitle());
-
+            jsonObject1.put("distrPicUrl", distrPicUrl);
             Double[] prices = new Double[tbSkuList.size()];
+            Double[] lowerDistrPrice = new Double[tbSkuList.size()];
             for (int m = 0; m < tbSkuList.size(); m++) {
+                if (StringUtils.isEmpty(tbSkuList.get(m).getSkuUrl())) {
+                    tbSkuList.get(m).setSkuUrl(distrPicUrl);
+                }
                 prices[m] = Double.valueOf(tbSkuList.get(m).getRealPrice());
+                lowerDistrPrice[m] = Double.valueOf(tbSkuList.get(m).getDistributionPrice());
             }
             Arrays.sort(prices);
+            Arrays.sort(lowerDistrPrice);
             jsonObject1.put("lowestPrice", prices[0]);
+            jsonObject1.put("lowerDistrPrice", lowerDistrPrice[0]);
             jsonObject1.put("nick", aList.getNick());
             jsonObject1.put("approveStatus", aList.getApproveStatus());
             jsonObject1.put("skuList", tbSkuList);

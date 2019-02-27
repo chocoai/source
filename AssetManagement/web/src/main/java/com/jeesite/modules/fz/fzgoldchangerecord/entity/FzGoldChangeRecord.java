@@ -42,11 +42,11 @@ public class FzGoldChangeRecord extends DataEntity<FzGoldChangeRecord> {
 	
 	private static final long serialVersionUID = 1L;
 	private String recordCode;		// 梵钻变更记录主键
-	private Long number;		// 数量
+	private Double number;		// 数量
 	private String goldType;		// 梵钻类型 0，兑币，1:部门内币，2：跨部门币'
 	private String inOrOut;		// 收支
 	private String userid;		// 员工
-	private Long balance;          //余额
+	private Double balance;          //余额
 	private String userName;
 	private DingUser dingUser;
 	private String inOrOutName;
@@ -119,11 +119,11 @@ public class FzGoldChangeRecord extends DataEntity<FzGoldChangeRecord> {
 //		this.userName = userName;
 //	}
 
-	public Long getBalance() {
+	public Double getBalance() {
 		return balance;
 	}
 
-	public void setBalance(Long balance) {
+	public void setBalance(Double balance) {
 		this.balance = balance;
 	}
 
@@ -144,11 +144,11 @@ public class FzGoldChangeRecord extends DataEntity<FzGoldChangeRecord> {
 	}
 	
 	@NotNull(message="数量不能为空")
-	public Long getNumber() {
+	public Double getNumber() {
 		return number;
 	}
 
-	public void setNumber(Long number) {
+	public void setNumber(Double number) {
 		this.number = number;
 	}
 	

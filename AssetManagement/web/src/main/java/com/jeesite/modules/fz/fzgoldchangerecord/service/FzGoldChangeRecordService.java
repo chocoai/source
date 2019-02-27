@@ -5,6 +5,7 @@ package com.jeesite.modules.fz.fzgoldchangerecord.service;
 
 import java.util.List;
 
+import com.jeesite.common.lang.NumberUtils;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.asset.ding.service.DingUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,17 +67,17 @@ public class FzGoldChangeRecordService extends CrudService<FzGoldChangeRecordDao
         if (fzGoldChangeRecord.getGoldType().equals("0")) {      //可兑换梵钻
             dingUser = dingUserService.get(fzGoldChangeRecord.getUserid());
             if (dingUser != null) {
-                fzGoldChangeRecord.setBalance(dingUser.getConvertibleGold());
+                fzGoldChangeRecord.setBalance(dingUser.getConvertibleGold().doubleValue());
             }
         } else if (fzGoldChangeRecord.getGoldType().equals("1")) {  //部门内梵钻
             dingUser = dingUserService.get(fzGoldChangeRecord.getUserid());
             if (dingUser != null) {
-                fzGoldChangeRecord.setBalance(dingUser.getInDepartmentGold());
+                fzGoldChangeRecord.setBalance(dingUser.getInDepartmentGold().doubleValue());
             }
         } else if (fzGoldChangeRecord.getGoldType().equals("2")) {  //夸部门梵钻
             dingUser = dingUserService.get(fzGoldChangeRecord.getUserid());
             if (dingUser != null) {
-                fzGoldChangeRecord.setBalance(dingUser.getOutDepartmentGold());
+                fzGoldChangeRecord.setBalance(dingUser.getOutDepartmentGold().doubleValue());
             }
 
         }
@@ -107,4 +108,18 @@ public class FzGoldChangeRecordService extends CrudService<FzGoldChangeRecordDao
         fzGoldChangeRecordDao.insetBatch(fzGoldChangeRecords2);
     }
 
+
+    /**
+     * 保存点滴商城
+     */
+    @Transactional(readOnly = false)
+    public void saveMall (FzGoldChangeRecord fzGoldChangeRecord, DingUser dingUser) {
+        if ("0".equals(fzGoldChangeRecord.getInOrOut())) {
+            fzGoldChangeRecord.setBalance(NumberUtils.sub(dingUser.getConvertibleGold().doubleValue(), fzGoldChangeRecord.getNumber()));
+        } else {
+            fzGoldChangeRecord.setBalance(dingUser.getConvertibleGold().doubleValue());
+        }
+        fzGoldChangeRecord.setIsNewRecord(true);
+        super.save(fzGoldChangeRecord);
+    }
 }

@@ -106,4 +106,8 @@ public class AmOrderShoppingService extends CrudService<AmOrderShoppingDao, AmOr
 	public int updateBySkuIdList(List<String> skuIdList, String userCode) {
 		return amOrderShoppingDao.updateBySkuIdList(skuIdList, userCode);
 	}
+
+	public String selectImgByNumIid(String numIid) {
+		return amOrderShoppingDao.selectImgByNumIid(numIid);
+	}
 }

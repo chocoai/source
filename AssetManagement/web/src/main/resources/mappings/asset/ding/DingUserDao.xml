@@ -108,14 +108,144 @@
     </select>
 
 
-    <!-- 批量更新数据-->
-    <update id="updateBatch" parameterType="java.util.List">
+    <insert id="insertAllUsers" parameterType="java.util.List" keyProperty="userid" useGeneratedKeys="false">
+        INSERT INTO js_ding_user
+        (userid,
+        openid,
+        `name`,
+        tel,
+        work_place,
+        remark,
+        mobile,
+        email,
+        org_email,
+        active,
+        orderin_depts,
+        is_admin,
+        is_boss,
+        unionid,
+        is_leader_in_depts,
+        is_hide,
+        department,
+        `position`,
+        avatar,
+        hired_date,
+        jobnumber,
+        extattr,
+        roleid,
+        state_code,
+        is_senior,
+        convertible_gold,
+        in_department_gold,
+        out_department_gold,
+        `left`,
+        winning_prize,
+        prize_type,
+        achievement,
+        user_status,
+        user_is_vip,
+        is_manager,
+        direct_superior,
+        department_header,
+        used_point,
+        freeze_point,
+        job_level
+        )
+        VALUES
+        <foreach collection="list" item="user" index="index" separator=",">
+            (#{user.userid,jdbcType=VARCHAR},
+            #{user.openid,jdbcType=VARCHAR},
+            #{user.name,jdbcType=VARCHAR},
+            #{user.tel,jdbcType=VARCHAR},
+            #{user.workPlace,jdbcType=VARCHAR},
+            #{user.remark,jdbcType=VARCHAR},
+            #{user.mobile,jdbcType=VARCHAR},
+            #{user.email,jdbcType=VARCHAR},
+            #{user.orgEmail,jdbcType=VARCHAR},
+            #{user.active,jdbcType=VARCHAR},
+            #{user.orderinDepts,jdbcType=VARCHAR},
+            #{user.isAdmin,jdbcType=VARCHAR},
+            #{user.isBoss,jdbcType=VARCHAR},
+            #{user.unionid,jdbcType=VARCHAR},
+            #{user.isLeaderInDepts,jdbcType=VARCHAR},
+            #{user.isHide,jdbcType=VARCHAR},
+            #{user.department,jdbcType=VARCHAR},
+            #{user.position,jdbcType=VARCHAR},
+            #{user.avatar,jdbcType=VARCHAR},
+            #{user.hiredDate},
+            #{user.jobnumber,jdbcType=VARCHAR},
+            #{user.extattr,jdbcType=VARCHAR},
+            #{user.roleid,jdbcType=VARCHAR},
+            #{user.stateCode,jdbcType=VARCHAR},
+            #{user.isSenior,jdbcType=VARCHAR},
+            #{user.convertibleGold,jdbcType=INTEGER},
+            #{user.inDepartmentGold,jdbcType=INTEGER},
+            #{user.outDepartmentGold,jdbcType=INTEGER},
+            #{user.left,jdbcType=VARCHAR},
+            #{user.winningPrize,jdbcType=CHAR},
+            #{user.prizeType,jdbcType=VARCHAR},
+            #{user.achievement,jdbcType=VARCHAR},
+            #{user.userStatus,jdbcType=CHAR},
+            #{user.userIsVip,jdbcType=CHAR},
+            #{user.isManager,jdbcType=CHAR},
+            #{user.directSuperior,jdbcType=VARCHAR},
+            #{user.departmentHeader,jdbcType=VARCHAR},
+            #{user.usedPoint,jdbcType=DOUBLE},
+            #{user.freezePoint,jdbcType=DOUBLE},
+            #{user.jobLevel,jdbcType=VARCHAR}
+            )
+        </foreach>
+    </insert>
+
+    <update id="updateAllUsers" parameterType="java.util.List">
+
         <foreach collection="list" item="item" index="index" open="" close="" separator=";">
-            update js_ding_user
-            <set>
-                job_level = #{item.jobLevel}
-            </set>
-            where userid = #{item.userid}
+            UPDATE js_ding_user SET
+            <if test="item.openid!=null"> openid = #{item.openid,jdbcType=VARCHAR}, </if>
+            <if test="item.name!=null"> `name` = #{item.name,jdbcType=VARCHAR}, </if>
+            <if test="item.tel!=null"> tel = #{item.tel,jdbcType=VARCHAR}, </if>
+            <if test="item.workPlace!=null"> work_place = #{item.workPlace,jdbcType=VARCHAR}, </if>
+            <if test="item.remark!=null"> remark = #{item.remark,jdbcType=VARCHAR}, </if>
+            <if test="item.mobile!=null"> mobile = #{item.mobile,jdbcType=VARCHAR}, </if>
+            <if test="item.email!=null"> email = #{item.email,jdbcType=VARCHAR}, </if>
+            <if test="item.orgEmail!=null"> org_email = #{item.orgEmail,jdbcType=VARCHAR}, </if>
+            <if test="item.active!=null"> active = #{item.active,jdbcType=VARCHAR}, </if>
+            <if test="item.orderinDepts!=null"> orderIn_depts = #{item.orderinDepts,jdbcType=VARCHAR}, </if>
+            <if test="item.isAdmin!=null"> is_admin = #{item.isAdmin,jdbcType=VARCHAR}, </if>
+            <if test="item.isBoss!=null"> is_boss = #{item.isBoss,jdbcType=VARCHAR}, </if>
+            <if test="item.unionid!=null"> unionid = #{item.unionid,jdbcType=VARCHAR}, </if>
+            <if test="item.isLeaderInDepts!=null"> is_leader_in_depts = #{item.isLeaderInDepts,jdbcType=VARCHAR}, </if>
+            <if test="item.isHide!=null"> is_hide = #{item.isHide,jdbcType=VARCHAR}, </if>
+            <if test="item.department!=null"> department = #{item.department,jdbcType=VARCHAR}, </if>
+            <if test="item.position!=null"> `position` = #{item.position,jdbcType=VARCHAR}, </if>
+            <if test="item.avatar!=null"> avatar = #{item.avatar,jdbcType=VARCHAR}, </if>
+            <if test="item.hiredDate!=null"> hired_date = #{item.hiredDate}, </if>
+            <if test="item.extattr!=null"> extattr = #{item.extattr,jdbcType=VARCHAR}, </if>
+            <if test="item.roleid!=null"> roleid = #{item.roleid,jdbcType=VARCHAR}, </if>
+            <if test="item.stateCode!=null"> state_code = #{item.stateCode,jdbcType=VARCHAR}, </if>
+            <if test="item.isSenior!=null"> is_senior = #{item.isSenior,jdbcType=VARCHAR}, </if>
+            <if test="item.left!=null"> `left` = #{item.left}, </if>
+            <if test="item.directSuperior!=null"> direct_superior = #{item.directSuperior}, </if>
+            <if test="item.departmentHeader!=null"> department_header = #{item.departmentHeader}, </if>
+            `userid` = #{item.userid}
+            WHERE `userid` = #{item.userid}
         </foreach>
     </update>
+
+    <delete id="deleteBatch" parameterType="java.util.List">
+        <foreach collection="list" item="item" index="index" open="" close="" separator=";">
+            DELETE FROM js_ding_user WHERE `userid` = #{item}
+        </foreach>
+    </delete>
+
+    <delete id="deleteAllianceUser" parameterType="java.util.List">
+        delete from js_ding_user
+        where userid in
+        <foreach collection="list" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+
+    </delete>
+
+
 </mapper>

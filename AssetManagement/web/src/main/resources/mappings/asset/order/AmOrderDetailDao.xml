@@ -24,7 +24,8 @@
         a.quantity as quantity,
         a.price as price,
         a.spec as spec,
-        a.sku_id skuId
+        a.sku_id skuId,
+        b.sku_url skuUrl
     FROM
 	   js_am_order_detail a
     LEFT JOIN tb_sku b ON a.sku_id = b.sku_id

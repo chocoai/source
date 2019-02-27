@@ -4,9 +4,13 @@
 package com.jeesite.modules.asset.product.web;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.jeesite.modules.asset.tianmao.entity.TbProduct;
 import com.jeesite.modules.asset.tianmao.service.TbProductService;
@@ -102,6 +106,44 @@ public class ProductCategoryController extends BaseController {
 		}
 		return list;
 	}
+
+	/**
+	 * 查询列表数据
+	 */
+	@RequiresPermissions("product:productCategory:view")
+	@RequestMapping(value = "listTreeData")
+	@ResponseBody
+	public List<ProductCategory> listTreeData(ProductCategory productCategory) {
+        Predicate<? super ProductCategory> predicate = a -> a.getParentCode().equals(ProductCategory.ROOT_CODE);
+        if (StringUtils.isBlank(productCategory.getParentCode())) {
+            productCategory.setParentCode(ProductCategory.ROOT_CODE);
+        } else predicate = a -> a.getParentCode().equals(productCategory.getParentCode());
+        if (StringUtils.isNotBlank(productCategory.getProcategoryStatus())) {
+            productCategory.setParentCode(null);
+        }
+        if (StringUtils.isNotBlank(productCategory.getCategoryName())) {
+            productCategory.setParentCode(null);
+        }
+        if (StringUtils.isNotBlank(productCategory.getStatus())) {
+            productCategory.setParentCode(null);
+        }
+        if (StringUtils.isNotBlank(productCategory.getRemarks())) {
+            productCategory.setParentCode(null);
+        }
+		List<ProductCategory> list = productCategoryService.findList(new ProductCategory());
+        List<ProductCategory> result = list.stream().filter(predicate).collect(Collectors.toList());
+        buildTree(list, result);
+		return result;
+	}
+	private void buildTree(List<ProductCategory> list, List<ProductCategory> result){
+        result.forEach(a->{
+            List<ProductCategory> children = list.stream().filter(b->b.getParentCode().equals(a.getProcategoryCode())).collect(Collectors.toList());
+            buildTree(list, children);
+            a.setChildList(children);
+            String imgPath = amUtilService.getImgPathAli(a.getProcategoryCode(), bizType);
+            a.setImgPath(imgPath);
+        });
+    }
 
 	/**
 	 * 查看编辑表单

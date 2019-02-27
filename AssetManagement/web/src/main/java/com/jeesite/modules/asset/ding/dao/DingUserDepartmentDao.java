@@ -19,4 +19,6 @@ import java.util.List;
 public interface DingUserDepartmentDao extends CrudDao<DingUserDepartment> {
     @Select("SELECT a.* FROM js_ding_user_department a LEFT JOIN js_ding_user b on a.user_id = b.userid where b.`left`='0'")
     List<DingUserDepartment> selectByLeft();
+
+    void deleteBatch(List<DingUserDepartment> list);
 }

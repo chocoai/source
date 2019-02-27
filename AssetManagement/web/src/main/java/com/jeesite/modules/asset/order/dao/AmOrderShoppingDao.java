@@ -9,6 +9,7 @@ import com.jeesite.modules.asset.order.entity.AmOrderShopping;
 import com.jeesite.modules.asset.order.entity.Shopping;
 import com.jeesite.modules.asset.tianmao.entity.TbSku;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -39,4 +40,12 @@ public interface AmOrderShoppingDao extends CrudDao<AmOrderShopping> {
      * @return
      */
     int updateBySkuIdList(@Param("skuIdList") List<String> skuIdList,@Param("userCode") String userCode);
+
+    /**
+     * 根据商品id获取商品最后一张图
+     * @param numIid
+     * @return
+     */
+    @Select("SELECT a.url from tb_item_imgs a where a.position = (SELECT MAX(position) from tb_item_imgs where item_id =#{arg0}) and a.item_id =#{arg0}")
+    String selectImgByNumIid(String numIid);
 }

@@ -7,6 +7,8 @@ import com.jeesite.common.dao.CrudDao;
 import com.jeesite.common.mybatis.annotation.MyBatisDao;
 import com.jeesite.modules.asset.fgcqualitycheck.entity.QualityCheckDetails;
 
+import java.util.List;
+
 /**
  * 质检单DAO接口
  * @author len
@@ -15,4 +17,10 @@ import com.jeesite.modules.asset.fgcqualitycheck.entity.QualityCheckDetails;
 @MyBatisDao
 public interface QualityCheckDetailsDao extends CrudDao<QualityCheckDetails> {
     QualityCheckDetails selectByEntityId(String entityId);
+
+    /**
+     * 根据质检单号删除
+     * @param billNoList
+     */
+    void deleteDb(List<String> billNoList);
 }

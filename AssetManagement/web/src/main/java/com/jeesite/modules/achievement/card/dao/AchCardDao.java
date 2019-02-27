@@ -41,46 +41,57 @@ public interface AchCardDao extends CrudDao<AchCard> {
     @Update("UPDATE ach_card SET `data_status` = #{arg0}, `update_by` = #{arg1}, `update_date` = NOW() WHERE `card_code` = #{arg2} AND `examined_staff_code` = #{arg3}  ")
     int updateStatus(String dataStatus, String updateBy, String cardCode, String userId);
 
-    @Select("SELECT a.userid as userId, a.`name` AS userName,\n" +
-            "CASE c.data_status WHEN '100' THEN IFNULL(SUM(e.add_sub_score),0) ELSE IFNULL(#{canShowAddScore},IFNULL(SUM(e.add_sub_score),0)) END AS `addSubScore`,\n" +
-            "IFNULL(SUM(c.examine_score),0) AS examineScore,\n" +
-            "#{month} AS examineMonth, a.avatar, f.name AS departmentName, a.position, a.jobnumber,\n" +
-            "IFNULL(c.card_code,'') AS cardCode,IFNULL(c.data_status,'-2') AS dataStatus,\n" +
+    @Select("SELECT t.*,\n" +
             "Max(case d.examine_name when 'KPI指标' then IFNULL(d.examine_score,0) else 0 end ) AS target,\n" +
             "Max(case d.examine_name when 'KPI任务' then IFNULL(d.examine_score,0)else 0 end) AS mission,\n" +
             "Max(case d.examine_name when '职场基础素养' then IFNULL(d.examine_score,0) ELSE 0 END) AS synthetical,\n" +
             "MAX(case d.examine_name when '价值观' then IFNULL(d.examine_score,0) else 0 end) AS senseWorth\n" +
+            "FROM (\n" +
+            "SELECT a.userid as userId, a.`name` AS userName, c.card_code,\n" +
+            "CASE c.data_status WHEN '100' THEN IFNULL(SUM(CASE e.score_type WHEN '0' THEN e.add_sub_score ELSE (0 - e.add_sub_score) END),0) ELSE IFNULL(#{canShowAddScore},IFNULL(SUM(CASE e.score_type WHEN '0' THEN e.add_sub_score ELSE (0 - e.add_sub_score) END),0)) END AS `addSubScore`,\n" +
+            "IFNULL(SUM(c.examine_score),0) AS examineScore,\n" +
+            "#{month} AS examineMonth, a.avatar, f.name AS departmentName, a.position, a.jobnumber,\n" +
+            "IFNULL(c.card_code,'') AS cardCode,IFNULL(c.data_status,'-2') AS dataStatus\n" +
             "FROM js_ding_user a\n" +
             "INNER JOIN js_ding_user_department b on a.userid = b.user_id\n" +
             "INNER JOIN js_ding_department f on b.department_id = f.department_id\n" +
             "LEFT JOIN ach_card c on c.examined_staff_code = a.userid AND c.examine_month = #{month}\n" +
-            "LEFT JOIN ach_card_score d on c.card_code = d.card_code\n" +
             "LEFT JOIN ach_card_score_modify e on e.examine_month = c.examine_month and e.user_id = a.userid\n" +
             "WHERE A.`left` = '0' ${myDeptIds} AND a.userid NOT IN (${expUserIds})\n" +
             "AND (#{userId} IS NULL OR a.direct_superior = #{userId}) AND a.jobnumber <> ''\n" +
             "AND (#{dataStatus} IS NULL OR c.data_status = #{dataStatus})\n" +
             "AND (#{userName} IS NULL OR a.name like #{userName})\n" +
-            "GROUP BY a.userid,a.`name`\n" +
-            "ORDER BY a.jobnumber LIMIT ${startIndex},${endIndex}")
+            "GROUP BY a.userid,a.`name`) t\n" +
+            "LEFT JOIN ach_card_score d on t.card_code = d.card_code\n" +
+            "GROUP BY t.userid,t.`userName`\n" +
+            "ORDER BY t.jobnumber LIMIT ${startIndex},${endIndex}")
     List<AchCardGroupData> getGroupData(@Param("month")String month, @Param("userId")String userId, @Param("userName")String userName, @Param("dataStatus") String dataStatus, @Param("myDeptIds")String myDeptIds, @Param("expUserIds")String expUserIds,@Param("canShowAddScore")String canShowAddScore, @Param("startIndex")int startIndex, @Param("endIndex")int endIndex);
 
-    @Select("SELECT COUNT(*) FROM (SELECT a.userid as userId, a.`name` AS userName,IFNULL(SUM(e.add_sub_score),0) AS `addSubScore`,IFNULL(SUM(c.examine_score),0) AS examineScore,\n" +
-            "IFNULL(c.card_code,'') AS cardCode,IFNULL(c.data_status,'-2') AS dataStatus,\n" +
+    @Select("SELECT COUNT(*) FROM (" +
+            "SELECT t.*,\n" +
             "Max(case d.examine_name when 'KPI指标' then IFNULL(d.examine_score,0) else 0 end ) AS target,\n" +
             "Max(case d.examine_name when 'KPI任务' then IFNULL(d.examine_score,0)else 0 end) AS mission,\n" +
             "Max(case d.examine_name when '职场基础素养' then IFNULL(d.examine_score,0) ELSE 0 END) AS synthetical,\n" +
             "MAX(case d.examine_name when '价值观' then IFNULL(d.examine_score,0) else 0 end) AS senseWorth\n" +
+            "FROM (\n" +
+            "SELECT a.userid as userId, a.`name` AS userName, c.card_code,\n" +
+            //"CASE c.data_status WHEN '100' THEN IFNULL(SUM(CASE e.score_type WHEN '0' THEN e.add_sub_score ELSE (0 - e.add_sub_score) END),0) ELSE IFNULL(#{canShowAddScore},IFNULL(SUM(CASE e.score_type WHEN '0' THEN e.add_sub_score ELSE (0 - e.add_sub_score) END),0)) END AS `addSubScore`,\n" +
+            "IFNULL(SUM(c.examine_score),0) AS examineScore,\n" +
+            "#{month} AS examineMonth, a.avatar, f.name AS departmentName, a.position, a.jobnumber,\n" +
+            "IFNULL(c.card_code,'') AS cardCode,IFNULL(c.data_status,'-2') AS dataStatus\n" +
             "FROM js_ding_user a\n" +
             "INNER JOIN js_ding_user_department b on a.userid = b.user_id\n" +
+            "INNER JOIN js_ding_department f on b.department_id = f.department_id\n" +
             "LEFT JOIN ach_card c on c.examined_staff_code = a.userid AND c.examine_month = #{month}\n" +
-            "LEFT JOIN ach_card_score d on c.card_code = d.card_code\n" +
             "LEFT JOIN ach_card_score_modify e on e.examine_month = c.examine_month and e.user_id = a.userid\n" +
             "WHERE A.`left` = '0' ${myDeptIds} AND a.userid NOT IN (${expUserIds})\n" +
             "AND (#{userId} IS NULL OR a.direct_superior = #{userId}) AND a.jobnumber <> ''\n" +
             "AND (#{dataStatus} IS NULL OR c.data_status = #{dataStatus})\n" +
             "AND (#{userName} IS NULL OR a.name like #{userName})\n" +
-            "GROUP BY a.userid,a.`name`\n" +
-            "ORDER BY a.jobnumber) T")
+            "GROUP BY a.userid,a.`name`) t\n" +
+            "LEFT JOIN ach_card_score d on t.card_code = d.card_code\n" +
+            "GROUP BY t.userid,t.`userName`\n" +
+            ") TCOUNT")
     long getGroupDataCount(@Param("month")String month, @Param("userId")String userId, @Param("userName")String userName, @Param("dataStatus") String dataStatus, @Param("myDeptIds")String myDeptIds, @Param("expUserIds")String expUserIds);
 
     @Update("UPDATE ${table} SET data_status = #{newStatus}\n" +

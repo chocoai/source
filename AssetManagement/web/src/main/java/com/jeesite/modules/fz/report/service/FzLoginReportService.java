@@ -4,12 +4,12 @@
 package com.jeesite.modules.fz.report.service;
 
 
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
 import com.jeesite.modules.asset.ding.entity.DepartmentUtil;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.asset.ding.entity.DingUserDepartment;
 import com.jeesite.modules.fz.utils.common.Variable;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,7 +32,7 @@ import java.util.Optional;
 public class FzLoginReportService extends CrudService<FzLoginReportDao, FzLoginReport> {
 
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 	/**
 	 * 获取单条数据
 	 * @param fzLoginReport
@@ -54,11 +54,11 @@ public class FzLoginReportService extends CrudService<FzLoginReportDao, FzLoginR
 	public Page<FzLoginReport> findPage(Page<FzLoginReport> page, FzLoginReport fzLoginReport) {
 		Page<FzLoginReport> page1 = super.findPage(page, fzLoginReport);
 		// 获取缓存中所有部门
-		List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取部门用户中间表的数据
-		List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUserDepartment> dingUserDepartmentList = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取所有用户
-		List<DingUser> dingUserList = redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUser> dingUserList = redisList.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
 		for (FzLoginReport fzLoginReport1 : page1.getList()) {
 			Optional<DingUser> optionalDingUser = dingUserList.stream().filter(s ->s.getUserid().equals(fzLoginReport1.getUserId())).findFirst();
 			if (optionalDingUser.isPresent()) {

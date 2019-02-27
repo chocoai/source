@@ -101,7 +101,7 @@ public class AuthHelper {
         try {
 //            RedisHelp rh = new RedisHelp();
 
-            accessToken = RedisHelp.redisHelp.getAcessToken();
+            accessToken = RedisHelp.redisHelp.getDingDingAcessToken();
 
             ticket = AuthHelper.getJsapiTicket(accessToken, baseDir);
             signature = AuthHelper.sign(ticket, nonceStr, timeStamp, signedUrl);

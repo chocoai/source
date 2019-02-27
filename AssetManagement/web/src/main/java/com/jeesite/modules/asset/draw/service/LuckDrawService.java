@@ -4,18 +4,16 @@
 package com.jeesite.modules.asset.draw.service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.collect.ListUtils;
-import com.jeesite.common.config.Global;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
 import com.jeesite.modules.asset.ding.entity.DepartmentUtil;
 import com.jeesite.modules.asset.ding.entity.DingUser;
 import com.jeesite.modules.asset.ding.entity.DingUserDepartment;
 import com.jeesite.modules.fz.utils.common.Variable;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +40,7 @@ public class LuckDrawService extends CrudService<LuckDrawDao, LuckDraw> {
 	@Autowired
 	private LuckDrawDao luckDrawDao;
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 	private String RANDOMID = "r92CGREvVtp15loQ";
 	/**
 	 * 获取单条数据
@@ -147,9 +145,9 @@ public class LuckDrawService extends CrudService<LuckDrawDao, LuckDraw> {
 	public void inserDetail(LuckDraw luckDraw, List<DingUser> dingUserList) {
 		super.save(luckDraw);
 		List<LuckDetail> luckDetailList = ListUtils.newArrayList();
-		List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUserDepartment> dingUserDepartmentList = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取缓存中所有部门
-		List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 		for (DingUser dingUser : dingUserList) {
 			// 部门获得
 			String departmentName = DepartmentUtil.getDepartment(dingUser, dingUserDepartmentList, departmentList);

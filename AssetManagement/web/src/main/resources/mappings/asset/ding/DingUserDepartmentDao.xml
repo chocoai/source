@@ -11,5 +11,11 @@
 		</where>
 		ORDER BY ${sqlMap.order.toSql()}
 	</select> -->
-	
+	<delete id="deleteBatch" parameterType="java.util.List">
+
+		<foreach collection="list" item="item" index="index" open="" close="" separator=";">
+			DELETE FROM js_ding_user_department WHERE `user_id` = #{item.userId} AND `department_id` = #{item.departmentId}
+		</foreach>
+
+	</delete>
 </mapper>

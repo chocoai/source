@@ -8,6 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.jeesite.common.lang.DateUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.utils.excel.ExcelExport;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
 import com.jeesite.modules.asset.ding.entity.DepartmentUtil;
@@ -16,7 +17,7 @@ import com.jeesite.modules.asset.ding.entity.DingUserDepartment;
 import com.jeesite.modules.fz.utils.common.Variable;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.annotation.Validated;
@@ -45,7 +46,7 @@ public class FzFollowReportController extends BaseController {
 	@Autowired
 	private FzFollowReportService fzFollowReportService;
 	@Resource
-	private RedisTemplate<String, List> redisTemplate;
+	private RedisUtil<String, List> redisList;
 	
 	/**
 	 * 获取数据
@@ -115,11 +116,11 @@ public class FzFollowReportController extends BaseController {
 	@ResponseBody
 	public void exportData(FzFollowReport fzFollowReport, HttpServletResponse response){
 		List<FzFollowReport> reportList = fzFollowReportService.findList(fzFollowReport);
-		List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUserDepartment> dingUserDepartmentList = redisList.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取缓存中所有部门
-		List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+		List<DepartmentData> departmentList = redisList.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 		// 获取所有用户
-		List<DingUser> dingUserList = redisTemplate.opsForValue().get("dingUser" + Variable.dataBase + Variable.RANDOMID);
+		List<DingUser> dingUserList = redisList.get("dingUser" + Variable.dataBase + Variable.RANDOMID);
 		for (FzFollowReport report : reportList) {
 			DingUser dingUser = dingUserList.stream().filter(s ->s.getUserid().equals(report.getUserid())).findFirst().get();
 			String department = DepartmentUtil.getDepartment(dingUser, dingUserDepartmentList, departmentList);

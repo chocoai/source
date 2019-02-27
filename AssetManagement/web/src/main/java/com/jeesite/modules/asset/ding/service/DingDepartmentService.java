@@ -3,22 +3,25 @@
  */
 package com.jeesite.modules.asset.ding.service;
 
+import com.jeesite.common.collect.ListUtils;
 import com.jeesite.common.service.TreeService;
 import com.jeesite.modules.asset.ding.dao.DingDepartmentDao;
+import com.jeesite.modules.asset.ding.dao.DingUserDepartmentDao;
 import com.jeesite.modules.asset.ding.data.Node;
 import com.jeesite.modules.asset.ding.entity.DepartmentData;
 import com.jeesite.modules.asset.ding.entity.DingDepartment;
 import com.jeesite.modules.asset.util.ParamentUntil;
+import com.jeesite.modules.dingding.DingDepartmentApiObject;
+import com.jeesite.modules.util.StringUtils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * js_ding_departmentService
@@ -31,6 +34,12 @@ import java.util.Set;
 public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDepartment> {
     @Autowired
     DingDepartmentDao departmentDao;
+    @Autowired
+    DingUserDepartmentDao dingUserDepartmentDao;
+    @Autowired
+    RedisUtil<String, DingDepartment> redisDingDepartment;
+
+    public static final String REDIS_KEY_DING_DEPARTMENT = "dingdept";
 
     /**
      * 获取单条数据
@@ -207,8 +216,8 @@ public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDe
               String treenames="";
               String*/
                 List<String> list1 = new ArrayList<>();
-                List<String> list = getParentNodes(departmentList, dingDepartment, list1);
-                dingDepartment.setTreeSort(Integer.valueOf(dingDepartment.getOrder()==null?"0":dingDepartment.getOrder()));
+                getParentNodes(departmentList, dingDepartment, list1);
+                dingDepartment.setTreeSort(Integer.valueOf(dingDepartment.getOrder() == null ? " " : dingDepartment.getOrder()));
                 //GroupContainSubdept为true（1）时，含有子节点
 				/*List<String> strs=departmentDao.getDingDepartmentByParentCode(dingDepartment.getDepartmentId());
 				if(strs==null ||strs.size()<=0){
@@ -239,14 +248,14 @@ public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDe
                     dingDepartment.setParentCode(dingDepartment.getParentid());
                 }
                 dingDepartment.setTreeName_(dingDepartment.getName());
-                if (null == list || list.size() <= 0) {
+                if (null == list1 || list1.size() <= 0) {
                     dingDepartment.setTreeLevel(0);
                     dingDepartment.setParentCodes("0,");
                 } else {
-                    dingDepartment.setTreeLevel(list.size());
+                    dingDepartment.setTreeLevel(list1.size());
                     String str = "0,";
-                    for (int i = 0; i < list.size(); i++) {
-                        str = str + list.get(i) + ",";
+                    for (int i = 0; i < list1.size(); i++) {
+                        str = str + list1.get(i) + ",";
                     }
                     dingDepartment.setParentCodes(str);
                 }
@@ -274,20 +283,23 @@ public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDe
 
 
 	}*/
-    public List<String> getParentNodes(List<DingDepartment> departmentList, DingDepartment dingDepartment, List<String> list) {
-        //List<String> list=new ArrayList<String>();
-        if (null == dingDepartment.getParentid() || "".equals(dingDepartment.getParentid())) {
-            return list;
-        }
-        for (DingDepartment dingDepartment1 : departmentList) {
-            String departmentId = dingDepartment1.getDepartmentId();
-            if (departmentId.equals(dingDepartment.getParentid())) {
-                list.add(departmentId);
-                getParentNodes(departmentList, dingDepartment1, list);
 
+    /**
+     * 获取部门所有父节点
+     * @param departmentList
+     * @param dingDepartment
+     * @param list
+     * @return
+     */
+    public void getParentNodes(List<DingDepartment> departmentList, DingDepartment dingDepartment, List<String> list) {
+        if (!StringUtils.isEmpty(dingDepartment.getParentid())) {
+            Optional<DingDepartment> optionalDingDepartment = departmentList.stream().filter(a->a.getDepartmentId().equals(dingDepartment.getParentid())).findFirst();
+            if(optionalDingDepartment.isPresent()){
+                DingDepartment parentDept = optionalDingDepartment.get();
+                list.add(parentDept.getDepartmentId());
+                getParentNodes(departmentList, optionalDingDepartment.get(), list);
             }
         }
-        return list;
     }
 
 
@@ -305,6 +317,7 @@ public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDe
 
     /**
      * 根据用户钉钉id得到部门数据
+     *
      * @param userid
      * @return
      */
@@ -364,24 +377,26 @@ public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDe
 
     /**
      * 根据一级部门名字得到该一级部门下有多少人
+     *
      * @param name
      * @return
      */
-    public int getNumberByName(String name){
+    public int getNumberByName(String name) {
         String id = departmentDao.getDeptIdByName(name);
-        return departmentDao.getNumberById("%"+id+"%");
+        return departmentDao.getNumberById("%" + id + "%");
     }
 
     /**
      * 返回所有一级部门的名字,除了加盟体系
+     *
      * @return
      */
-    public List getDeptLevelName(){
+    public List getDeptLevelName() {
         List<DingDepartment> parentCode = departmentDao.getChiddeptsByParentCode("1");
         List<String> list = new ArrayList<>();
         for (DingDepartment dingDepartment : parentCode) {
             String name = dingDepartment.getName();
-            if(!"加盟体系".equals(name)){
+            if (!"加盟体系".equals(name)) {
                 list.add(name);
             }
         }
@@ -390,6 +405,7 @@ public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDe
 
     /**
      * 返回所有部门id
+     *
      * @return List<String>
      */
     @Transactional(readOnly = false)
@@ -398,10 +414,73 @@ public class DingDepartmentService extends TreeService<DingDepartmentDao, DingDe
     }
 
 
-/*
+    /**
+     * 插入所有部门
+     */
     @Transactional(readOnly = false)
-    public boolean syncAllDepartment(List<DingDepartment> dpt){
-        return departmentDao.syncAllDepartment(dpt);
+    public void syncAllDepartment(String departments) {
+        List<DingDepartment> departmentListInsert = new ArrayList<>();
+        List<DingDepartment> departmentListUpdate = new ArrayList<>();
+        List<DingDepartmentApiObject> apiDepartmentList = com.alibaba.fastjson.JSONObject.parseArray(departments, DingDepartmentApiObject.class);
+        if (!ListUtils.isEmpty(apiDepartmentList)) {
+            List<DingDepartment> dbDepartmentList = findList(new DingDepartment());
+            for (int i = 0; i < apiDepartmentList.size(); i++) {
+
+                DingDepartmentApiObject dingDepartmentApiObject = apiDepartmentList.get(i);
+                if(dingDepartmentApiObject.getName() != null && dingDepartmentApiObject.getName().equals("加盟体系")) continue;
+
+                DingDepartment newDept = new DingDepartment();
+                dingDepartmentApiObject.CopyTo(newDept);
+
+                List<String> parentIds = new ArrayList<>();
+                getParentNodes(dbDepartmentList, newDept, parentIds);
+                //设置parentIds拼接字符串
+                if(ListUtils.isEmpty(parentIds)){
+                    newDept.setTreeLevel(0);
+                    newDept.setParentCodes("0,");
+                } else {
+                    newDept.setTreeLevel(parentIds.size());
+                    StringBuilder sbParentIds = new StringBuilder("0,");
+                    parentIds.forEach(a->sbParentIds.append(a).append(','));
+                    newDept.setParentCodes(sbParentIds.toString());
+                }
+
+                //判断是否有叶子节点
+                newDept.setTreeLeaf(apiDepartmentList.stream().anyMatch(a-> a.getParentid() != null && a.getParentid().equals(dingDepartmentApiObject.getId())) ? "0" : "1");
+
+                //根据数据库数据判断新增或更新
+                if(dbDepartmentList.stream().anyMatch(a->a.getDepartmentId().equals(newDept.getDepartmentId()))){
+                    newDept.setIsNewRecord(false);
+                    departmentListUpdate.add(newDept);
+                } else {
+                    newDept.setIsNewRecord(true);
+                    departmentListInsert.add(newDept);
+                }
+
+                //写入缓存
+                if(ListUtils.isEmpty(parentIds)){
+                    redisDingDepartment.set(redisDingDepartment.DEPT, REDIS_KEY_DING_DEPARTMENT + "_" + newDept.getDepartmentId(), newDept);
+                } else {
+                    parentIds.remove("1");
+                    parentIds.add(REDIS_KEY_DING_DEPARTMENT);
+                    Collections.reverse(parentIds);
+                    parentIds.add(newDept.getDepartmentId());
+                    String deptString = String.join("_", parentIds);
+                    redisDingDepartment.set(redisDingDepartment.DEPT, deptString, newDept);
+                }
+
+            }
+            List<String> departmentListDelete = dbDepartmentList.stream().filter(a->
+                    apiDepartmentList.stream().noneMatch(b->String.valueOf(b.getId()).equals(a.getDepartmentId()))
+            ).map(a->a.getDepartmentId()).collect(Collectors.toList());
+            if(!ListUtils.isEmpty(departmentListDelete)) departmentDao.deleteBatch(departmentListDelete);
+            if(!ListUtils.isEmpty(departmentListInsert)) departmentDao.insertBatch(departmentListInsert);
+            if(!ListUtils.isEmpty(departmentListUpdate)) departmentDao.updateBatch(departmentListUpdate);
+            departmentDao.updateAllUserCount();
+        }
     }
-    */
+
+    public DingDepartment getDingDepartmentByIdFromCache(String departmentId){
+        return redisDingDepartment.getByPattern(redisDingDepartment.DEPT, REDIS_KEY_DING_DEPARTMENT + "*_" + departmentId);
+    }
 }

@@ -2,6 +2,7 @@ package com.jeesite.modules.fz.fzlogin.web;
 
 import com.alibaba.fastjson.JSONObject;
 import com.jeesite.common.codec.Md5Utils;
+import com.jeesite.modules.util.redis.RedisUtil;
 import com.jeesite.common.web.BaseController;
 import com.jeesite.common.web.http.HttpClientUtils;
 import com.jeesite.modules.asset.ding.FzTask;
@@ -10,6 +11,7 @@ import com.jeesite.modules.asset.ding.service.DingDepartmentService;
 import com.jeesite.modules.asset.ding.service.DingUserService;
 import com.jeesite.modules.asset.util.result.ReturnDate;
 import com.jeesite.modules.asset.util.result.ReturnInfo;
+import com.jeesite.modules.dingding.service.DingDingService;
 import com.jeesite.modules.fz.config.IsFileter;
 import com.jeesite.modules.fz.fzlogin.entity.FzNeigouLoginLog;
 import com.jeesite.modules.fz.fzlogin.service.FzLoginRecordService;
@@ -20,8 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.amqp.core.AmqpTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -43,9 +43,7 @@ public class FzLoginContoller extends BaseController {
     Long FZ_EXPRIED_TIME;  //token过期时间
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
     @Resource
-    private RedisTemplate<String, List> redisTemplate;
-    @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private RedisUtil<String, String> redisString;
     @Autowired
     private AmqpTemplate rabbitTemplate;
     @Autowired
@@ -56,6 +54,8 @@ public class FzLoginContoller extends BaseController {
     private FzLoginRecordService fzLoginRecordService;
     @Autowired
     private FzLoginService fzLoginService;
+    @Autowired
+    private DingDingService dingDingService;
     @Value("${SMSNOTIFICATION}")
     String SMSNOTIFICATION;  //短信验证
 
@@ -83,8 +83,7 @@ public class FzLoginContoller extends BaseController {
     @RequestMapping(value = "/fzLogin", method = RequestMethod.POST)
     @ResponseBody
     public ReturnInfo fzLogin(String ddCode, HttpServletResponse response) throws Exception {
-        String GET_DING_ACCESS_TOKEN_ADDRESS = "https://oapi.dingtalk.com/gettoken?corpid=dingde55314a8e20f3f6&corpsecret=YDj118xRNB5CyG_s0uWdZvvi7DOueWS9RmUN_HFiSaTjjGb9c42jCPWO-vQ1jpht";
-        String result = HttpClientUtils.get(GET_DING_ACCESS_TOKEN_ADDRESS);
+        String result = HttpClientUtils.get(dingDingService.GET_DING_ACCESS_TOKEN_ADDRESS);
         net.sf.json.JSONObject jsonObject1 = net.sf.json.JSONObject.fromObject(result);
         if (jsonObject1 != null) {
             if (jsonObject1.containsKey("errcode")) {
@@ -211,7 +210,7 @@ public class FzLoginContoller extends BaseController {
             ReturnInfo info = fzLoginService.getLoginToken(userid,true);
             if(info == null){
                 return null;
-            } 
+            }
             Integer code = info.getCode();
             if (code == 15028) {
                 fzNeigouLoginLog.setLoginSuccess("2");
@@ -243,11 +242,11 @@ public class FzLoginContoller extends BaseController {
     @RequestMapping(value = "/getUvanToken", method = RequestMethod.GET)
     public ReturnInfo getUvanToken(String getTokenUser,String getTokenPass) {
         if(getUvanTokenUser.equals(getTokenUser) || getUvanTokenPass.equals(getTokenPass)){
-            String uvan_neigou_token = stringRedisTemplate.opsForValue().get("uvan_neigou_token");
+            String uvan_neigou_token = redisString.get("uvan_neigou_token");
             if(uvan_neigou_token == null || "".equals(uvan_neigou_token)){
                 //根据uuid生产随机token,把"-"去掉,不然在跟前端交互的时候会出现问题
                 uvan_neigou_token = UUID.randomUUID().toString().replaceAll("-", "");
-                stringRedisTemplate.opsForValue().set("uvan_neigou_token",uvan_neigou_token,5,TimeUnit.MINUTES);
+                redisString.set("uvan_neigou_token",uvan_neigou_token,5L,TimeUnit.MINUTES);
             }
             return ReturnDate.success(15031,"获取uvan_token成功",uvan_neigou_token);
         }

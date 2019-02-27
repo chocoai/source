@@ -26,7 +26,7 @@ import com.jeesite.modules.asset.util.service.AmSeqService;
 import com.jeesite.modules.sys.entity.DictData;
 import com.jeesite.modules.sys.utils.DictUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+import com.jeesite.modules.util.redis.RedisUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -70,8 +70,6 @@ public class AchCardService extends CrudService<AchCardDao, AchCard> {
 	@Autowired
 	private AchCardDao achCardDao;
 
-	@Resource
-	private RedisTemplate<String, List> redisTemplate;
 	/**
 	 * 获取单条数据
 	 * @param achCard
@@ -155,9 +153,9 @@ public class AchCardService extends CrudService<AchCardDao, AchCard> {
 
 
 
-                //List<DingUserDepartment> dingUserDepartmentList = redisTemplate.opsForValue().get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
+                //List<DingUserDepartment> dingUserDepartmentList = redisTemplate.get("dingUserDepartment" + Variable.dataBase + Variable.RANDOMID);
                 //// 获取缓存中所有部门
-                //List<DepartmentData> departmentList = redisTemplate.opsForValue().get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
+                //List<DepartmentData> departmentList = redisTemplate.get("dingDepartment" + Variable.dataBase + Variable.RANDOMID);
 
                 DingUser secondSuperior = dingUserService.getMyBoss(userData.getDirectSuperior());
                 if(secondSuperior != null) {
@@ -210,7 +208,6 @@ public class AchCardService extends CrudService<AchCardDao, AchCard> {
                 achCardSyntheticalService.createDefaultData(dbItem.getCardCode(), userData.getUserid(), userData.getIsManager());
                 //创建默认评分表
 				achCardScoreService.createDefaultData(dbItem.getCardCode(), userData.getUserid(), userData.getDirectSuperior());
-
 
 
                 achCardScoreService.updateTargerScore(dbItem.getCardCode());
